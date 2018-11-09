@@ -1,0 +1,163 @@
+-- DEMO USB descriptor for tiny USB stack
+require("usb_cdc_acm")
+require("usb_hid")
+return {
+-- Demo descriptor of Bulk device
+Device {
+    strManufacture = "tiny usb",
+    strProduct = "tiny usb bulk demo",
+    strSerial = "tu123456",
+    idVendor = 0x0483,       -- VID PID for ST-link, it will install signed WinUSB driver
+    idProduct = 0x3748,
+    prefix = "BULK",
+    Config {
+        bMaxPower = 100,
+        SelfPower = true,
+        RemoteWakeup = true,
+        Interface{
+            EndPoint(IN(1),  BulkDouble, 64),
+            EndPoint(OUT(2), BulkDouble, 64),
+        },
+   }
+},
+
+-- Demo descriptor of CDC device
+Device {
+    strManufacture = "tiny usb",
+    strProduct = "tiny usb cdc demo",
+    strSerial = "tu123456",
+    idVendor = 0x03EB,    -- VID PID for Ateml CDC
+    idProduct = 0x6124,
+    prefix = "CDC",
+    Config {
+        bMaxPower = 100,
+        SelfPower = true,
+        RemoteWakeup = true,
+        CDC_ACM{
+            CtrlEp =  EndPoint(IN(3),  Interrupt,  8, 1),
+            ReadEp =  EndPoint(IN(1),  BulkDouble, 64),
+            WriteEp = EndPoint(OUT(2), BulkDouble, 64),
+        },
+    },
+},
+
+-- Demo descriptor of 7 CDC device
+Device {
+    strManufacture = "tiny usb",
+    strProduct = "tiny usb cdc7 demo",
+    strSerial = "tu123456",
+    idVendor = 0x1234,   -- Win10 can drive the multiple CDC, VID PID can be any one
+    idProduct = 0x0007,
+    prefix = "CDC7",
+    Config {
+        bMaxPower = 100,
+        SelfPower = true,
+        RemoteWakeup = true,
+        CDC_ACM{
+            CtrlEp =  EndPoint(IN(8),  Interrupt,  8, 1),
+            ReadEp =  EndPoint(IN(1),  BulkDouble, 64),
+            WriteEp = EndPoint(OUT(1), BulkDouble, 64),
+        },
+        CDC_ACM{
+            CtrlEp =  EndPoint(IN(9),  Interrupt,  8, 1),
+            ReadEp =  EndPoint(IN(2),  BulkDouble, 32),
+            WriteEp = EndPoint(OUT(2), BulkDouble, 32),
+        },
+        CDC_ACM{
+            CtrlEp =  EndPoint(IN(10),  Interrupt,  8, 1),
+            ReadEp =  EndPoint(IN(3),  BulkDouble, 32),
+            WriteEp = EndPoint(OUT(3), BulkDouble, 32),
+        },
+        CDC_ACM{
+            CtrlEp =  EndPoint(IN(11),  Interrupt,  8, 1),
+            ReadEp =  EndPoint(IN(4),  BulkDouble, 32),
+            WriteEp = EndPoint(OUT(4), BulkDouble, 32),
+        },
+        CDC_ACM{
+            CtrlEp =  EndPoint(IN(12),  Interrupt,  8, 1),
+            ReadEp =  EndPoint(IN(5),  BulkDouble, 16),
+            WriteEp = EndPoint(OUT(5), BulkDouble, 16),
+        },
+        CDC_ACM{
+            CtrlEp =  EndPoint(IN(13),  Interrupt,  8, 1),
+            ReadEp =  EndPoint(IN(6),  BulkDouble, 16),
+            WriteEp = EndPoint(OUT(6), BulkDouble, 16),
+        },
+        CDC_ACM{
+            CtrlEp =  EndPoint(IN(14),  Interrupt,  8, 1),
+            ReadEp =  EndPoint(IN(7),  BulkDouble, 16),
+            WriteEp = EndPoint(OUT(7), BulkDouble, 16),
+        },
+    },
+},
+
+-- Demo descriptor of HID device
+Device {
+    strManufacture = "tiny usb",
+    strProduct = "tiny usb HID demo",
+    strSerial = "tu123456",
+    idVendor = 0x1234,
+    idProduct = 0x0011,
+    prefix = "HID",
+    Config {
+        bMaxPower = 100,
+        SelfPower = true,
+        RemoteWakeup = true,
+        USB_HID{
+            isKey = false,
+            isMouse = false,
+            isBoot = false,
+            ReadEp = EndPoint(IN(1),  Interrupt, 64),
+            WriteEp = EndPoint(OUT(1), Interrupt, 64),
+            report = HID_InOut(64),
+        },
+   }
+},
+
+-- Demo descriptor of 7 HID device
+Device {
+    strManufacture = "tiny usb",
+    strProduct = "tiny usb 7 HID demo",
+    strSerial = "tu123456",
+    idVendor = 0x1234,
+    idProduct = 0x0017,
+    prefix = "HID7",
+    Config {
+        USB_HID{
+            ReadEp = EndPoint(IN(1),  Interrupt, 64),
+            WriteEp = EndPoint(OUT(1), Interrupt, 64),
+            report = HID_InOut(64),
+        },
+        USB_HID{
+            ReadEp = EndPoint(IN(2),  Interrupt, 32),
+            WriteEp = EndPoint(OUT(2), Interrupt, 32),
+            report = HID_InOut(32),
+        },
+        USB_HID{
+            ReadEp = EndPoint(IN(3),  Interrupt, 32),
+            WriteEp = EndPoint(OUT(3), Interrupt, 32),
+            report = HID_InOut(32),
+        },
+        USB_HID{
+            ReadEp = EndPoint(IN(4),  Interrupt, 32),
+            WriteEp = EndPoint(OUT(4), Interrupt, 32),
+            report = HID_InOut(32),
+        },
+        USB_HID{
+            ReadEp = EndPoint(IN(5),  Interrupt, 16),
+            WriteEp = EndPoint(OUT(5), Interrupt, 16),
+            report = HID_InOut(16),
+        },
+        USB_HID{
+            ReadEp = EndPoint(IN(6),  Interrupt, 16),
+            WriteEp = EndPoint(OUT(6), Interrupt, 16),
+            report = HID_InOut(16),
+        },
+        USB_HID{
+            ReadEp = EndPoint(IN(7),  Interrupt, 16),
+            WriteEp = EndPoint(OUT(7), Interrupt, 16),
+            report = HID_InOut(16),
+        },
+   }
+},
+}
