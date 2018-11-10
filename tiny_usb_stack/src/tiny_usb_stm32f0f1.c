@@ -106,6 +106,13 @@ static uint32_t tusb_pma_rx(tusb_device_t* dev, pma_record* pma, void* data)
 #else
 #define  DOUBLE_BUFF 0
 #endif
+#ifdef HAS_ISO_EP
+#define  ISO_EP  1
+#else
+#define  ISO_EP  0
+#endif
+
+
 // helper function to copy data to end point
 static void copy_tx(tusb_device_t* dev, tusb_ep_data* ep, pma_record* pma, const void* data, uint16_t len, uint16_t tx_max_size)
 { 
@@ -149,6 +156,11 @@ int tusb_send_data(tusb_device_t* dev, uint8_t EPn, const void* data, uint16_t l
     }
     // toggle it
     TUSB_RX_DTOG(GetUSB(dev), EPn, EP);
+  }else if( ISO_EP && ((EP & USB_EP_TYPE_MASK) == USB_EP_ISOCHRONOUS ) ){
+    pma_record* pma = EP & USB_EP_DTOG_TX ? PMA_TX0(dev, EPn) : PMA_TX1(dev, EPn);
+    ep->tx_pushed = 0;
+    copy_tx(dev, ep, pma, data, len, dev->tx_max_size[EPn]);
+    TUSB_SET_TX_STATUS(GetUSB(dev), EPn, EP, USB_EP_TX_VALID);
   }else{
     // normal ep send data
     if( (EP & USB_EPTX_STAT) != USB_EP_TX_NAK){
@@ -175,6 +187,9 @@ void tusb_send_data_done(tusb_device_t* dev, uint8_t EPn, uint16_t EP)
       TUSB_RX_DTOG(GetUSB(dev), EPn, EP);
     }
     pma = (EP & USB_EP_DTOG_RX) ? PMA_TX0(dev, EPn) : PMA_TX1(dev, EPn);
+  }else if( ISO_EP && ((EP & USB_EP_TYPE_MASK) == USB_EP_ISOCHRONOUS ) ){
+    ep->tx_pushed = 0;
+    pma = (EP & USB_EP_DTOG_TX) ? PMA_TX0(dev, EPn) : PMA_TX1(dev, EPn);
   }else{
     ep->tx_pushed = 0;
     pma = PMA_TX(dev, EPn);
@@ -244,6 +259,8 @@ void tusb_recv_data(tusb_device_t* dev, uint8_t EPn, uint16_t EP)
       // We read the data filled by device
       pma = (EP & USB_EP_DTOG_TX) ? PMA_RX0(dev, EPn) :  PMA_RX1(dev, EPn);
     }
+  }else if( ISO_EP && ((EP & USB_EP_TYPE_MASK) == USB_EP_ISOCHRONOUS ) ){
+    pma = (EP & USB_EP_DTOG_RX) ? PMA_TX0(dev, EPn) : PMA_TX1(dev, EPn);
   }else{
     pma = PMA_RX(dev, EPn);
   }

@@ -68,18 +68,20 @@ local function getInitCode(epInfo)
     epSizeTable.inMax = 0
     epSizeTable.outMax = 0
     local hasDoubleBuffer = false
+    local hasISO = false
     for i=0,epInfo.maxEp do
         local ep = epInfo.usage[i]
         if ep then
             r = r .. "\n// EndPoints " .. i .. " defines\n"
             hasDoubleBuffer = hasDoubleBuffer or ep.doubleBuffer
+            hasISO = hasISO or (ep.type == ISO)
             epSizeTable[i] = {
                 inSize = ep.inSize or 0,
                 outSize = ep.outSize or 0,
             }
             epSizeTable.inMax = epSizeTable.inMax < epSizeTable[i].inSize and epSizeTable[i].inSize or epSizeTable.inMax
             epSizeTable.outMax = epSizeTable.outMax < epSizeTable[i].outSize and epSizeTable[i].outSize or epSizeTable.outMax
-            if ep.doubleBuffer then
+            if ep.doubleBuffer or (ep.type == ISO) then
                 if ep.outSize then
                     r = r .. MACRO('EP' .. i .. '_RX_SIZE', ep.outSize)
                     r = r .. MACRO('EP' .. i .. '_RX0_ADDR', '('..dev.prefix..'USB_BUF_START + ' .. addr ..')')
@@ -156,7 +158,7 @@ local function getInitCode(epInfo)
             r = r .. gsub("    SET_RX_ADDR(dev, PCD_ENDP$n, $EPn_RX_ADDR);  \\\n", t)
             r = r .. gsub("    SET_RX_CNT(dev, PCD_ENDP$n, $EPn_RX_SIZE);  \\\n", t)
         elseif ep.inSize then
-            if ep.doubleBuffer then
+            if ep.doubleBuffer or ep.type == ISO then
             r = r .. gsub("    INIT_EP_TxDouble(dev, PCD_ENDP$n, $EPn_TYPE);     \\\n", t)
             r = r .. gsub("    SET_DOUBLE_ADDR(dev, PCD_ENDP$n, $EPn_TX0_ADDR, $EPn_TX1_ADDR);  \\\n", t)
             r = r .. gsub("    SET_DBL_TX_CNT(dev, PCD_ENDP$n, 0);     \\\n", t)
@@ -165,7 +167,7 @@ local function getInitCode(epInfo)
             r = r .. gsub("    SET_TX_ADDR(dev, PCD_ENDP$n, $EPn_TX_ADDR);  \\\n", t)
             end
         elseif ep.outSize then
-            if ep.doubleBuffer then
+            if ep.doubleBuffer or ep.type == ISO  then
             r = r .. gsub("    INIT_EP_RxDouble(dev, PCD_ENDP$n, $EPn_TYPE);     \\\n", t)
             r = r .. gsub("    SET_DOUBLE_ADDR(dev, PCD_ENDP$n, $EPn_RX0_ADDR, $EPn_RX1_ADDR);     \\\n", t)
             r = r .. gsub("    SET_DBL_RX_CNT(dev, PCD_ENDP$n, $EPn_RX_SIZE);     \\\n", t)
@@ -201,6 +203,10 @@ local function getInitCode(epInfo)
     if hasDoubleBuffer then
     r = r .. "// Enable double buffer related code\n"
     r = r .. "#define  HAS_DOUBLE_BUFFER\n\n\n"
+    end
+    if hasISO then
+    r = r .. "// Enable iso ep related code\n"
+    r = r .. "#define  HAS_ISO_EP\n\n\n"
     end
     
     return r
@@ -253,6 +259,11 @@ function EndPointInfo(deviceDescriptor, maxEp, maxMem)
                     if ep.inSize and ep.outSize then
                         if ep.doubleBuffer then warning("Double buffer will disabled in BiDirection ep" .. i) end
                         ep.doubleBuffer = false
+                    end
+                    if ep.type == ISO then
+                        if ep.inSize and ep.outSize then
+                            warning("ISO type in BiDirection ep" .. i)
+                        end
                     end
                     
                     r.usage[addr] = ep
