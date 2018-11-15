@@ -102,6 +102,7 @@ function Device(param)
             r = r .. tostring(str)
         end
         r = r .. str_holder .. "};\n\n"
+        r = r .. MakeWCID(desc)
         r = r .. "//  Device descriptors\n"
         r = r .. [[
 const tusb_descriptors ]]..desc.prefix..[[descriptors = {
@@ -109,8 +110,23 @@ const tusb_descriptors ]]..desc.prefix..[[descriptors = {
   .config = ]]..desc.prefix..[[ConfigDescriptor,
   .strings = ]]..desc.prefix..[[StringDescriptors,
   .string_cnt = ]]..desc.prefix..[[STRING_COUNT,
+#if defined(HAS_WCID)
+#if defined(]]..desc.prefix..[[WCID_DESCRIPTOR_SIZE)
+  .wcid_desc = ]]..desc.prefix..[[WCIDDescriptor,
+#else
+  .wcid_desc = 0,  
+#endif // ]]..desc.prefix..[[WCID_DESCRIPTOR_SIZE)
+
+#if defined(]]..desc.prefix..[[WCID_PROPERTIES_SIZE)
+  .wcid_properties = ]]..desc.prefix..[[WCIDProperties,
+#else
+  .wcid_properties = 0,  
+#endif // ]]..desc.prefix..[[WCID_PROPERTIES_SIZE
+
+#endif // HAS_WCID
 };
 ]]
+        
         return r
     end
     return desc
@@ -229,6 +245,7 @@ function IAD(param)
                 {bFunctionProtocol      = intFirst.bInterfaceProtocol    },
                 {iFunction              = 0                              },
     }(param)
+    desc.WCID = param.WCID
     desc.outputHeader = "  /* IAD descriptor */\n"
     desc.outputTail = ""
     return desc
@@ -254,6 +271,7 @@ function Interface(param)
         {bInterfaceProtocol       = 0                            },
         {iInterface               = 0                            },
     }(param)
+    desc.WCID = param.WCID
     desc.wTotalLength = epLength + desc.bLength
     desc.outputHeader = desc.ident .. "/* Interface descriptor, len: "..desc.wTotalLength.."*/\n"
     desc.outputTail = function(desc)

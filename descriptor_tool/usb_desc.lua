@@ -37,8 +37,8 @@
 
 ]]
 
-local SIMPLE = SIMPLE or false
-local VERBOSE = VERBOSE or false
+SIMPLE = SIMPLE or false
+VERBOSE = VERBOSE or false
 
 DEVICE_DESCRIPTOR_TYPE           =   SIMPLE and 0x01 or "USB_DEVICE_DESCRIPTOR_TYPE"
 CONFIGURATION_DESCRIPTOR_TYPE    =   SIMPLE and 0x02 or "USB_CONFIGURATION_DESCRIPTOR_TYPE"
@@ -59,23 +59,23 @@ end
 
 
 function splitU16(v)
-    local h = math.modf(v/256)
-    local l = v - h*256
-    return l, h
+    return v&0xff, v>>8
 end
-
+function splitU32(v)
+    return v & 0xff, (v>>8)&0xff, (v>>16)&0xff, (v>>24)&0xff
+end
 
 
 local comment_col = 50
 local fmt = string.format
-local function output8(v, desc, ident)
+function output8(v, desc, ident)
     local r = fmt("0x%02x, ",v)
     if SIMPLE then return r end
     ident = ident or 0
     r = r .. string.rep(" ", comment_col - #r - ident)
     return r .. "/* " .. desc .. " */\n"
 end
-local function output16(v, desc, ident)
+function output16(v, desc, ident)
     local l,h = splitU16(v)
     local r = fmt("0x%02x, 0x%02x, ", l, h)
     if SIMPLE then return r end
@@ -83,8 +83,29 @@ local function output16(v, desc, ident)
     r = r .. string.rep(" ", comment_col - #r - ident)
     return r .. "/* " .. desc .. " */\n"
 end
+function output32(v, desc, ident)
+    local l,h,hl,hh = splitU32(v)
+    local r = fmt("0x%02x, 0x%02x, 0x%02x, 0x%02x, ", l, h, hl, hh)
+    if SIMPLE then return r end
+    ident = ident or 0
+    r = r .. string.rep(" ", comment_col - #r - ident)
+    return r .. "/* " .. desc .. " */\n"
+end
 
-local function outputWChar(v, desc, ident)
+function outputChar(ch, desc, ident)
+    local r = ""
+    if ch>=0x20 and ch<=0x7f then
+        r = r .. fmt("'%s', ", string.char(ch))
+    else
+        r = r .. fmt("0x%02x, ", ch)
+    end
+    if SIMPLE then return r end
+    ident = ident or 0
+    r = r .. string.rep(" ", comment_col - #r - ident)
+    return r .. "/* " .. desc .. " */\n"
+end
+
+function outputWChar(v, desc, ident)
     local l,h = splitU16(v)
     local r = ""
     if h == 0 and l>=0x20 and l<=0x7f then
@@ -100,7 +121,7 @@ end
 
 local fieldSize
 -- String means the value is a macro define
-local function outputString(v, desc, ident)
+function outputString(v, desc, ident)
     ident = ident or 0
     if fieldSize(desc) == 2 then
         v = "LOBYTE("..v.."), HIBYTE(" .. v .. ")"
@@ -117,6 +138,7 @@ local field_prefix_table = {
     w = output16,
     bcd = output16,
     wc = outputWChar,
+    dw = output32,
 }
 
 local function fieldPrefix(field)
@@ -135,8 +157,9 @@ fieldSize = function(field)
     if field_prefix_table[pre] == output16 then return 2 end
     if field_prefix_table[pre] == outputWChar then return 2 end
     if field_prefix_table[pre] == output8 then return 1 end
-    error("unknown field size " .. filed)
-    return 1
+    if field_prefix_table[pre] == output32 then return 4 end
+    --error("unknown field size " .. tostring(filed))
+    return -1
 end
 
 -- every cnt output a newline

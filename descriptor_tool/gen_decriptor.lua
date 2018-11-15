@@ -1,4 +1,5 @@
 require("usb_init_ep")
+require("usb_wcid")
 local function usage()
     print("usage:")
     print("  lua usb_gen_desc.lua <inFile> [-maxep=<max ep number>] [-maxmem=<memory size in bytes>]")
