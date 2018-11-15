@@ -376,8 +376,14 @@ local log = function(...)
     logEdit:append(r)
 end
 
-function warning(...)
+function logW(...)
     log("WARNING: ", ...)
+end
+function logI(...)
+    log("INFO   : ", ...)
+end
+function logE(...)
+    log("Error  : ", ...)
 end
 
 local devCnt = 1
@@ -554,7 +560,7 @@ local function dev_show_inf()
     end
     local t = QTextEdit()
     t.plainText = DriverCreate(dev.windowTitle, desc)
-    mdiArea:addSubWindow(t):show()
+    mdiArea:addSubWindow(t):showMaximized()
 end
 
 local function dev_show_inf_all()
@@ -576,7 +582,7 @@ local function dev_show_inf_all()
     if #descs > 0 then
         local t = QTextEdit()
         t.plainText = DriverCreate(n, descs)
-        mdiArea:addSubWindow(t):show()
+        mdiArea:addSubWindow(t):showMaximized()
     end
 end
 
@@ -588,7 +594,7 @@ local function dev_gen_inf()
     for i,v in ipairs(dev.back.ifs) do
         desc.drivers[i] = v.drvCombo.currentText
     end
-    DriverCreate(dev.windowTitle, desc)
+    DriverCreate(dev.windowTitle, desc, true)
 end
 
 local function dev_gen_inf_all()
@@ -608,7 +614,7 @@ local function dev_gen_inf_all()
         end
     end
     if #descs > 0 then
-        DriverCreate(n, descs)
+        DriverCreate(n, descs, true)
     end
 end
 
@@ -651,6 +657,10 @@ mainWindow:menuBar(){
         },
         QAction(tr("&Tile")){
             triggered = function() mdiArea:tileSubWindows() end, QKeySequence("Ctrl+Alt+T"),
+        },
+        QAction(""){ separator = true },
+        QAction(tr("Clear &Log")){
+            triggered = function() logEdit:clear() end, QKeySequence("Ctrl+Alt+C"),
         },
     }
 }

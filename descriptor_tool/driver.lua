@@ -5,9 +5,12 @@ require("usb_wcid")
 local tinyGUID = "{5F5080D8-75A4-46F5-ADF8-ED654DD1AF45}"
 
 local tempPath = "driver_res\\template\\"
+local tempBin = "driver_res\\bins\\"
 local outputPath = "output\\"
 
-local warning = warning or function(...) print(...) end
+local logW = _G.logW or function(...) print(...) end
+local logI = _G.logI or function(...) print(...) end
+local logE = _G.logE or function(...) print(...) end
 
 function SupportDriverList()
     return {
@@ -33,12 +36,14 @@ local extData = {
         DRIVER_VERSION = "1.2.6.0",
         DRIVER_DATE = "08/02/2012",
         LK_EQ_X86 = "= 1,x86",
+        LK_EQ_X64 = "= 1,x64",
     },
     libusbk = {
         DRIVER_VERSION = "3.0.7.0",
         DRIVER_DATE = "12/01/2014",
         WDF_VERSION = "01011",
         KMDF_VERSION = "1.11",
+        USE_DEVICE_INTERFACE_GUID = "AddDeviceInterfaceGUID",
     },
 }
 
@@ -101,11 +106,10 @@ local function sign_driver(catPath, devName, fileList)
         arg = arg .. '"'..v ..'" '
     end
     local f = io.popen(arg)
-    
     f:close()
 end
 
-local function PrepareDriver(name, r)
+local function PrepareDriver(name, r, genFiles)
     local drivers = {}
     for i,dev in ipairs(r.devs) do
         if #dev == 1 then
@@ -118,6 +122,7 @@ local function PrepareDriver(name, r)
         end
     end
     local r = ""
+    local copyBin = false
     for i,v in ipairs(drivers) do
         local f = io.open( tempPath..v.name .. ".inf.in", "r")
         if f then
@@ -138,10 +143,17 @@ local function PrepareDriver(name, r)
             if p1 then
                 error("token not processed " .. template:sub(p1, p2))
             end
-            local inf = io.open(outputPath .. v.INF_FILENAME, "w+")
-            if inf then
-                inf:write(template)
-                inf:close()
+            if genFiles then
+                if not copyBin then
+                    os.execute("xcopy "..tempBin.."* " .. outputPath .. " /E /Y")
+                    copyBin = true
+                end
+                local inf = io.open(outputPath .. v.INF_FILENAME, "w+")
+                if inf then
+                    inf:write(template)
+                    inf:close()
+                    logI("Generate inf file: " .. outputPath .. v.INF_FILENAME)
+                end
             end
             local fileList = {}
             fileList[#fileList+1] = outputPath .. v.INF_FILENAME
@@ -162,12 +174,15 @@ local function PrepareDriver(name, r)
                 end
                 catf:close()
             end
-            r = r .. "#sgin file list:\n"
+            r = r .. "####  need sign file list: ####\n"
             for j,sFile in ipairs(fileList) do
                 r = r .. "#" .. sFile .. "\n"
             end
-            r = r .. "\n\n"
-            sign_driver(outputPath .. v.CAT_FILENAME, name, fileList)
+            r = r .. "############# inf file for "..v.name.." end #############\n\n"
+            if genFiles then
+                sign_driver(outputPath .. v.CAT_FILENAME, name, fileList)
+                logI("Generate cat file: " .. outputPath .. v.CAT_FILENAME)
+            end
         end
     end
     return r
@@ -183,7 +198,7 @@ local function DriverCollect(r, desc)
     assert(#desc.drivers == #cfg, "Driver count and Interface count mismatch")
     local devId = string.format("VID_%04X&PID_%04X", desc.vid, desc.pid)
     if r.devs[devId] then
-        warning("Device " .. devId .. " driver already set, new interface will append to it")
+        logW("Device " .. devId .. " driver already set, new interface will append to it")
     else
        r.devs[devId] = {}
        r.devs[#r.devs+1] = r.devs[devId]
@@ -202,14 +217,17 @@ local function DriverCollect(r, desc)
         
         dev[#dev+1] = ifInfo
         if dev[ifID] then
-            warning("Interface " .. ifID .. " driver already set, last one take effect")
+            logW("Interface " .. ifID .. " driver already set, last one take effect")
         end
         dev[ifID] = ifInfo
     end
 end
 
 
-function DriverCreate(name, descs)
+function DriverCreate(name, descs, genFiles)
+    logW = _G.logW or logW
+    logI = _G.logI or logI
+    logE = _G.logE or logE
     local r = {}
     if descs.bDescriptorType == DEVICE_DESCRIPTOR_TYPE then
         DriverCollect(r, descs)
@@ -218,13 +236,6 @@ function DriverCreate(name, descs)
             DriverCollect(r, v)
         end
     end
-    local s = tostring(name) .. "\n"
-    for i,dev in ipairs(r.devs) do
-        s = s .. "ID: " .. dev.id .. "  vendor: " .. dev.vendor .. " product: " .. dev.product .. "\n"
-        for j,ifs in ipairs(dev) do
-            s = s .. "  " .. ifs.id .. " = " .. ifs.driver .. "\n"
-        end
-    end
-    return PrepareDriver(name, r)
+    return PrepareDriver(name, r, genFiles)
     --return s
 end
