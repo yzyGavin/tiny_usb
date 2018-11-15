@@ -1,7 +1,7 @@
--- xtoolbox ui init file
 require("usb_hid")
 require("usb_cdc_acm")
 require("gen_decriptor")
+require("Driver")
 
 local tr = tr or function(s, ctx) return s end
 
@@ -19,6 +19,7 @@ function EPView:__init(name, optional)
         "ISO",
     }
     self.optional = optional
+    self.valid = true
     self.attr = QComboBox{ self.attrMap }
     self.dir = QComboBox{{
         "IN",
@@ -43,6 +44,7 @@ function EPView:__init(name, optional)
         self.attr.enabled = e
         self.packetSize.enabled = e
         self.interval.enabled = e
+        self.valid = e
     end
     self.layout = QHBoxLayout {
             self.holder,
@@ -75,29 +77,13 @@ function EPView:getAddr()
     return (tonumber(self.addr.text) & 0x7f) + (self.dir.currentIndex == 1 and 0 or 0x80)
 end
 function EPView:makeDesc()
+    if not self.valid then return nil end
     return EndPoint{
         bEndpointAddress = self:getAddr(),
         bmAttributes = _G[self.attr.currentText],
         wMaxPacketSize = tonumber(self.packetSize.text),
         bInterval = tonumber(self.interval.text),
     }
-end
-
-local minEp = nil
-function freeEp(ep)
-    if minEp and minEp[ep] then minEp[ep] = false end
-end
-function getMinEp()
-    if not minEp then
-        minEp = {}
-        for i=1, 64 do minEp[i] = false end
-    end
-    for i=1,#minEp do
-        if not minEp[i] then
-            minEp[i] = true
-            return i
-        end
-    end
 end
 
 class "IfView" (QFrame)
@@ -107,8 +93,9 @@ function IfView:__init(p, name)
     self.ifname = QLabel("")
     self.name = QLineEdit(){ placeHolderText = tr("Set Interface Name or leave empty") }
     self.btnRemove = QPushButton(tr("Remove")) {maxH = 30}
+    self.drvCombo = QComboBox{ SupportDriverList() }
     self.layout = QVBoxLayout{
-        QHBoxLayout{self.ifname,QLabel(" - " .. name), self.name, self.btnRemove},
+        QHBoxLayout{self.ifname,QLabel(" - " .. name), self.name, self.btnRemove, self.drvCombo},
     }
     self.btnRemove.clicked = function()
         if self.removeEp then self.removeEp() end
@@ -139,20 +126,19 @@ function CDCView:__init(p)
     self.layout:addWidget(self.cdcCtrl)
     self.layout:addWidget(self.cdcRead)
     self.layout:addWidget(self.cdcWrite)
-    local e = getMinEp()
-    self.cdcCtrl:setEp(0x80 + getMinEp(), "Interrupt", 8)
+    local e = p.getMinEp()
+    self.cdcCtrl:setEp(0x80 + p.getMinEp(), "Interrupt", 8)
     self.cdcRead:setEp(0x80 + e, "Bulk")
     self.cdcWrite:setEp(e, "Bulk")
     self.removeEp = function()
-        freeEp(self.cdcCtrl:getAddr()&0x7f)
-        freeEp(self.cdcRead:getAddr()&0x7f)
-        freeEp(self.cdcWrite:getAddr()&0x7f)
+        self.freeEp(self.cdcCtrl:getAddr()&0x7f)
+        self.freeEp(self.cdcRead:getAddr()&0x7f)
+        self.freeEp(self.cdcWrite:getAddr()&0x7f)
     end
 end
 
 function CDCView:makeDesc()
     return CDC_ACM{
-        strFunction = self:strInterface(),
         CtrlEp = self.cdcCtrl:makeDesc(),
         ReadEp = self.cdcRead:makeDesc(),
         WriteEp = self.cdcWrite:makeDesc(),
@@ -172,7 +158,7 @@ function HIDView:__init(p)
     }}
     self.ioSize = QLineEdit("64") {maxW = 40, minW = 40}
     self.btnEditRpt = QPushButton(tr("Edit...", "HID")){enabled = false, maxH = 30}
-    self.userRpt = HID_ReportTemp()
+    self.userRpt = HID_ReportTemp().text
     
     self.rptType.currentIndexChanged = function()
         local idx = self.rptType.currentText
@@ -191,7 +177,7 @@ function HIDView:__init(p)
         if dlg:exec() == 1 then self.userRpt = t.plainText end
     end
     
-    local e = getMinEp()
+    local e = p.getMinEp()
     self.epRead:setEp(0x80+e, "Interrupt", 64, 1)
     self.epWrite:setEp(e, "Interrupt", 64, 1)
     self.layout:addWidget(self.epRead)
@@ -200,8 +186,8 @@ function HIDView:__init(p)
         QLabel(tr("    Report desc")), self.rptType, QLabel("Size:"), self.ioSize, self.btnEditRpt
     })
     self.removeEp = function()
-        freeEp(self.epRead:getAddr() & 0x7f)
-        freeEp(self.epWrite:getAddr() & 0x7f)
+        self.freeEp(self.epRead:getAddr() & 0x7f)
+        self.freeEp(self.epWrite:getAddr() & 0x7f)
     end
 end
 
@@ -218,7 +204,8 @@ function HIDView:makeDesc()
     elseif self.rptType.currentText == "BootMouse" then
         r.report = HID_BootMouse()
     else
-        r.report = loadstring(self.userRpt)() or {0}
+        
+        r.report = HID_BuildReport(self.userRpt)
     end
     return USB_HID(r)
 end
@@ -234,11 +221,11 @@ function GenericView:__init(p)
     self.eps = {
         EPView(tr("Generic")),
     }
-    self.eps[1]:setEp(getMinEp(), "Bulk", 64, 0)
+    self.eps[1]:setEp(p.getMinEp(), "Bulk", 64, 0)
     self.layout:addWidget(self.eps[1])
     self.btnAdd.clicked = function()
         local epv = EPView(tr("Generic"), true)
-        epv:setEp(getMinEp(), "Bulk", 64, 0)
+        epv:setEp(self.getMinEp(), "Bulk", 64, 0)
         epv.name.toggled = function()
             if not epv.name.checked then
                 local idx
@@ -250,6 +237,7 @@ function GenericView:__init(p)
                 end
                 local v = table.remove(self.eps, idx)
                 if v then
+                    self.freeEp(v:getAddr() & 0x7f)
                     v:close()
                     self.layout:removeWidget(v)
                     self:resize(self.sizeHint)
@@ -261,6 +249,11 @@ function GenericView:__init(p)
         self.eps[#self.eps+1] = epv
         self:resize(self.sizeHint)
         if self.reset_back then self.reset_back() end
+    end
+    self.removeEp = function()
+        for i,v in ipairs(self.eps) do
+            self.freeEp(v:getAddr() & 0x7f)
+        end
     end
 end
 
@@ -280,10 +273,16 @@ function UsbDescView:__init(parent)
     QFrame.__init(self, parent)
     self.ifs = parent.ifs
     self.editVid = QLineEdit("0x1234"){
-       placeHolderText = "VID",
+       placeHolderText = "VID", maxW = 60
     }
     self.editPid = QLineEdit("0x1234"){
-       placeHolderText = "PID",
+       placeHolderText = "PID", maxW = 60
+    }
+    self.editPktSize = QLineEdit("8"){
+        placeHolderText = "EP0 Size", maxW = 60
+    }
+    self.editDeviceName = QLineEdit(""){
+        placeHolderText = "Name"
     }
     self.editVendor = QLineEdit("Tiny USB Desc Tool"){
        placeHolderText = tr("Manufacture string or leave empty"),
@@ -296,15 +295,23 @@ function UsbDescView:__init(parent)
     }
     self.chkSelfPower = QCheckBox(tr("Self Power"))
     self.chkRemoteWakeup = QCheckBox(tr("Remote Wakeup"))
-    self.maxPower = QLineEdit("100"){inputMask = "999"}
+    self.maxPower = QLineEdit("100"){inputMask = "999", maxW = 80}
     self.chkSelfPower.toggled = function()
         self.maxPower.enabled = not self.chkSelfPower.checked
     end
-    self.btnViewDesc = QPushButton(tr("View &Desc...")){maxH = 30}
-    self.btnViewEpInit = QPushButton(tr("View &EP...")){maxH = 30}
+    
+    self.editMaxEP = QLineEdit("7") {maxW = 80}
+    self.editMaxMem = QLineEdit("1024") {maxW = 80}
+    
     self.layout = QVBoxLayout{
         QHBoxLayout{
+            self.editDeviceName,
             QLabel("VID"), self.editVid, QLabel("PID"), self.editPid,
+            QLabel("PktSize"), self.editPktSize,
+        },
+        QHBoxLayout{
+            QLabel(tr("Max EP No.")), self.editMaxEP, 
+            QLabel(tr("USB Memory size")), self.editMaxMem
         },
         QFormLayout{
             {tr("Vendor Str"), self.editVendor},
@@ -324,20 +331,15 @@ function UsbDescView:__init(parent)
     }
     self.layout.contentsMargins = QMargins(0,0,0,0)
     
-    self.btnViewDesc.clicked = function()
-        local t = QTextEdit()
-        t.plainText = tostring(self:makeDesc())
-        mdiArea:addSubWindow(t):showMaximized()
-    end
-    
-    self.btnViewEpInit.clicked = function()
-        local desc = self:makeDesc()
-        local t = QTextEdit()
-        local ep = EndPointInfo(desc, 7, 1024):getInitCode()
-        t.plainText = ep
-        mdiArea:addSubWindow(t):showMaximized()
-    end
+
 end
+function UsbDescView:maxEP()
+    return tonumber(self.editMaxEP.text)
+end
+function UsbDescView:maxMem()
+    return tonumber(self.editMaxMem.text)
+end
+
 local function str(edit)
         if edit.text == "" then return nil end
         return edit.text
@@ -350,13 +352,19 @@ function UsbDescView:makeDesc()
     for i,v in ipairs(self.ifs) do
         cfg[#cfg+1] = v:makeDesc()
     end
+    local prefix = nil
+    if self.editDeviceName.text ~= "" then
+        prefix = self.editDeviceName.text
+        prefix = string.gsub(prefix, "[ \t]", "_")
+    end
     local desc = Device {
         strManufacture = str(self.editVendor),
         strProduct = str(self.editProduct),
         strSerial = str(self.editSerial),
         idVendor = tonumber(self.editVid.text) or 0,
         idProduct = tonumber(self.editPid.text) or 0,
-        prefix = "TinyUI",
+        bMaxPacketSize = tonumber(self.editPktSize.text) or 8,
+        prefix = prefix:upper(),
         Config (cfg)
     }
     return desc
@@ -368,84 +376,283 @@ local log = function(...)
     logEdit:append(r)
 end
 
+function warning(...)
+    log("WARNING: ", ...)
+end
 
-local addView
-local back = QFrame()
-back.ifs = {}
-local sa = QScrollArea()
-local udv = UsbDescView(back)
-local btnAddIf = QPushButton(tr("Add Interface"), back){w = 160}
-btnAddIf.menu = QMenu{
-    QAction(tr("CDC")) {
-        triggered = function() addView(CDCView) end
+local devCnt = 1
+
+class "UsbDev"(QScrollArea)
+function UsbDev:__init()
+    QScrollArea.__init(self)
+    self.addView = nil
+    self.windowTitle = "Device " .. devCnt
+    devCnt = devCnt + 1
+    self.back = QFrame()
+    self.back.ifs = {}
+    self.udv = UsbDescView(self.back)
+    self.udv.editDeviceName.text = self.windowTitle
+    self.udv.editDeviceName.editingFinished = function()
+        self.windowTitle = self.udv.editDeviceName.text
+    end
+    self.btnAddIf = QPushButton(tr("Add Interface"), self.back){w = 160}
+    self.btnAddIf.menu = QMenu{
+        QAction(tr("CDC")) {
+            triggered = function() self.addView(CDCView) end
+        },
+        QAction(tr("HID")){
+            triggered = function() self.addView(HIDView) end
+        },
+        QAction(tr("Generic")){
+            triggered = function() self.addView(GenericView) end
+        },
+    }
+
+    self.udvSize = self.udv.sizeHint
+    self.udv.x = 10
+    self.udv.y = 10
+    self.udv:resize(self.udvSize)
+    self.btnSize = self.btnAddIf.sizeHint
+    self.reset_back = function()
+        local w = self.udvSize.w + self.udv.x
+        local h = self.udvSize.h + self.udv.y
+        local margin = 10
+        local lMargin = 10
+        for i,v in ipairs(self.back.ifs) do
+            h = h + margin
+            v.x = lMargin
+            v.y = h
+            h = h + v.sizeHint.h
+            if v.sizeHint.w > w then w = v.sizeHint.w end
+        end
+        h = h + margin + 10
+        self.btnAddIf.x = lMargin
+        self.btnAddIf.y = h
+        h = h + self.btnSize.h
+        self.back:resize(  QSize(w+lMargin*2, h+margin*2) )
+        --sa:ensureWidgetVisible(btnAddIf)
+    end
+
+    self.onRemove = function(view)
+        local idx
+        for i,v in ipairs(self.back.ifs) do
+            if v == view then idx = i end
+        end
+        local v = table.remove(self.back.ifs, idx)
+        if v then
+            v:close()
+            self.reset_back()
+        end
+        for i,v in ipairs(self.back.ifs) do
+            if v.initIf then v:initIf(i, self.onRemove) end
+        end
+    end
+    
+    self.minEp = nil
+    function self.freeEp(ep)
+        if self.minEp and self.minEp[ep] then self.minEp[ep] = false end
+    end
+    function self.getMinEp()
+        if not self.minEp then
+            self.minEp = {}
+            for i=1, 64 do self.minEp[i] = false end
+        end
+        for i=1,#self.minEp do
+            if not self.minEp[i] then
+                self.minEp[i] = true
+                return i
+            end
+        end
+    end
+    self.back.getMinEp = self.getMinEp
+    self.back.freeEp = self.freeEp
+
+    self.addView = function(view)
+        local v = view(self.back)
+        v.freeEp = self.freeEp
+        v.getMinEp = self.getMinEp
+        v.visible = true
+        v.reset_back = self.reset_back
+        self.back.ifs[#self.back.ifs+1] = v
+        if v.initIf then v:initIf(#self.back.ifs, self.onRemove) end
+        self.reset_back()
+    end
+    self.reset_back()
+    self.widget = self.back
+end
+
+--logEdit:append(""..udv.sizeHint.w ..",".. udv.sizeHint.h)
+local function dev_new()
+    local dev = UsbDev()
+    dev:setProperty("TinyDevice",dev)
+    mdiArea:addSubWindow(dev):show()
+end
+local function curDev(subWindow)
+    subWindow = subWindow or mdiArea.currentSubWindow
+    local dev = subWindow.widget:property("TinyDevice")
+    if dev.udv then return dev end
+    return nil
+end
+local function dev_show_desc()
+    local dev = curDev()
+    if not dev then return end
+    local t = QTextEdit()
+    t.plainText = tostring(dev.udv:makeDesc())
+    t.windowTitle = "Preview " .. dev.windowTitle .. " Descriptor"
+    mdiArea:addSubWindow(t):showMaximized()
+end
+local function dev_show_ep_define()
+    local dev = curDev()
+    if not dev then return end
+    local desc = dev.udv:makeDesc()
+    local x = tostring(desc)
+    local t = QTextEdit()
+    local ep = EndPointInfo(desc, dev.udv:maxEP(), dev.udv:maxMem()):getInitCode()
+    t.plainText = ep
+    t.windowTitle = "Preview " .. dev.windowTitle .. " EP Define"
+    mdiArea:addSubWindow(t):showMaximized()
+end
+
+local function gen_code(desc)
+    local descs,eps = collectDescriptor(desc, dev.udv:maxEP(), dev.udv:maxMem())
+    local dir = QCommonDlg.getDir()
+    if not dir or dir == "" then return end
+    local s = "-- Generate from UI Tool --"
+    arg = { "<Generate from UI Tool>" }
+    outputCode(dir.."/tiny_usb_desc.c", s, descs)
+    outputCode(dir.."/tiny_usb_init.h", s, eps)
+    log("Code generated in " .. dir)
+end
+
+local function dev_gen_code()
+    local dev = curDev()
+    if not dev then return end
+    local desc = dev.udv:makeDesc()
+    gen_code(desc)
+end
+local function dev_gen_code_all()
+    local r = mdiArea:subWindowList()
+    local descs = {}
+    for i,v in ipairs(r) do
+        local dev = curDev(v)
+        if dev and dev.udv then
+            descs[#descs+1] = dev.udv:makeDesc()
+        end
+    end
+    if #descs > 0 then
+        gen_code(descs)
+    end
+end
+
+local function dev_show_inf()
+    local dev = curDev()
+    if not dev then return end
+    local desc = dev.udv:makeDesc()
+    desc.drivers = {}
+    for i,v in ipairs(dev.back.ifs) do
+        desc.drivers[i] = v.drvCombo.currentText
+    end
+    local t = QTextEdit()
+    t.plainText = DriverCreate(dev.windowTitle, desc)
+    mdiArea:addSubWindow(t):show()
+end
+
+local function dev_show_inf_all()
+    local r = mdiArea:subWindowList()
+    local descs = {}
+    local n = ""
+    for i,v in ipairs(r) do
+        local dev = curDev(v)
+        if dev and dev.udv then
+            n = dev.windowTitle
+            local desc = dev.udv:makeDesc()
+            desc.drivers = {}
+            for j,iv in ipairs(dev.back.ifs) do
+                desc.drivers[j] = iv.drvCombo.currentText
+            end
+            descs[#descs+1] = desc
+        end
+    end
+    if #descs > 0 then
+        local t = QTextEdit()
+        t.plainText = DriverCreate(n, descs)
+        mdiArea:addSubWindow(t):show()
+    end
+end
+
+local function dev_gen_inf()
+    local dev = curDev()
+    if not dev then return end
+    local desc = dev.udv:makeDesc()
+    desc.drivers = {}
+    for i,v in ipairs(dev.back.ifs) do
+        desc.drivers[i] = v.drvCombo.currentText
+    end
+    DriverCreate(dev.windowTitle, desc)
+end
+
+local function dev_gen_inf_all()
+    local r = mdiArea:subWindowList()
+    local descs = {}
+    local n = ""
+    for i,v in ipairs(r) do
+        local dev = curDev(v)
+        if dev and dev.udv then
+            n = dev.windowTitle
+            local desc = dev.udv:makeDesc()
+            desc.drivers = {}
+            for j,iv in ipairs(dev.back.ifs) do
+                desc.drivers[j] = iv.drvCombo.currentText
+            end
+            descs[#descs+1] = desc
+        end
+    end
+    if #descs > 0 then
+        DriverCreate(n, descs)
+    end
+end
+
+mainWindow:menuBar(){
+    QMenu(tr("&USB Descriptor")){
+        QAction(tr("&New")){
+            triggered = dev_new, QKeySequence("Ctrl+N"),
+        },
+        QAction(tr("Preview &Descriptor")){
+            triggered = dev_show_desc, QKeySequence("Ctrl+D"),
+        },
+        QAction(tr("Preview &EP Define")){
+            triggered = dev_show_ep_define, QKeySequence("Ctrl+E"),
+        },
+        QAction(tr("&Generate Code")){
+            triggered = dev_gen_code, QKeySequence("Ctrl+G"),
+        },
+        QAction(tr("Generate Code &All")){
+            triggered = dev_gen_code_all, QKeySequence("Ctrl+A"),
+        },
+
     },
-    QAction(tr("HID")){
-        triggered = function() addView(HIDView) end
+    QMenu(tr("USB &Driver")){
+        QAction(tr("Priview &Inf")){
+            triggered = dev_show_inf, QKeySequence("Ctrl+P"),
+        },
+        QAction(tr("Priview &Inf All")){
+            triggered = dev_show_inf_all, QKeySequence("Ctrl+Alt+P"),
+        },
+        QAction(tr("Generate &Inf")){
+            triggered = dev_gen_inf, QKeySequence("Ctrl+I"),
+        },
+        QAction(tr("Generate Inf &All")){
+            triggered = dev_gen_inf_all, QKeySequence("Ctrl+Alt+I"),
+        },
     },
-    QAction(tr("Generic")){
-        triggered = function() addView(GenericView) end
-    },
+    QMenu(tr("&Window")){
+        QAction(tr("&Cascade")){
+            triggered = function() mdiArea:cascadeSubWindows() end, QKeySequence("Ctrl+Alt+C"),
+        },
+        QAction(tr("&Tile")){
+            triggered = function() mdiArea:tileSubWindows() end, QKeySequence("Ctrl+Alt+T"),
+        },
+    }
 }
 
-local udvSize = udv.sizeHint
-udv.x = 10
-udv.y = 10
-udv:resize(udvSize)
-local btnSize = btnAddIf.sizeHint
-local function reset_back()
-    local w = udvSize.w + udv.x
-    local h = udvSize.h + udv.y
-    local margin = 10
-    local lMargin = 5
-    for i,v in ipairs(back.ifs) do
-        h = h + margin
-        v.x = lMargin
-        v.y = h
-        h = h + v.sizeHint.h
-        if v.sizeHint.w > w then w = v.sizeHint.w end
-    end
-    h = h + margin + 10
-    btnAddIf.x = 5
-    btnAddIf.y = h
-    h = h + btnSize.h
-    back:resize(  QSize(w + lMargin*2, h+30) )
-    --sa:ensureWidgetVisible(btnAddIf)
-end
-
-local function onRemove(view)
-    local idx
-    for i,v in ipairs(back.ifs) do
-        if v == view then idx = i end
-    end
-    local v = table.remove(back.ifs, idx)
-    if v then
-        v:close()
-        reset_back()
-    end
-    for i,v in ipairs(back.ifs) do
-        if v.initIf then v:initIf(i, onRemove) end
-    end
-end
-
-addView = function(view)
-    local v = view(back)
-    v.visible = true
-    v.reset_back = reset_back
-    back.ifs[#back.ifs+1] = v
-    if v.initIf then v:initIf(#back.ifs, onRemove) end
-    reset_back()
-end
-
-reset_back()
-
-
-
-sa.widget = back
---logEdit:append(""..udv.sizeHint.w ..",".. udv.sizeHint.h)
-
-
-
-local sw = mdiArea:addSubWindow(sa)
-sw.w = 800
-sw.h = 600
-sw:showMaximized()
+dev_new()
