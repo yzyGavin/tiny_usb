@@ -40,18 +40,30 @@ local function outputReportDescriptor(hid)
 #define $prefix$REPORT_DESCRIPTOR_SIZE_IF$ifn$ $size$
 WEAK __ALIGN(2) const uint8_t $prefix$ReportDescriptor_if$ifn$[$prefix$REPORT_DESCRIPTOR_SIZE_IF$ifn$] = {
 ]], "%$(%w+)%$", {prefix = hid.prefix, ifn = hid.bInterfaceNumber, size = #hid.report })
+        if hid.report.text then
+        r = r .. "\n" .. hid.report.text .. "\n"
+        else
         for i,v in ipairs(hid.report) do
             r = r .. string.format("0x%02x, ", v)
             if (i & 0xf) == 0 then r = r .."\n" end
+        end
         end
         r = r .. "};\n\n"
     end
     return r
 end
 
+function HID_BuildReport(str)
+    str = string.gsub(str, "//", "--")
+    local r = loadstring( "return { ".. str .. "}")() or {0}
+    r.text = string.gsub(str, "%-%-", "//")
+    return r
+end
 
 function HID_InOut(size)
-    local r = {-- report descriptor
+    size = string.format("0x95, 0x%02x,", size)
+    local r = [[
+        -- report descriptor for general input/output
         0x06, 0x00, 0xFF,  -- Usage Page (Vendor Defined 0xFF00)
         0x09, 0x01,        -- Usage (0x01)
         0xA1, 0x01,        -- Collection (Application)
@@ -59,17 +71,19 @@ function HID_InOut(size)
         0x15, 0x00,        --   Logical Minimum (0)
         0x25, 0xFF,        --   Logical Maximum (255)
         0x75, 0x08,        --   Report Size (8)
-        0x95, size,        --   Report Count (64)
+        ]]..size..
+                 [[        --   Report Count (64)
         0x81, 0x02,        --   Input (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position)
         0x09, 0x03,        --   Usage (0x03)
         0x91, 0x02,        --   Output (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position,Non-volatile)
         0xC0               -- End Collection
-    }
-    return r
+    ]]
+    return HID_BuildReport(r)
 end
 
 function HID_BootKeyBoard()
-    return {
+    local r = [[
+        --  Boot keyboad report descriptor
         0x05, 0x01,     -- USAGE_PAGE (Generic Desktop)
         0x09, 0x06,     -- USAGE (Keyboard)
         0xa1, 0x01,     -- COLLECTION (Application)
@@ -102,10 +116,12 @@ function HID_BootKeyBoard()
         0x29, 0x65,     --   USAGE_MAXIMUM (Keyboard Application)
         0x81, 0x00,     --   INPUT (Data,Ary,Abs)
         0xc0            -- END_COLLECTION
-    }
+    ]]
+    return HID_BuildReport(r) 
 end
 function HID_BootMouse()
-    return {
+    local r = [[
+        --  Boot Mouse report descriptor
         0x05, 0x01,     -- USAGE_PAGE (Generic Desktop)
         0x09, 0x02,     -- USAGE (Mouse)
         0xa1, 0x01,     -- COLLECTION (Application)
@@ -132,12 +148,12 @@ function HID_BootMouse()
         0x81, 0x06,     --     INPUT (Data,Var,Rel)
         0xc0,           --   END_COLLECTION
         0xc0            -- END_COLLECTION
-    }
+    ]]
+    return HID_BuildReport(r)
 end
 function HID_ReportTemp()
-return 
-[[
-return {
+local r = [[
+    -- Temaple report
     0x06, 0x00, 0xFF,  -- Usage Page (Vendor Defined 0xFF00)
     0x09, 0x01,        -- Usage (0x01)
     0xA1, 0x01,        -- Collection (Application)
@@ -150,8 +166,8 @@ return {
     0x09, 0x03,        --   Usage (0x03)
     0x91, 0x02,        --   Output (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position,Non-volatile)
     0xC0               -- End Collection
-}
 ]]
+    return HID_BuildReport(r)
 end
 
 function USB_HID(param)
