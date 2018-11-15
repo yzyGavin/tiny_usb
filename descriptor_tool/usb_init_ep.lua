@@ -214,10 +214,10 @@ local function getInitCode(epInfo)
     r = r .. "#ifndef WCID_VENDOR_CODE\n"
     r = r .. "#define  WCID_VENDOR_CODE       0x17\n"
     r = r .. "extern const uint8_t WCID_StringDescriptor_MSOS[];\n"
-    r = r .. "#endif\n\n\n"
-    
+    r = r .. "#endif\n\n"
+    r = r .. "// Descriptor declare\n"
     end
-    
+    --r = r .. (dev.declare or "") .. "\n\n"
     return r
 end
 

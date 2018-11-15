@@ -83,7 +83,8 @@ function Device(param)
     desc.pid = desc.idProduct
     desc.idVendor = desc.prefix .. "VID"
     desc.idProduct = desc.prefix .. "PID"
-
+    desc.declare = "#define  "..desc.prefix.."DEVICE_DESCRIPTOR_SIZE  (".. desc.bLength .. ")\n"
+     .. "const uint8_t "..desc.prefix.."DeviceDescriptor ["..desc.bLength.."];\n"
     desc.outputHeader = "#define  "..desc.prefix.."DEVICE_DESCRIPTOR_SIZE  (".. desc.bLength .. ")\n"
     .. "__ALIGN(2)  const uint8_t "..desc.prefix.."DeviceDescriptor ["..desc.bLength.."] = {\n"
     -- output tail and followed config descriptor and string descriptor
@@ -93,9 +94,11 @@ function Device(param)
         for i,cfg in ipairs(desc) do
             cfg.prefix = desc.prefix
             r = r .. tostring(cfg)
+            desc.declare = desc.declare .. (cfg.declare or "")
         end
         r = r .. "// Strings \n"
         local str_holder = ""--"#define ".. desc.prefix .."STRING_COUNT   " .. #desc.strings .. "\n"
+        desc.declare = desc.declare .. "const uint8_t* const "..desc.prefix.."StringDescriptors[".. desc.prefix .."STRING_COUNT];\n"
         str_holder = str_holder .. "const uint8_t* const "..desc.prefix.."StringDescriptors[".. desc.prefix .."STRING_COUNT] = {\n"
         for i, str in ipairs(desc.strings) do
             str_holder = str_holder .. desc.prefix .."StringDescriptor" .. (i-1)  .. ",\n"
@@ -103,6 +106,7 @@ function Device(param)
         end
         r = r .. str_holder .. "};\n\n"
         r = r .. MakeWCID(desc)
+        desc.declare = desc.declare .. [[const tusb_descriptors ]]..desc.prefix..[[descriptors;]] .. "\n"
         r = r .. "//  Device descriptors\n"
         r = r .. [[
 const tusb_descriptors ]]..desc.prefix..[[descriptors = {
@@ -173,6 +177,7 @@ function Config(param)
         end
     end
     desc.iConfiguration = 0
+    desc.declare = ""
     desc.outputHeader = function()
         local r = ""
         for i,v in ipairs(desc) do
@@ -181,15 +186,19 @@ function Config(param)
                     if int.extraDesc then
                         int.prefix = desc.prefix
                         r = r .. int:extraDesc()
+                        desc.declare = desc.declare .. (int.declare or "")
                     end
                 end
             else
                 if v.extraDesc then
                     v.prefix = desc.prefix
                     r = r .. v:extraDesc()
+                    desc.declare = desc.declare .. (v.declare or "")
                 end
             end
         end
+        desc.declare = desc.declare .. "#define  "..desc.prefix.."CONFIG_DESCRIPTOR_SIZE  (".. desc.wTotalLength .. ")\n"
+        .. "const uint8_t "..desc.prefix.."ConfigDescriptor ["..desc.wTotalLength.."];\n"
         local r = r .. "#define  "..desc.prefix.."CONFIG_DESCRIPTOR_SIZE  (".. desc.wTotalLength .. ")\n"
         .. "__ALIGN(2)  const uint8_t "..desc.prefix.."ConfigDescriptor ["..desc.wTotalLength.."] = {\n"
         return r
@@ -208,15 +217,20 @@ function Config(param)
         r = r .. "};\n"
         r = r .. "\n// Power status\n"
         if (desc.bmAttributes & 0x40) == 0x40 then
+            desc.declare = desc.declare .. "#define "..desc.prefix.."DEV_STATUS0      USB_CONFIG_SELF_POWERED\n"
             r = r .. "#define "..desc.prefix.."DEV_STATUS0      USB_CONFIG_SELF_POWERED\n"
         else
+            desc.declare = desc.declare .. "#define "..desc.prefix.."DEV_STATUS0      (0)\n"
             r = r .. "#define "..desc.prefix.."DEV_STATUS0      (0)\n"
         end
         if (desc.bmAttributes & 0x20) == 0x20 then
+            desc.declare = desc.declare .. "#define "..desc.prefix.."DEV_STATUS1      USB_CONFIG_REMOTE_WAKEUP\n"
             r = r .. "#define "..desc.prefix.."DEV_STATUS1      USB_CONFIG_REMOTE_WAKEUP\n"
         else
+            desc.declare = desc.declare .. "#define "..desc.prefix.."DEV_STATUS1      USB_CONFIG_REMOTE_WAKEUP\n"
             r = r .. "#define "..desc.prefix.."DEV_STATUS1      (0)\n"
         end
+        desc.declare = desc.declare .. "#define "..desc.prefix.."DEV_STATUS    (("..desc.prefix.."DEV_STATUS0) |("..desc.prefix.."DEV_STATUS1) )\n\n"
         r = r .. "#define "..desc.prefix.."DEV_STATUS    (("..desc.prefix.."DEV_STATUS0) |("..desc.prefix.."DEV_STATUS1) )\n\n"
         r = r .. desc.prefix .. "TXEP_MAX_SIZE\n" .. desc.prefix .. "RXEP_MAX_SIZE\n\n"
         return r

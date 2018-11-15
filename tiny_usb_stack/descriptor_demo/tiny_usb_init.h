@@ -1,13 +1,13 @@
 /*
  * Name   :  tiny_usb_init.h
  * Author :  admin@xtoolbox.org
- * Date   :  2018-11-09 17:37:12
+ * Date   :  2018-11-15 23:35:02
  * Desc   :  This file is auto generate by the tiny_usb script tool
  *           Visit https://github.com/xtoolbox/tiny_usb for more info
  */
 
 /*
-  Input source name:  ../src/descriptor_demo/demo.lua  
+  Input source name:  ..\tiny_usb_stack\descriptor_demo\demo.lua  
   Content type is lua script:
   ------------- lua script begin ------------
 -- DEMO USB descriptor for tiny USB stack
@@ -38,7 +38,7 @@ Device {
     strManufacture = "tiny usb",
     strProduct = "tiny usb cdc demo",
     strSerial = "tu123456",
-    idVendor = 0x03EB,
+    idVendor = 0x03EB,    -- VID PID for Ateml CDC
     idProduct = 0x6124,
     prefix = "CDC",
     Config {
@@ -58,7 +58,7 @@ Device {
     strManufacture = "tiny usb",
     strProduct = "tiny usb cdc7 demo",
     strSerial = "tu123456",
-    idVendor = 0x1234,
+    idVendor = 0x1234,   -- Win10 can drive the multiple CDC, VID PID can be any one
     idProduct = 0x0007,
     prefix = "CDC7",
     Config {
@@ -176,8 +176,8 @@ Device {
 
   ------------- lua script end   ------------
  */
-#ifndef ____SRC_DESCRIPTOR_DEMO_TINY_USB_INIT_H_
-#define ____SRC_DESCRIPTOR_DEMO_TINY_USB_INIT_H_
+#ifndef ____TINY_USB_STACK_DESCRIPTOR_DEMO_TINY_USB_INIT_H_
+#define ____TINY_USB_STACK_DESCRIPTOR_DEMO_TINY_USB_INIT_H_
 #include "tiny_usb.h"
 /////////////////////////////////////////////////////////////////////
 //// EndPoint for device1 define begin

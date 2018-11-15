@@ -35,7 +35,13 @@ local TAG = "HID: "
 
 local function outputReportDescriptor(hid)
     local r = ""
+    hid.declare = ""
     if hid.report then
+        hid.declare = string.gsub([[
+#define $prefix$REPORT_DESCRIPTOR_SIZE_IF$ifn$ $size$
+const uint8_t $prefix$ReportDescriptor_if$ifn$[$prefix$REPORT_DESCRIPTOR_SIZE_IF$ifn$];
+]], "%$(%w+)%$", {prefix = hid.prefix, ifn = hid.bInterfaceNumber, size = #hid.report })
+        
         r = r .. string.gsub([[
 #define $prefix$REPORT_DESCRIPTOR_SIZE_IF$ifn$ $size$
 WEAK __ALIGN(2) const uint8_t $prefix$ReportDescriptor_if$ifn$[$prefix$REPORT_DESCRIPTOR_SIZE_IF$ifn$] = {
@@ -55,13 +61,13 @@ end
 
 function HID_BuildReport(str)
     str = string.gsub(str, "//", "--")
-    local r = loadstring( "return { ".. str .. "}")() or {0}
+    local r = load( "return { ".. str .. "}")() or {0}
     r.text = string.gsub(str, "%-%-", "//")
     return r
 end
 
 function HID_InOut(size)
-    size = string.format("0x95, 0x%02x,", size)
+    local str = string.format("0x95, 0x%02x,", size)
     local r = [[
         -- report descriptor for general input/output
         0x06, 0x00, 0xFF,  -- Usage Page (Vendor Defined 0xFF00)
@@ -71,8 +77,8 @@ function HID_InOut(size)
         0x15, 0x00,        --   Logical Minimum (0)
         0x25, 0xFF,        --   Logical Maximum (255)
         0x75, 0x08,        --   Report Size (8)
-        ]]..size..
-                 [[        --   Report Count (64)
+        ]]..str..
+                 [[        --   Report Count (]]..tostring(size)..[[)
         0x81, 0x02,        --   Input (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position)
         0x09, 0x03,        --   Usage (0x03)
         0x91, 0x02,        --   Output (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position,Non-volatile)

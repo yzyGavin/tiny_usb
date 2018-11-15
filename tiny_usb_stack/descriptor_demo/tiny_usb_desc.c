@@ -1,13 +1,13 @@
 /*
  * Name   :  tiny_usb_desc.c
  * Author :  admin@xtoolbox.org
- * Date   :  2018-11-09 17:37:12
+ * Date   :  2018-11-15 23:35:02
  * Desc   :  This file is auto generate by the tiny_usb script tool
  *           Visit https://github.com/xtoolbox/tiny_usb for more info
  */
 
 /*
-  Input source name:  ../src/descriptor_demo/demo.lua  
+  Input source name:  ..\tiny_usb_stack\descriptor_demo\demo.lua  
   Content type is lua script:
   ------------- lua script begin ------------
 -- DEMO USB descriptor for tiny USB stack
@@ -38,7 +38,7 @@ Device {
     strManufacture = "tiny usb",
     strProduct = "tiny usb cdc demo",
     strSerial = "tu123456",
-    idVendor = 0x03EB,
+    idVendor = 0x03EB,    -- VID PID for Ateml CDC
     idProduct = 0x6124,
     prefix = "CDC",
     Config {
@@ -58,7 +58,7 @@ Device {
     strManufacture = "tiny usb",
     strProduct = "tiny usb cdc7 demo",
     strSerial = "tu123456",
-    idVendor = 0x1234,
+    idVendor = 0x1234,   -- Win10 can drive the multiple CDC, VID PID can be any one
     idProduct = 0x0007,
     prefix = "CDC7",
     Config {
@@ -315,6 +315,20 @@ const tusb_descriptors BULK_descriptors = {
   .config = BULK_ConfigDescriptor,
   .strings = BULK_StringDescriptors,
   .string_cnt = BULK_STRING_COUNT,
+#if defined(HAS_WCID)
+#if defined(BULK_WCID_DESCRIPTOR_SIZE)
+  .wcid_desc = BULK_WCIDDescriptor,
+#else
+  .wcid_desc = 0,  
+#endif // BULK_WCID_DESCRIPTOR_SIZE)
+
+#if defined(BULK_WCID_PROPERTIES_SIZE)
+  .wcid_properties = BULK_WCIDProperties,
+#else
+  .wcid_properties = 0,  
+#endif // BULK_WCID_PROPERTIES_SIZE
+
+#endif // HAS_WCID
 };
 /////////////////////////////////////////////////////////////////////
 //// Descriptor for device1  define end
@@ -499,6 +513,20 @@ const tusb_descriptors CDC_descriptors = {
   .config = CDC_ConfigDescriptor,
   .strings = CDC_StringDescriptors,
   .string_cnt = CDC_STRING_COUNT,
+#if defined(HAS_WCID)
+#if defined(CDC_WCID_DESCRIPTOR_SIZE)
+  .wcid_desc = CDC_WCIDDescriptor,
+#else
+  .wcid_desc = 0,  
+#endif // CDC_WCID_DESCRIPTOR_SIZE)
+
+#if defined(CDC_WCID_PROPERTIES_SIZE)
+  .wcid_properties = CDC_WCIDProperties,
+#else
+  .wcid_properties = 0,  
+#endif // CDC_WCID_PROPERTIES_SIZE
+
+#endif // HAS_WCID
 };
 /////////////////////////////////////////////////////////////////////
 //// Descriptor for device2  define end
@@ -1125,6 +1153,20 @@ const tusb_descriptors CDC7_descriptors = {
   .config = CDC7_ConfigDescriptor,
   .strings = CDC7_StringDescriptors,
   .string_cnt = CDC7_STRING_COUNT,
+#if defined(HAS_WCID)
+#if defined(CDC7_WCID_DESCRIPTOR_SIZE)
+  .wcid_desc = CDC7_WCIDDescriptor,
+#else
+  .wcid_desc = 0,  
+#endif // CDC7_WCID_DESCRIPTOR_SIZE)
+
+#if defined(CDC7_WCID_PROPERTIES_SIZE)
+  .wcid_properties = CDC7_WCIDProperties,
+#else
+  .wcid_properties = 0,  
+#endif // CDC7_WCID_PROPERTIES_SIZE
+
+#endif // HAS_WCID
 };
 /////////////////////////////////////////////////////////////////////
 //// Descriptor for device3  define end
@@ -1156,8 +1198,22 @@ __ALIGN(2)  const uint8_t HID_DeviceDescriptor [18] = {
 // Configs 
 #define HID_REPORT_DESCRIPTOR_SIZE_IF0 24
 WEAK __ALIGN(2) const uint8_t HID_ReportDescriptor_if0[HID_REPORT_DESCRIPTOR_SIZE_IF0] = {
-0x06, 0x00, 0xff, 0x09, 0x01, 0xa1, 0x01, 0x09, 0x02, 0x15, 0x00, 0x25, 0xff, 0x75, 0x08, 0x95, 
-0x40, 0x81, 0x02, 0x09, 0x03, 0x91, 0x02, 0xc0, };
+
+        // report descriptor for general input/output
+        0x06, 0x00, 0xFF,  // Usage Page (Vendor Defined 0xFF00)
+        0x09, 0x01,        // Usage (0x01)
+        0xA1, 0x01,        // Collection (Application)
+        0x09, 0x02,        //   Usage (0x02)
+        0x15, 0x00,        //   Logical Minimum (0)
+        0x25, 0xFF,        //   Logical Maximum (255)
+        0x75, 0x08,        //   Report Size (8)
+        0x95, 0x40,        //   Report Count (64)
+        0x81, 0x02,        //   Input (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position)
+        0x09, 0x03,        //   Usage (0x03)
+        0x91, 0x02,        //   Output (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position,Non-volatile)
+        0xC0               // End Collection
+    
+};
 
 #define  HID_CONFIG_DESCRIPTOR_SIZE  (41)
 __ALIGN(2)  const uint8_t HID_ConfigDescriptor [41] = {
@@ -1283,6 +1339,20 @@ const tusb_descriptors HID_descriptors = {
   .config = HID_ConfigDescriptor,
   .strings = HID_StringDescriptors,
   .string_cnt = HID_STRING_COUNT,
+#if defined(HAS_WCID)
+#if defined(HID_WCID_DESCRIPTOR_SIZE)
+  .wcid_desc = HID_WCIDDescriptor,
+#else
+  .wcid_desc = 0,  
+#endif // HID_WCID_DESCRIPTOR_SIZE)
+
+#if defined(HID_WCID_PROPERTIES_SIZE)
+  .wcid_properties = HID_WCIDProperties,
+#else
+  .wcid_properties = 0,  
+#endif // HID_WCID_PROPERTIES_SIZE
+
+#endif // HAS_WCID
 };
 /////////////////////////////////////////////////////////////////////
 //// Descriptor for device4  define end
@@ -1314,38 +1384,136 @@ __ALIGN(2)  const uint8_t HID7_DeviceDescriptor [18] = {
 // Configs 
 #define HID7_REPORT_DESCRIPTOR_SIZE_IF0 24
 WEAK __ALIGN(2) const uint8_t HID7_ReportDescriptor_if0[HID7_REPORT_DESCRIPTOR_SIZE_IF0] = {
-0x06, 0x00, 0xff, 0x09, 0x01, 0xa1, 0x01, 0x09, 0x02, 0x15, 0x00, 0x25, 0xff, 0x75, 0x08, 0x95, 
-0x40, 0x81, 0x02, 0x09, 0x03, 0x91, 0x02, 0xc0, };
+
+        // report descriptor for general input/output
+        0x06, 0x00, 0xFF,  // Usage Page (Vendor Defined 0xFF00)
+        0x09, 0x01,        // Usage (0x01)
+        0xA1, 0x01,        // Collection (Application)
+        0x09, 0x02,        //   Usage (0x02)
+        0x15, 0x00,        //   Logical Minimum (0)
+        0x25, 0xFF,        //   Logical Maximum (255)
+        0x75, 0x08,        //   Report Size (8)
+        0x95, 0x40,        //   Report Count (64)
+        0x81, 0x02,        //   Input (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position)
+        0x09, 0x03,        //   Usage (0x03)
+        0x91, 0x02,        //   Output (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position,Non-volatile)
+        0xC0               // End Collection
+    
+};
 
 #define HID7_REPORT_DESCRIPTOR_SIZE_IF1 24
 WEAK __ALIGN(2) const uint8_t HID7_ReportDescriptor_if1[HID7_REPORT_DESCRIPTOR_SIZE_IF1] = {
-0x06, 0x00, 0xff, 0x09, 0x01, 0xa1, 0x01, 0x09, 0x02, 0x15, 0x00, 0x25, 0xff, 0x75, 0x08, 0x95, 
-0x20, 0x81, 0x02, 0x09, 0x03, 0x91, 0x02, 0xc0, };
+
+        // report descriptor for general input/output
+        0x06, 0x00, 0xFF,  // Usage Page (Vendor Defined 0xFF00)
+        0x09, 0x01,        // Usage (0x01)
+        0xA1, 0x01,        // Collection (Application)
+        0x09, 0x02,        //   Usage (0x02)
+        0x15, 0x00,        //   Logical Minimum (0)
+        0x25, 0xFF,        //   Logical Maximum (255)
+        0x75, 0x08,        //   Report Size (8)
+        0x95, 0x20,        //   Report Count (32)
+        0x81, 0x02,        //   Input (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position)
+        0x09, 0x03,        //   Usage (0x03)
+        0x91, 0x02,        //   Output (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position,Non-volatile)
+        0xC0               // End Collection
+    
+};
 
 #define HID7_REPORT_DESCRIPTOR_SIZE_IF2 24
 WEAK __ALIGN(2) const uint8_t HID7_ReportDescriptor_if2[HID7_REPORT_DESCRIPTOR_SIZE_IF2] = {
-0x06, 0x00, 0xff, 0x09, 0x01, 0xa1, 0x01, 0x09, 0x02, 0x15, 0x00, 0x25, 0xff, 0x75, 0x08, 0x95, 
-0x20, 0x81, 0x02, 0x09, 0x03, 0x91, 0x02, 0xc0, };
+
+        // report descriptor for general input/output
+        0x06, 0x00, 0xFF,  // Usage Page (Vendor Defined 0xFF00)
+        0x09, 0x01,        // Usage (0x01)
+        0xA1, 0x01,        // Collection (Application)
+        0x09, 0x02,        //   Usage (0x02)
+        0x15, 0x00,        //   Logical Minimum (0)
+        0x25, 0xFF,        //   Logical Maximum (255)
+        0x75, 0x08,        //   Report Size (8)
+        0x95, 0x20,        //   Report Count (32)
+        0x81, 0x02,        //   Input (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position)
+        0x09, 0x03,        //   Usage (0x03)
+        0x91, 0x02,        //   Output (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position,Non-volatile)
+        0xC0               // End Collection
+    
+};
 
 #define HID7_REPORT_DESCRIPTOR_SIZE_IF3 24
 WEAK __ALIGN(2) const uint8_t HID7_ReportDescriptor_if3[HID7_REPORT_DESCRIPTOR_SIZE_IF3] = {
-0x06, 0x00, 0xff, 0x09, 0x01, 0xa1, 0x01, 0x09, 0x02, 0x15, 0x00, 0x25, 0xff, 0x75, 0x08, 0x95, 
-0x20, 0x81, 0x02, 0x09, 0x03, 0x91, 0x02, 0xc0, };
+
+        // report descriptor for general input/output
+        0x06, 0x00, 0xFF,  // Usage Page (Vendor Defined 0xFF00)
+        0x09, 0x01,        // Usage (0x01)
+        0xA1, 0x01,        // Collection (Application)
+        0x09, 0x02,        //   Usage (0x02)
+        0x15, 0x00,        //   Logical Minimum (0)
+        0x25, 0xFF,        //   Logical Maximum (255)
+        0x75, 0x08,        //   Report Size (8)
+        0x95, 0x20,        //   Report Count (32)
+        0x81, 0x02,        //   Input (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position)
+        0x09, 0x03,        //   Usage (0x03)
+        0x91, 0x02,        //   Output (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position,Non-volatile)
+        0xC0               // End Collection
+    
+};
 
 #define HID7_REPORT_DESCRIPTOR_SIZE_IF4 24
 WEAK __ALIGN(2) const uint8_t HID7_ReportDescriptor_if4[HID7_REPORT_DESCRIPTOR_SIZE_IF4] = {
-0x06, 0x00, 0xff, 0x09, 0x01, 0xa1, 0x01, 0x09, 0x02, 0x15, 0x00, 0x25, 0xff, 0x75, 0x08, 0x95, 
-0x10, 0x81, 0x02, 0x09, 0x03, 0x91, 0x02, 0xc0, };
+
+        // report descriptor for general input/output
+        0x06, 0x00, 0xFF,  // Usage Page (Vendor Defined 0xFF00)
+        0x09, 0x01,        // Usage (0x01)
+        0xA1, 0x01,        // Collection (Application)
+        0x09, 0x02,        //   Usage (0x02)
+        0x15, 0x00,        //   Logical Minimum (0)
+        0x25, 0xFF,        //   Logical Maximum (255)
+        0x75, 0x08,        //   Report Size (8)
+        0x95, 0x10,        //   Report Count (16)
+        0x81, 0x02,        //   Input (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position)
+        0x09, 0x03,        //   Usage (0x03)
+        0x91, 0x02,        //   Output (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position,Non-volatile)
+        0xC0               // End Collection
+    
+};
 
 #define HID7_REPORT_DESCRIPTOR_SIZE_IF5 24
 WEAK __ALIGN(2) const uint8_t HID7_ReportDescriptor_if5[HID7_REPORT_DESCRIPTOR_SIZE_IF5] = {
-0x06, 0x00, 0xff, 0x09, 0x01, 0xa1, 0x01, 0x09, 0x02, 0x15, 0x00, 0x25, 0xff, 0x75, 0x08, 0x95, 
-0x10, 0x81, 0x02, 0x09, 0x03, 0x91, 0x02, 0xc0, };
+
+        // report descriptor for general input/output
+        0x06, 0x00, 0xFF,  // Usage Page (Vendor Defined 0xFF00)
+        0x09, 0x01,        // Usage (0x01)
+        0xA1, 0x01,        // Collection (Application)
+        0x09, 0x02,        //   Usage (0x02)
+        0x15, 0x00,        //   Logical Minimum (0)
+        0x25, 0xFF,        //   Logical Maximum (255)
+        0x75, 0x08,        //   Report Size (8)
+        0x95, 0x10,        //   Report Count (16)
+        0x81, 0x02,        //   Input (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position)
+        0x09, 0x03,        //   Usage (0x03)
+        0x91, 0x02,        //   Output (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position,Non-volatile)
+        0xC0               // End Collection
+    
+};
 
 #define HID7_REPORT_DESCRIPTOR_SIZE_IF6 24
 WEAK __ALIGN(2) const uint8_t HID7_ReportDescriptor_if6[HID7_REPORT_DESCRIPTOR_SIZE_IF6] = {
-0x06, 0x00, 0xff, 0x09, 0x01, 0xa1, 0x01, 0x09, 0x02, 0x15, 0x00, 0x25, 0xff, 0x75, 0x08, 0x95, 
-0x10, 0x81, 0x02, 0x09, 0x03, 0x91, 0x02, 0xc0, };
+
+        // report descriptor for general input/output
+        0x06, 0x00, 0xFF,  // Usage Page (Vendor Defined 0xFF00)
+        0x09, 0x01,        // Usage (0x01)
+        0xA1, 0x01,        // Collection (Application)
+        0x09, 0x02,        //   Usage (0x02)
+        0x15, 0x00,        //   Logical Minimum (0)
+        0x25, 0xFF,        //   Logical Maximum (255)
+        0x75, 0x08,        //   Report Size (8)
+        0x95, 0x10,        //   Report Count (16)
+        0x81, 0x02,        //   Input (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position)
+        0x09, 0x03,        //   Usage (0x03)
+        0x91, 0x02,        //   Output (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position,Non-volatile)
+        0xC0               // End Collection
+    
+};
 
 #define  HID7_CONFIG_DESCRIPTOR_SIZE  (233)
 __ALIGN(2)  const uint8_t HID7_ConfigDescriptor [233] = {
@@ -1665,6 +1833,20 @@ const tusb_descriptors HID7_descriptors = {
   .config = HID7_ConfigDescriptor,
   .strings = HID7_StringDescriptors,
   .string_cnt = HID7_STRING_COUNT,
+#if defined(HAS_WCID)
+#if defined(HID7_WCID_DESCRIPTOR_SIZE)
+  .wcid_desc = HID7_WCIDDescriptor,
+#else
+  .wcid_desc = 0,  
+#endif // HID7_WCID_DESCRIPTOR_SIZE)
+
+#if defined(HID7_WCID_PROPERTIES_SIZE)
+  .wcid_properties = HID7_WCIDProperties,
+#else
+  .wcid_properties = 0,  
+#endif // HID7_WCID_PROPERTIES_SIZE
+
+#endif // HAS_WCID
 };
 /////////////////////////////////////////////////////////////////////
 //// Descriptor for device5  define end
