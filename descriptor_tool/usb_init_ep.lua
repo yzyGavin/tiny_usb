@@ -57,7 +57,7 @@ local function getInitCode(epInfo)
         r = r .. MACRO(k,v)
     end
     r = r .. "\n// PMA buffer reserved for buffer description table  \n"
-    r = r .. MACRO("USB_BUF_START", "("..dev.prefix.."EP_BUF_DESC_TABLE_SIZE * EP_NUM)")
+    r = r .. MACRO("USB_BUF_START", "("..dev.prefix.."EP_BUF_DESC_TABLE_SIZE * "..dev.prefix.."EP_NUM)")
     local start = (epInfo.maxEp+1) * 8
     local mem_usage = ""
     for i=1,epInfo.maxEp+1 do

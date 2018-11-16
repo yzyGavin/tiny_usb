@@ -188,7 +188,6 @@ static void tusb_standard_request(tusb_device_t* dev, tusb_setup_packet* setup_r
 void tusb_recv_data(tusb_device_t* dev, uint8_t EPn, uint16_t EP);
 void tusb_send_data_done(tusb_device_t* dev, uint8_t EPn, uint16_t EP);
 uint32_t tusb_read_ep0(tusb_device_t* dev, void* buf);
-void get_setup(const void* s);
 // end point data handler
 void tusb_ep_handler(tusb_device_t* dev, uint8_t EPn)
 {
@@ -199,7 +198,6 @@ void tusb_ep_handler(tusb_device_t* dev, uint8_t EPn)
         // Handle setup packet
         tusb_read_ep0(dev, &dev->setup);
         tusb_setup_packet *setup_req = &dev->setup;
-        get_setup(setup_req);
         if( (setup_req->bmRequestType & USB_REQ_TYPE_MASK) == USB_REQ_TYPE_CLASS){
           tusb_class_request(dev, setup_req);
 #if defined(HAS_WCID)

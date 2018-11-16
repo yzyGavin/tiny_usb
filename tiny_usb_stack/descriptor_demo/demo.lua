@@ -23,8 +23,8 @@ Device {
         },
         Interface{
             WCID = WinUSB,
-            EndPoint(IN(3),  BulkDouble, 64),
-            EndPoint(OUT(4), BulkDouble, 64),
+            EndPoint(IN(3),  Bulk, 64),
+            EndPoint(OUT(4), Bulk, 64),
             strInterface = "TinyUsb2",
         },
    }

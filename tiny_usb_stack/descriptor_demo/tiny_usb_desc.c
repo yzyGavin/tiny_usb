@@ -1,7 +1,7 @@
 /*
  * Name   :  tiny_usb_desc.c
  * Author :  admin@xtoolbox.org
- * Date   :  2018-11-15 23:35:02
+ * Date   :  2018-11-16 17:58:46
  * Desc   :  This file is auto generate by the tiny_usb script tool
  *           Visit https://github.com/xtoolbox/tiny_usb for more info
  */
@@ -13,22 +13,31 @@
 -- DEMO USB descriptor for tiny USB stack
 require("usb_cdc_acm")
 require("usb_hid")
+require("usb_wcid")
 return {
 -- Demo descriptor of Bulk device
 Device {
     strManufacture = "tiny usb",
     strProduct = "tiny usb bulk demo",
     strSerial = "tu123456",
-    idVendor = 0x0483,       -- VID PID for ST-link, it will install signed WinUSB driver
-    idProduct = 0x3748,
+    idVendor = 0x4322,
+    idProduct = 0x4321,
     prefix = "BULK",
     Config {
         bMaxPower = 100,
         SelfPower = true,
         RemoteWakeup = true,
         Interface{
+            WCID = WinUSB,
             EndPoint(IN(1),  BulkDouble, 64),
             EndPoint(OUT(2), BulkDouble, 64),
+            strInterface = "TinyUsb1",
+        },
+        Interface{
+            WCID = WinUSB,
+            EndPoint(IN(3),  Bulk, 64),
+            EndPoint(OUT(4), Bulk, 64),
+            strInterface = "TinyUsb2",
         },
    }
 },
@@ -198,12 +207,12 @@ __ALIGN(2)  const uint8_t BULK_DeviceDescriptor [18] = {
 };
 
 // Configs 
-#define  BULK_CONFIG_DESCRIPTOR_SIZE  (32)
-__ALIGN(2)  const uint8_t BULK_ConfigDescriptor [32] = {
+#define  BULK_CONFIG_DESCRIPTOR_SIZE  (55)
+__ALIGN(2)  const uint8_t BULK_ConfigDescriptor [55] = {
     0x09,                                         /* bLength */
     USB_CONFIGURATION_DESCRIPTOR_TYPE,            /* bDescriptorType */
-    0x20, 0x00,                                   /* wTotalLength */
-    0x01,                                         /* bNumInterfaces */
+    0x37, 0x00,                                   /* wTotalLength */
+    0x02,                                         /* bNumInterfaces */
     0x01,                                         /* bConfigurationValue */
     0x00,                                         /* iConfiguration */
     0xe0,                                         /* bmAttributes */
@@ -217,7 +226,7 @@ __ALIGN(2)  const uint8_t BULK_ConfigDescriptor [32] = {
     0xff,                                         /* bInterfaceClass */
     0xff,                                         /* bInterfaceSubClass */
     0x00,                                         /* bInterfaceProtocol */
-    0x00,                                         /* iInterface */
+    0x04,                                         /* iInterface */
     /* EndPoint descriptor */
     0x07,                                         /* bLength */
     USB_ENDPOINT_DESCRIPTOR_TYPE,                 /* bDescriptorType */
@@ -229,6 +238,30 @@ __ALIGN(2)  const uint8_t BULK_ConfigDescriptor [32] = {
     0x07,                                         /* bLength */
     USB_ENDPOINT_DESCRIPTOR_TYPE,                 /* bDescriptorType */
     0x02,                                         /* bEndpointAddress */
+    0x02,                                         /* bmAttributes */
+    0x40, 0x00,                                   /* wMaxPacketSize */
+    0x01,                                         /* bInterval */
+    /* Interface descriptor, len: 23*/
+    0x09,                                         /* bLength */
+    USB_INTERFACE_DESCRIPTOR_TYPE,                /* bDescriptorType */
+    0x01,                                         /* bInterfaceNumber */
+    0x00,                                         /* bAlternateSetting */
+    0x02,                                         /* bNumEndpoints */
+    0xff,                                         /* bInterfaceClass */
+    0xff,                                         /* bInterfaceSubClass */
+    0x00,                                         /* bInterfaceProtocol */
+    0x05,                                         /* iInterface */
+    /* EndPoint descriptor */
+    0x07,                                         /* bLength */
+    USB_ENDPOINT_DESCRIPTOR_TYPE,                 /* bDescriptorType */
+    0x83,                                         /* bEndpointAddress */
+    0x02,                                         /* bmAttributes */
+    0x40, 0x00,                                   /* wMaxPacketSize */
+    0x01,                                         /* bInterval */
+    /* EndPoint descriptor */
+    0x07,                                         /* bLength */
+    USB_ENDPOINT_DESCRIPTOR_TYPE,                 /* bDescriptorType */
+    0x04,                                         /* bEndpointAddress */
     0x02,                                         /* bmAttributes */
     0x40, 0x00,                                   /* wMaxPacketSize */
     0x01,                                         /* bInterval */
@@ -302,12 +335,136 @@ WEAK __ALIGN(2) const uint8_t  BULK_StringDescriptor3 [18]= {
     '5', 0x00,                                    /* wcChar6 */
     '6', 0x00,                                    /* wcChar7 */
 };
+#define BULK_STRING_DESCRIPTOR4_STR          "TinyUsb1"
+#define BULK_STRING_DESCRIPTOR4_SIZE          (18)
+WEAK __ALIGN(2) const uint8_t  BULK_StringDescriptor4 [18]= {
+    0x12,                                         /* bLength */
+    USB_STRING_DESCRIPTOR_TYPE,                   /* bDescriptorType */
+    'T', 0x00,                                    /* wcChar0 */
+    'i', 0x00,                                    /* wcChar1 */
+    'n', 0x00,                                    /* wcChar2 */
+    'y', 0x00,                                    /* wcChar3 */
+    'U', 0x00,                                    /* wcChar4 */
+    's', 0x00,                                    /* wcChar5 */
+    'b', 0x00,                                    /* wcChar6 */
+    '1', 0x00,                                    /* wcChar7 */
+};
+#define BULK_STRING_DESCRIPTOR5_STR          "TinyUsb2"
+#define BULK_STRING_DESCRIPTOR5_SIZE          (18)
+WEAK __ALIGN(2) const uint8_t  BULK_StringDescriptor5 [18]= {
+    0x12,                                         /* bLength */
+    USB_STRING_DESCRIPTOR_TYPE,                   /* bDescriptorType */
+    'T', 0x00,                                    /* wcChar0 */
+    'i', 0x00,                                    /* wcChar1 */
+    'n', 0x00,                                    /* wcChar2 */
+    'y', 0x00,                                    /* wcChar3 */
+    'U', 0x00,                                    /* wcChar4 */
+    's', 0x00,                                    /* wcChar5 */
+    'b', 0x00,                                    /* wcChar6 */
+    '2', 0x00,                                    /* wcChar7 */
+};
 const uint8_t* const BULK_StringDescriptors[BULK_STRING_COUNT] = {
 BULK_StringDescriptor0,
 BULK_StringDescriptor1,
 BULK_StringDescriptor2,
 BULK_StringDescriptor3,
+BULK_StringDescriptor4,
+BULK_StringDescriptor5,
 };
+
+
+
+#if defined(HAS_WCID)
+
+// Define WCID os string descriptor 
+#ifndef WCID_MSOS_STRING
+#define WCID_MSOS_STRING
+#define WCID_STRING_DESCRIPTOR_MSOS_STR          "MSFT100"
+#define WCID_STRING_DESCRIPTOR_MSOS_SIZE          (18)
+WEAK __ALIGN(2) const uint8_t  WCID_StringDescriptor_MSOS [18]= {
+    0x12,                                         /* bLength */
+    USB_STRING_DESCRIPTOR_TYPE,                   /* bDescriptorType */
+    'M', 0x00,                                    /* wcChar0 */
+    'S', 0x00,                                    /* wcChar1 */
+    'F', 0x00,                                    /* wcChar2 */
+    'T', 0x00,                                    /* wcChar3 */
+    '1', 0x00,                                    /* wcChar4 */
+    '0', 0x00,                                    /* wcChar5 */
+    '0', 0x00,                                    /* wcChar6 */
+    WCID_VENDOR_CODE,                             /* bVendorCode */
+    0x00,                                         /* bReserved */
+};
+#endif
+
+#define  BULK_WCID_DESCRIPTOR_SIZE  (64)
+WEAK __ALIGN(2)  const uint8_t BULK_WCIDDescriptor [64] = {
+    0x40, 0x00, 0x00, 0x00,                       /* dwLength */
+    0x00, 0x01,                                   /* bcdVersion */
+    0x04, 0x00,                                   /* wIndex */
+    0x02,                                         /* bCount */
+    0,0,0,0,0,0,0,                                /* Reserved */
+    /* WCID Function  */
+    0x00,                                         /* bFirstInterfaceNumber */
+    0x01,                                         /* bReserved */
+    /* CID */
+    'W', 'I', 'N', 'U', 'S', 'B', 0x00, 0x00, 
+    /* sub CID */
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
+    0,0,0,0,0,0,                                  /* Reserved */
+    /* WCID Function  */
+    0x01,                                         /* bFirstInterfaceNumber */
+    0x01,                                         /* bReserved */
+    /* CID */
+    'W', 'I', 'N', 'U', 'S', 'B', 0x00, 0x00, 
+    /* sub CID */
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
+    0,0,0,0,0,0,                                  /* Reserved */
+};
+
+#define  BULK_WCID_PROPERTIES_SIZE  (224)
+WEAK __ALIGN(2)  const uint8_t BULK_WCIDProperties [224] = {
+    0xe0, 0x00, 0x00, 0x00,                       /* dwLength */
+    0x00, 0x01,                                   /* bcdVersion */
+    0x05, 0x00,                                   /* wIndex */
+    0x01, 0x00,                                   /* wCount */
+    /*WCID property field */
+  /* DeviceInterfaceGUIDs = 
+       {c1ec0d12-f598-5584-0328-c4600b285cda}
+       {de262ae2-44a6-6ed4-a3b4-1d3a511a9986}  */
+    0xd6, 0x00, 0x00, 0x00,                       /* dwSize */
+    0x07, 0x00, 0x00, 0x00,                       /* dwPropertyDataType */
+    0x2a, 0x00,                                   /* wPropertyNameLength */
+    'D', 0x00, 'e', 0x00, 'v', 0x00, 'i', 0x00, 
+    'c', 0x00, 'e', 0x00, 'I', 0x00, 'n', 0x00, 
+    't', 0x00, 'e', 0x00, 'r', 0x00, 'f', 0x00, 
+    'a', 0x00, 'c', 0x00, 'e', 0x00, 'G', 0x00, 
+    'U', 0x00, 'I', 0x00, 'D', 0x00, 's', 0x00, 
+    0x00, 0x00, 
+    0x9e, 0x00, 0x00, 0x00,                       /* dwPropertyDataLength */
+    '{', 0x00, 'c', 0x00, '1', 0x00, 'e', 0x00, 
+    'c', 0x00, '0', 0x00, 'd', 0x00, '1', 0x00, 
+    '2', 0x00, '-', 0x00, 'f', 0x00, '5', 0x00, 
+    '9', 0x00, '8', 0x00, '-', 0x00, '5', 0x00, 
+    '5', 0x00, '8', 0x00, '4', 0x00, '-', 0x00, 
+    '0', 0x00, '3', 0x00, '2', 0x00, '8', 0x00, 
+    '-', 0x00, 'c', 0x00, '4', 0x00, '6', 0x00, 
+    '0', 0x00, '0', 0x00, 'b', 0x00, '2', 0x00, 
+    '8', 0x00, '5', 0x00, 'c', 0x00, 'd', 0x00, 
+    'a', 0x00, '}', 0x00, 0x00, 0x00, '{', 0x00, 
+    'd', 0x00, 'e', 0x00, '2', 0x00, '6', 0x00, 
+    '2', 0x00, 'a', 0x00, 'e', 0x00, '2', 0x00, 
+    '-', 0x00, '4', 0x00, '4', 0x00, 'a', 0x00, 
+    '6', 0x00, '-', 0x00, '6', 0x00, 'e', 0x00, 
+    'd', 0x00, '4', 0x00, '-', 0x00, 'a', 0x00, 
+    '3', 0x00, 'b', 0x00, '4', 0x00, '-', 0x00, 
+    '1', 0x00, 'd', 0x00, '3', 0x00, 'a', 0x00, 
+    '5', 0x00, '1', 0x00, '1', 0x00, 'a', 0x00, 
+    '9', 0x00, '9', 0x00, '8', 0x00, '6', 0x00, 
+    '}', 0x00, 0x00, 0x00, 0x00, 0x00, 
+};
+
+
+#endif
 
 //  Device descriptors
 const tusb_descriptors BULK_descriptors = {

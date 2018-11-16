@@ -1,7 +1,7 @@
 /*
  * Name   :  tiny_usb_init.h
  * Author :  admin@xtoolbox.org
- * Date   :  2018-11-15 23:35:02
+ * Date   :  2018-11-16 17:58:46
  * Desc   :  This file is auto generate by the tiny_usb script tool
  *           Visit https://github.com/xtoolbox/tiny_usb for more info
  */
@@ -13,22 +13,31 @@
 -- DEMO USB descriptor for tiny USB stack
 require("usb_cdc_acm")
 require("usb_hid")
+require("usb_wcid")
 return {
 -- Demo descriptor of Bulk device
 Device {
     strManufacture = "tiny usb",
     strProduct = "tiny usb bulk demo",
     strSerial = "tu123456",
-    idVendor = 0x0483,       -- VID PID for ST-link, it will install signed WinUSB driver
-    idProduct = 0x3748,
+    idVendor = 0x4322,
+    idProduct = 0x4321,
     prefix = "BULK",
     Config {
         bMaxPower = 100,
         SelfPower = true,
         RemoteWakeup = true,
         Interface{
+            WCID = WinUSB,
             EndPoint(IN(1),  BulkDouble, 64),
             EndPoint(OUT(2), BulkDouble, 64),
+            strInterface = "TinyUsb1",
+        },
+        Interface{
+            WCID = WinUSB,
+            EndPoint(IN(3),  Bulk, 64),
+            EndPoint(OUT(4), Bulk, 64),
+            strInterface = "TinyUsb2",
         },
    }
 },
@@ -182,20 +191,20 @@ Device {
 /////////////////////////////////////////////////////////////////////
 //// EndPoint for device1 define begin
 /////////////////////////////////////////////////////////////////////
-#define BULK_VID                                            0x0483
-#define BULK_PID                                            0x3748
-#define BULK_STRING_COUNT                                   (4)
+#define BULK_VID                                            0x4322
+#define BULK_PID                                            0x4321
+#define BULK_STRING_COUNT                                   (6)
 // Endpoint usage:
 #ifdef BULK_BTABLE_ADDRESS
 #undef BULK_BTABLE_ADDRESS
 #endif
 #define BULK_BTABLE_ADDRESS                                 (0)
-#define BULK_MAX_EP                                         (2)
+#define BULK_MAX_EP                                         (4)
 #define BULK_EP_NUM                                         (BULK_MAX_EP + 1)
 #define BULK_EP_BUF_DESC_TABLE_SIZE                         (8)
 
 // PMA buffer reserved for buffer description table  
-#define BULK_USB_BUF_START                                  (BULK_EP_BUF_DESC_TABLE_SIZE * EP_NUM)
+#define BULK_USB_BUF_START                                  (BULK_EP_BUF_DESC_TABLE_SIZE * BULK_EP_NUM)
 
 // EndPoints 0 defines
 #define BULK_EP0_RX_SIZE                                    (8)
@@ -216,15 +225,25 @@ Device {
 #define BULK_EP2_RX1_ADDR                                   (BULK_USB_BUF_START + 208)
 #define BULK_EP2_TYPE                                       USB_EP_BULK
 
+// EndPoints 3 defines
+#define BULK_EP3_TX_SIZE                                    (64)
+#define BULK_EP3_TX_ADDR                                    (BULK_USB_BUF_START + 272)
+#define BULK_EP3_TYPE                                       USB_EP_BULK
+
+// EndPoints 4 defines
+#define BULK_EP4_RX_SIZE                                    (64)
+#define BULK_EP4_RX_ADDR                                    (BULK_USB_BUF_START + 336)
+#define BULK_EP4_TYPE                                       USB_EP_BULK
+
 // EndPoint max packed sizes
 extern const uint8_t BULK_txEpMaxSize[];
 #define BULK_TXEP_MAX_SIZE                                  \
 const uint8_t BULK_txEpMaxSize[] = \
-{BULK_EP0_TX_SIZE, BULK_EP1_TX_SIZE, 0, };
+{BULK_EP0_TX_SIZE, BULK_EP1_TX_SIZE, 0, BULK_EP3_TX_SIZE, 0, };
 extern const uint8_t BULK_rxEpMaxSize[];
 #define BULK_RXEP_MAX_SIZE                                  \
 const uint8_t BULK_rxEpMaxSize[] = \
-{BULK_EP0_RX_SIZE, 0, BULK_EP2_RX_SIZE, };
+{BULK_EP0_RX_SIZE, 0, BULK_EP2_RX_SIZE, 0, BULK_EP4_RX_SIZE, };
 
 // EndPoints init function
 #define BULK_TUSB_INIT(dev) \
@@ -242,6 +261,13 @@ const uint8_t BULK_rxEpMaxSize[] = \
     INIT_EP_RxDouble(dev, PCD_ENDP2, BULK_EP2_TYPE);     \
     SET_DOUBLE_ADDR(dev, PCD_ENDP2, BULK_EP2_RX0_ADDR, BULK_EP2_RX1_ADDR);     \
     SET_DBL_RX_CNT(dev, PCD_ENDP2, BULK_EP2_RX_SIZE);     \
+    /* Init ep3 */ \
+    INIT_EP_TxOnly(dev, PCD_ENDP3, BULK_EP3_TYPE);       \
+    SET_TX_ADDR(dev, PCD_ENDP3, BULK_EP3_TX_ADDR);  \
+    /* Init ep4 */ \
+    INIT_EP_RxOnly(dev, PCD_ENDP4, BULK_EP4_TYPE);       \
+    SET_RX_ADDR(dev, PCD_ENDP4, BULK_EP4_RX_ADDR);  \
+    SET_RX_CNT(dev, PCD_ENDP4, BULK_EP4_RX_SIZE);  \
     /* Init device features */       \
     memset(dev, 0, sizeof(*dev));    \
     dev->status = BULK_DEV_STATUS;         \
@@ -264,6 +290,16 @@ const uint8_t BULK_rxEpMaxSize[] = \
 #define  HAS_DOUBLE_BUFFER
 
 
+// Enable WCID related code
+#define  HAS_WCID
+
+
+#ifndef WCID_VENDOR_CODE
+#define  WCID_VENDOR_CODE       0x17
+extern const uint8_t WCID_StringDescriptor_MSOS[];
+#endif
+
+// Descriptor declare
 /////////////////////////////////////////////////////////////////////
 //// EndPoint for device1 define end
 /////////////////////////////////////////////////////////////////////
@@ -286,7 +322,7 @@ const uint8_t BULK_rxEpMaxSize[] = \
 #define CDC_EP_BUF_DESC_TABLE_SIZE                          (8)
 
 // PMA buffer reserved for buffer description table  
-#define CDC_USB_BUF_START                                   (CDC_EP_BUF_DESC_TABLE_SIZE * EP_NUM)
+#define CDC_USB_BUF_START                                   (CDC_EP_BUF_DESC_TABLE_SIZE * CDC_EP_NUM)
 
 // EndPoints 0 defines
 #define CDC_EP0_RX_SIZE                                     (8)
@@ -385,7 +421,7 @@ const uint8_t CDC_rxEpMaxSize[] = \
 #define CDC7_EP_BUF_DESC_TABLE_SIZE                         (8)
 
 // PMA buffer reserved for buffer description table  
-#define CDC7_USB_BUF_START                                  (CDC7_EP_BUF_DESC_TABLE_SIZE * EP_NUM)
+#define CDC7_USB_BUF_START                                  (CDC7_EP_BUF_DESC_TABLE_SIZE * CDC7_EP_NUM)
 
 // EndPoints 0 defines
 #define CDC7_EP0_RX_SIZE                                    (8)
@@ -536,7 +572,7 @@ const uint8_t CDC7_rxEpMaxSize[] = \
 #define HID_EP_BUF_DESC_TABLE_SIZE                          (8)
 
 // PMA buffer reserved for buffer description table  
-#define HID_USB_BUF_START                                   (HID_EP_BUF_DESC_TABLE_SIZE * EP_NUM)
+#define HID_USB_BUF_START                                   (HID_EP_BUF_DESC_TABLE_SIZE * HID_EP_NUM)
 
 // EndPoints 0 defines
 #define HID_EP0_RX_SIZE                                     (8)
@@ -615,7 +651,7 @@ const uint8_t HID_rxEpMaxSize[] = \
 #define HID7_EP_BUF_DESC_TABLE_SIZE                         (8)
 
 // PMA buffer reserved for buffer description table  
-#define HID7_USB_BUF_START                                  (HID7_EP_BUF_DESC_TABLE_SIZE * EP_NUM)
+#define HID7_USB_BUF_START                                  (HID7_EP_BUF_DESC_TABLE_SIZE * HID7_EP_NUM)
 
 // EndPoints 0 defines
 #define HID7_EP0_RX_SIZE                                    (8)

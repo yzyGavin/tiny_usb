@@ -32,11 +32,20 @@
 uint8_t buf[4096];
 __IO uint32_t recv_count = 0;
 
+
+#define  RX_EP1   PCD_ENDP4
+#define  TX_EP1   PCD_ENDP3
+
+uint8_t buf1[4096];
+__IO uint32_t recv_count1 = 0;
+
 // if data tx done, set rx valid again
 void tusb_on_tx_done(tusb_device_t* dev, uint8_t EPn)
 {
   if(EPn == TX_EP){
     set_rx_valid(dev, RX_EP);
+  }else if(EPn == TX_EP1){
+    set_rx_valid(dev, RX_EP1);
   }
 }
 
@@ -50,6 +59,9 @@ int tusb_on_rx_done(tusb_device_t* dev, uint8_t EPn, const void* data, uint16_t 
     }
     // otherwise, return -1 means data need process, recv buffer is busy
     return -1;
+  }else if(EPn == RX_EP1){
+    recv_count1 = len;
+    return recv_count1;
   }
   return 0;
 }
@@ -58,8 +70,10 @@ void tusb_reconfig(tusb_device_t* dev)
 {
   // call the BULK device init macro
   BULK_TUSB_INIT(dev);
+  
   // setup recv buffer for rx end point
   tusb_set_recv_buffer(dev, RX_EP, buf, sizeof(buf));
+  tusb_set_recv_buffer(dev, RX_EP1, buf1, sizeof(buf1));
 }
 
 void delay_ms(uint32_t ms)
@@ -72,7 +86,7 @@ void delay_ms(uint32_t ms)
 tusb_device_t tusb_dev;
 int main(void)
 {
-  tusb_close_device(&tusb_dev);
+  tusb_close_device(&tusb_dev); 
   delay_ms(100);  
   tusb_open_device(&tusb_dev);
   while(1){
@@ -83,6 +97,15 @@ int main(void)
       }
       tusb_send_data(&tusb_dev, TX_EP, buf, recv_count);
       recv_count = 0; 
+    }
+    
+    if(recv_count1){
+      // every data plus 1 and echo back
+      for(int i=0;i<recv_count1;i++){
+        buf1[i]+=2;
+      }
+      tusb_send_data(&tusb_dev, TX_EP1, buf1, recv_count1);
+      recv_count1 = 0; 
     }
   }
 }
