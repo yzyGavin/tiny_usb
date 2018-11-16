@@ -245,13 +245,13 @@ function MakeWCID(dev)
             if     iad_or_if.bDescriptorType == IAD_DESCRIPTOR_TYPE then
                 if iad_or_if.WCID then
                     features[#features+1] = iad_or_if.WCID(iad_or_if.bFirstInterface())
-                    guids[#guids+1] = GUID( "seed" .. dev.vid .. dev.pid .. iad_or_if.bFirstInterface() )
+                    guids[#guids+1] = GUID( "seed" .. dev.vid .. dev.pid .. iad_or_if.iFunction)
                     hasWCID = true
                 end
             elseif iad_or_if.bDescriptorType == INTERFACE_DESCRIPTOR_TYPE then
                 if iad_or_if.WCID then
                     features[#features+1] = iad_or_if.WCID(iad_or_if.bInterfaceNumber)
-                    guids[#guids+1] = GUID( "seed" .. dev.vid .. dev.pid .. iad_or_if.bInterfaceNumber )
+                    guids[#guids+1] = GUID( "seed" .. dev.vid .. dev.pid .. iad_or_if.iInterface)
                     hasWCID = true
                 end
             end

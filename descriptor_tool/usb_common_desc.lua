@@ -46,14 +46,18 @@ function Device(param)
         desc.prefix = t
     end
     desc.strings = {}
+    desc.stringMap = {}
     function addStr(d, field)
         local sname = "str" .. field
         local dname = "i" .. field
         if d[sname] and d.default[dname] then
-            desc.strings[#desc.strings + 1] = StringDescriptor(d[sname])
-        desc.strings[#desc.strings].index = #desc.strings - 1
-        desc.strings[#desc.strings].prefix = desc.prefix
-        d[dname] = #desc.strings - 1
+            if not desc.stringMap[d[sname]] then
+                desc.stringMap[d[sname]] = true
+                desc.strings[#desc.strings + 1] = StringDescriptor(d[sname])
+                desc.strings[#desc.strings].index = #desc.strings - 1
+                desc.strings[#desc.strings].prefix = desc.prefix
+            end
+            d[dname] = #desc.strings - 1
         end
     end
     -- set langID descriptor

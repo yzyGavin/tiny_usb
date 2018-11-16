@@ -1,4 +1,6 @@
 require("usb_init_ep")
+require("usb_cdc_acm")
+require("usb_hid")
 require("usb_wcid")
 local function usage()
     print("usage:")
@@ -64,7 +66,7 @@ local descriptor = ""
 local epDefine = ""
 if desc.bDescriptorType == DEVICE_DESCRIPTOR_TYPE then
     descriptor = tostring(desc)
-    epDefine = EndPointInfo(desc, maxEp, memSize):getInitCode()
+    epDefine = EndPointInfo(desc, desc.maxEp or maxEp, desc.memSize or memSize):getInitCode()
 else
     for i,v in ipairs(desc) do
         descriptor = descriptor .. [[
@@ -83,7 +85,7 @@ else
 /////////////////////////////////////////////////////////////////////
 //// EndPoint for device]]..i..[[ define begin
 /////////////////////////////////////////////////////////////////////
-]] .. EndPointInfo(v, maxEp, memSize):getInitCode() .. [[
+]] .. EndPointInfo(v, v.maxEp or maxEp, v.memSize or memSize):getInitCode() .. [[
 /////////////////////////////////////////////////////////////////////
 //// EndPoint for device]]..i..[[ define end
 /////////////////////////////////////////////////////////////////////

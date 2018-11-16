@@ -534,7 +534,7 @@ local function dev_show_ep_define()
 end
 
 local function gen_code(desc)
-    local descs,eps = collectDescriptor(desc, dev.udv:maxEP(), dev.udv:maxMem())
+    local descs,eps = collectDescriptor(desc)
     local dir = QCommonDlg.getDir()
     if not dir or dir == "" then return end
     local s = "-- Generate from UI Tool --"
@@ -548,6 +548,7 @@ local function dev_gen_code()
     local dev = curDev()
     if not dev then return end
     local desc = dev.udv:makeDesc()
+    desc.maxEp, desc.memSize = dev.udv:maxEP(), dev.udv:maxMem()
     gen_code(desc)
 end
 local function dev_gen_code_all()
@@ -556,11 +557,13 @@ local function dev_gen_code_all()
     for i,v in ipairs(r) do
         local dev = curDev(v)
         if dev and dev.udv then
-            descs[#descs+1] = dev.udv:makeDesc()
+            local desc = dev.udv:makeDesc()
+            desc.maxEp, desc.memSize = dev.udv:maxEP(), dev.udv:maxMem()
+            descs[#descs+1] = desc
         end
     end
     if #descs > 0 then
-        gen_code(descs)
+        gen_code(descs, dev)
     end
 end
 
@@ -674,7 +677,7 @@ mainWindow:menuBar(){
         },
         QAction(""){ separator = true },
         QAction(tr("Clear &Log")){
-            triggered = function() logEdit:clear() end, QKeySequence("Ctrl+Alt+C"),
+            triggered = function() logEdit:clear() end, QKeySequence("Ctrl+Alt+L"),
         },
     }
 }
