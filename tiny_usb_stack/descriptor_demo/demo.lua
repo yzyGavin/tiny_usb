@@ -1,7 +1,4 @@
 -- DEMO USB descriptor for tiny USB stack
-require("usb_cdc_acm")
-require("usb_hid")
-require("usb_wcid")
 return {
 -- Demo descriptor of Bulk device
 Device {
