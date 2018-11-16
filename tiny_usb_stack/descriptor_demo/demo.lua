@@ -1,22 +1,31 @@
 -- DEMO USB descriptor for tiny USB stack
 require("usb_cdc_acm")
 require("usb_hid")
+require("usb_wcid")
 return {
 -- Demo descriptor of Bulk device
 Device {
     strManufacture = "tiny usb",
     strProduct = "tiny usb bulk demo",
     strSerial = "tu123456",
-    idVendor = 0x0483,       -- VID PID for ST-link, it will install signed WinUSB driver
-    idProduct = 0x3748,
+    idVendor = 0x4322,
+    idProduct = 0x4321,
     prefix = "BULK",
     Config {
         bMaxPower = 100,
         SelfPower = true,
         RemoteWakeup = true,
         Interface{
+            WCID = WinUSB,
             EndPoint(IN(1),  BulkDouble, 64),
             EndPoint(OUT(2), BulkDouble, 64),
+            strInterface = "TinyUsb1",
+        },
+        Interface{
+            WCID = WinUSB,
+            EndPoint(IN(3),  BulkDouble, 64),
+            EndPoint(OUT(4), BulkDouble, 64),
+            strInterface = "TinyUsb2",
         },
    }
 },

@@ -73,6 +73,12 @@ static void tusb_get_descriptor(tusb_device_t* dev, tusb_setup_packet *req)
         desc = dev->descriptors->strings[index];
         if(desc)len = desc[0];
       }
+#if defined(HAS_WCID)
+      else if(index == 0xee && dev->descriptors->wcid_desc){
+        desc = WCID_StringDescriptor_MSOS;
+        len = desc[0];
+      }
+#endif
       break;
     }
 	}
@@ -88,6 +94,29 @@ static void tusb_set_addr(tusb_device_t* dev)
     dev->addr = 0;
   }
 }
+
+#if defined(HAS_WCID)
+static void tusb_vendor_request(tusb_device_t* dev, tusb_setup_packet* setup_req)
+{
+  uint32_t len = 0;
+  const uint8_t* desc = 0;
+  switch (setup_req->bRequest) {
+    case WCID_VENDOR_CODE:
+      switch(setup_req->wIndex)
+      case 4:
+        desc = dev->descriptors->wcid_desc;
+        len = desc[0] + (desc[1]<<8) + (desc[2]<<16) + (desc[3]<<24);
+        break;
+      case 5:
+        desc = dev->descriptors->wcid_properties;
+        len = desc[0] + (desc[1]<<8) + (desc[2]<<16) + (desc[3]<<24);
+        break;
+  }
+  // TODO: Handle length more than 0xffff
+  tusb_send_data(dev, 0, desc,
+					setup_req->wLength > len ? len : setup_req->wLength);
+}
+#endif
 
 // Standard request process function
 static void tusb_standard_request(tusb_device_t* dev, tusb_setup_packet* setup_req)
@@ -159,7 +188,7 @@ static void tusb_standard_request(tusb_device_t* dev, tusb_setup_packet* setup_r
 void tusb_recv_data(tusb_device_t* dev, uint8_t EPn, uint16_t EP);
 void tusb_send_data_done(tusb_device_t* dev, uint8_t EPn, uint16_t EP);
 uint32_t tusb_read_ep0(tusb_device_t* dev, void* buf);
-
+void get_setup(const void* s);
 // end point data handler
 void tusb_ep_handler(tusb_device_t* dev, uint8_t EPn)
 {
@@ -170,8 +199,13 @@ void tusb_ep_handler(tusb_device_t* dev, uint8_t EPn)
         // Handle setup packet
         tusb_read_ep0(dev, &dev->setup);
         tusb_setup_packet *setup_req = &dev->setup;
+        get_setup(setup_req);
         if( (setup_req->bmRequestType & USB_REQ_TYPE_MASK) == USB_REQ_TYPE_CLASS){
           tusb_class_request(dev, setup_req);
+#if defined(HAS_WCID)
+        }else if((setup_req->bmRequestType & USB_REQ_TYPE_MASK) == USB_REQ_TYPE_VENDOR){
+          tusb_vendor_request(dev, setup_req);
+#endif
         }else{
           tusb_standard_request(dev, setup_req);
         }

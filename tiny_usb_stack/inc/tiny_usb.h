@@ -57,6 +57,10 @@ typedef struct _tusb_descriptors
   desc_t  config;
   const desc_t*  strings;
   uint32_t string_cnt;
+#if defined(HAS_WCID)
+  desc_t  wcid_desc;
+  desc_t  wcid_properties;
+#endif
 }tusb_descriptors;
 
 
