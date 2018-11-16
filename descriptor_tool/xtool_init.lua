@@ -1,9 +1,15 @@
+-- xtool_init.lua
 require("usb_hid")
 require("usb_cdc_acm")
 require("gen_decriptor")
-require("Driver")
+require("driver")
 
-local tr = tr or function(s, ctx) return s end
+local rl, e = pcall(function()
+    require("language")
+end)
+if not rl then logEdit:append(e) end
+
+local tr = _G.tr or function(s, ctx) return s end
 
 class "EPView" (QFrame)
 function EPView:__init(name, optional)
@@ -92,7 +98,7 @@ function IfView:__init(p, name)
     name = name or "Generic"
     self.ifname = QLabel("")
     self.name = QLineEdit(){ placeHolderText = tr("Set Interface Name or leave empty") }
-    self.btnRemove = QPushButton(tr("Remove")) {maxH = 30}
+    self.btnRemove = QPushButton(tr("Remove")) {maxH = 30, minH = 20}
     self.drvCombo = QComboBox{ SupportDriverList() }
     self.layout = QVBoxLayout{
         QHBoxLayout{self.ifname,QLabel(" - " .. name), self.name, self.btnRemove, self.drvCombo},
@@ -213,19 +219,24 @@ end
 class "GenericView" (IfView)
 function GenericView:__init(p)
     IfView.__init(self, p)
-    self.btnAdd = QPushButton(tr("Add EndPoint")){maxH = 30}
+    self.btnAdd = QPushButton(tr("Add EndPoint")){maxH = 30, minH = 20}
     self.chkWCIDWinUSB = QCheckBox(tr("WCID WinUSB"))
     self.layout:addLayout(QHBoxLayout{
-        self.btnAdd, self.chkWCIDWinUSB, QLabel(""), strech = "0,0,1",
+        self.btnAdd, self.chkWCIDWinUSB, 
+        QLabel([[<a href="https://github.com/xtoolbox/tiny_usb/wiki/WCID-Device">]]..tr("What is WCID ?")..[[</a>]])
+        { openExternalLinks = true },
+        strech = "0,0,1",
     })
     self.eps = {
-        EPView(tr("Generic")),
+        EPView(tr("GenEp")),
     }
-    self.eps[1]:setEp(p.getMinEp(), "Bulk", 64, 0)
+    self.epDir = 0x80
+    self.eps[1]:setEp(p.getMinEp()+self.epDir, "Bulk", 64, 0)
     self.layout:addWidget(self.eps[1])
     self.btnAdd.clicked = function()
-        local epv = EPView(tr("Generic"), true)
-        epv:setEp(self.getMinEp(), "Bulk", 64, 0)
+        local epv = EPView(tr("GenEp"), true)
+        self.epDir = self.epDir == 0 and 0x80 or 0
+        epv:setEp(self.getMinEp()+self.epDir, "Bulk", 64, 0)
         epv.name.toggled = function()
             if not epv.name.checked then
                 local idx
@@ -307,7 +318,7 @@ function UsbDescView:__init(parent)
         QHBoxLayout{
             self.editDeviceName,
             QLabel("VID"), self.editVid, QLabel("PID"), self.editPid,
-            QLabel("PktSize"), self.editPktSize,
+            QLabel(tr("PktSize")), self.editPktSize,
         },
         QHBoxLayout{
             QLabel(tr("Max EP No.")), self.editMaxEP, 
@@ -352,7 +363,7 @@ function UsbDescView:makeDesc()
     for i,v in ipairs(self.ifs) do
         cfg[#cfg+1] = v:makeDesc()
     end
-    local prefix = nil
+    local prefix = ""
     if self.editDeviceName.text ~= "" then
         prefix = self.editDeviceName.text
         prefix = string.gsub(prefix, "[ \t]", "_")
@@ -491,7 +502,10 @@ end
 local function dev_new()
     local dev = UsbDev()
     dev:setProperty("TinyDevice",dev)
-    mdiArea:addSubWindow(dev):show()
+    local tw = mdiArea:addSubWindow(dev)
+    tw.w = 500
+    tw.h = 500
+    tw:show()
 end
 local function curDev(subWindow)
     subWindow = subWindow or mdiArea.currentSubWindow
@@ -559,7 +573,7 @@ local function dev_show_inf()
         desc.drivers[i] = v.drvCombo.currentText
     end
     local t = QTextEdit()
-    t.plainText = DriverCreate(dev.windowTitle, desc)
+    t.plainText = DriverCreate(desc.prefix, desc)
     mdiArea:addSubWindow(t):showMaximized()
 end
 
@@ -570,8 +584,8 @@ local function dev_show_inf_all()
     for i,v in ipairs(r) do
         local dev = curDev(v)
         if dev and dev.udv then
-            n = dev.windowTitle
             local desc = dev.udv:makeDesc()
+            n = desc.prefix
             desc.drivers = {}
             for j,iv in ipairs(dev.back.ifs) do
                 desc.drivers[j] = iv.drvCombo.currentText
@@ -594,7 +608,7 @@ local function dev_gen_inf()
     for i,v in ipairs(dev.back.ifs) do
         desc.drivers[i] = v.drvCombo.currentText
     end
-    DriverCreate(dev.windowTitle, desc, true)
+    DriverCreate(desc.prefix, desc, true)
 end
 
 local function dev_gen_inf_all()
@@ -604,8 +618,8 @@ local function dev_gen_inf_all()
     for i,v in ipairs(r) do
         local dev = curDev(v)
         if dev and dev.udv then
-            n = dev.windowTitle
             local desc = dev.udv:makeDesc()
+            n =desc.prefix
             desc.drivers = {}
             for j,iv in ipairs(dev.back.ifs) do
                 desc.drivers[j] = iv.drvCombo.currentText
@@ -620,7 +634,7 @@ end
 
 mainWindow:menuBar(){
     QMenu(tr("&USB Descriptor")){
-        QAction(tr("&New")){
+        QAction(tr("&New Device")){
             triggered = dev_new, QKeySequence("Ctrl+N"),
         },
         QAction(tr("Preview &Descriptor")){
@@ -633,7 +647,7 @@ mainWindow:menuBar(){
             triggered = dev_gen_code, QKeySequence("Ctrl+G"),
         },
         QAction(tr("Generate Code &All")){
-            triggered = dev_gen_code_all, QKeySequence("Ctrl+A"),
+            triggered = dev_gen_code_all, QKeySequence("Ctrl+Alt+A"),
         },
 
     },

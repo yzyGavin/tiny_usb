@@ -111,6 +111,11 @@ end
 
 local function PrepareDriver(name, r, genFiles)
     local drivers = {}
+    name = string.gsub(name, "_+$", "")
+    if name == "" then
+        name = "TinyUSB"
+    end
+    
     for i,dev in ipairs(r.devs) do
         if #dev == 1 then
             -- device contain only one interface

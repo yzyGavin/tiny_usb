@@ -1,3 +1,4 @@
+-- usb_common_desc.lua
 --[[ 
  Author:  admin@xtoolbox.org
  device, config, interface, endpoint, function, IAD descriptor class
@@ -17,8 +18,8 @@ function Device(param)
         {bDeviceSubClass    = 0                        },
         {bDeviceProtocol    = 0                        },
         {bMaxPacketSize     = 8                        },
-        {idVendor           = 0x0483                   },
-        {idProduct          = 0x3748                   },
+        {idVendor           = 0x1234                   },
+        {idProduct          = 0x1234                   },
         {bcdDevice          = 0x100                    },
         {iManufacture       = 0                        },
         {iProduct           = 0                        },

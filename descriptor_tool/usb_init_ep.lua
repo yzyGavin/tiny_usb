@@ -236,7 +236,11 @@ function EndPointInfo(deviceDescriptor, maxEp, maxMem)
     ep.type = Control
     r.usage[0] = ep
     local function warning(x)
-        _G.warning(deviceDescriptor.prefix .. ": " .. x)
+        if _G.logW then
+            _G.logW(deviceDescriptor.prefix .. ": " .. x)
+        else
+            print(deviceDescriptor.prefix .. ": " .. x)
+        end
     end
     function collectEp(v)
         for i,maybeEp in ipairs(v) do
