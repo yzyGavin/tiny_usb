@@ -3,7 +3,7 @@
 ## 特性 Features
 
 1. 根据配置自动生成USB描述符和端点初始化代码 Auto generate USB descriptors and Endpoint initial codes.
-2. 根据配置生成驱动inf文件并签名 Auto generate driver's yiinf file and sign.
+2. 根据配置生成驱动inf文件并签名 Auto generate driver's inf file and self sign.
 3. 驱动生成功能依赖libwdi项目
 
 ## 说明
@@ -18,7 +18,7 @@
 
 ## 图形化工具 GUI tool
 
-图形化工具采用[XToolbox][xtoolbox_download]开发，Xtoolbox是一个[lua脚本驱动的Qt应用程序原型开发框架][xtoolbox_intro]，用lua封装了常见的Qt界面元素。
+图形化工具采用[XToolbox][xtoolbox_download]开发，XToolbox是一个[lua脚本驱动的Qt应用程序原型开发框架][xtoolbox_intro]，用lua封装了常见的Qt界面元素。
 
 
 
