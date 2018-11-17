@@ -8,13 +8,19 @@
 
 ## 说明
 
-* 命令行和图形化工具都使用lua脚本开发。
+* 支持命令行和图形化工具生成描述符和端点初始化代码，支持图形化工具生成驱动inf文件并签名。
 * 通过解析描述符的配置文件，自动分析设备中的接口，并为接口分配编号。
 * 自动分析描述符中的字符串，生成字符描述符及序号，合并相同的字符。
 * 根据需要生成IAD描述符
 * 根据配置生成WCID相关描述符
 * 根据配置生成设备驱动inf文件，支持的类型与libwdi项目相同
 * 生成驱动自签名文件，签名功能调用libwdi完成
+
+## 图形化工具 GUI tool
+
+图形化工具采用[XToolbox][xtoolbox_download]开发，Xtoolbox是一个[lua脚本驱动的Qt应用程序原型开发框架][xtoolbox_intro]，用lua封装了常见的Qt界面元素。
+
+
 
 ## 命令行工具 command line tool
 
@@ -83,9 +89,7 @@ Device {
 
 设备配置的示例在[demo.lua][desc_demo]
 
-## 图形化工具 GUI tool
 
-图形化工具采用[XToolbox][xtoolbox_download]开发，Xtoolbox是一个[lua脚本驱动的Qt应用程序原型开发框架][xtoolbox_intro]，用lua封装了常见的Qt界面元素。
 
 
 [lua_download]: https://www.lua.org/download.html
