@@ -31,7 +31,7 @@
 ```batch
 lua gen_decriptor.lua <config-file>
 ```
-<config-file>是USB设备配置文件，用来生成描述符的C语言代码，其格式见下。执行后会在<config-file>相同目录下生成tiny_usb_desc.c和tiny_usb_init.h文件。tiny_usb_desc.c是设备描述符文件，包含USB设备的各种描述符。tiny_usb_init.h是端点定义文件，对于STM32F1xx和STM32F0xx芯片，会根据描述符中的端点信息，生成相应的端点初始化代码。查看生成的代码示例：[tiny_usb_desc.c][tiny_usb_desc_demo], [tiny_usb_init.h][tiny_usb_init_demo]
+config-file是USB设备配置文件，用来生成描述符的C语言代码，其格式见下。执行后会在config-file相同目录下生成tiny_usb_desc.c和tiny_usb_init.h文件。tiny_usb_desc.c是设备描述符文件，包含USB设备的各种描述符。tiny_usb_init.h是端点定义文件，对于STM32F1xx和STM32F0xx芯片，会根据描述符中的端点信息，生成相应的端点初始化代码。查看生成的代码示例：[tiny_usb_desc.c][tiny_usb_desc_demo], [tiny_usb_init.h][tiny_usb_init_demo]
 
 ### 配置文件格式
 
