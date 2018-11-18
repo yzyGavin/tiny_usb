@@ -3,6 +3,7 @@ require("usb_hid")
 require("usb_cdc_acm")
 require("gen_decriptor")
 require("driver")
+local deviceList = require("device_list")
 
 local rl, e = pcall(function()
     require("language")
@@ -283,14 +284,14 @@ class "UsbDescView" (QFrame)
 function UsbDescView:__init(parent)
     QFrame.__init(self, parent)
     self.ifs = parent.ifs
-    self.editVid = QLineEdit("0x1234"){
+    self.editVid = QLineEdit("0x2017"){
        placeHolderText = "VID", maxW = 60
     }
-    self.editPid = QLineEdit("0x1234"){
+    self.editPid = QLineEdit("0x0924"){
        placeHolderText = "PID", maxW = 60
     }
-    self.editPktSize = QLineEdit("8"){
-        placeHolderText = "EP0 Size", maxW = 60
+    self.editPktSize = QComboBox{
+        {"8","16","32","64"}, maxW = 60
     }
     self.editDeviceName = QLineEdit(""){
         placeHolderText = "Name"
@@ -311,9 +312,24 @@ function UsbDescView:__init(parent)
         self.maxPower.enabled = not self.chkSelfPower.checked
     end
     
+    self.comboDevices = QComboBox()
+    self.devMap = {}
+    for i,v in ipairs(deviceList) do
+        self.comboDevices:addItem(v.name)
+        self.devMap[v.name] = v
+    end
+    self.comboDevices.currentIndexChanged = function()
+        local v = self.devMap[self.comboDevices.currentText]
+        if v then
+            self.editMaxEP.text = tostring(v.maxEp)
+            self.editMaxMem.text = tostring(v.maxMem)
+        end
+    end
+    
     self.editMaxEP = QLineEdit("7") {maxW = 80}
     self.editMaxMem = QLineEdit("1024") {maxW = 80}
     
+    self.comboDevices.currentIndexChanged()
     self.layout = QVBoxLayout{
         QHBoxLayout{
             self.editDeviceName,
@@ -321,6 +337,7 @@ function UsbDescView:__init(parent)
             QLabel(tr("PktSize")), self.editPktSize,
         },
         QHBoxLayout{
+            self.comboDevices,
             QLabel(tr("Max EP No.")), self.editMaxEP, 
             QLabel(tr("USB Memory size")), self.editMaxMem
         },
@@ -374,7 +391,7 @@ function UsbDescView:makeDesc()
         strSerial = str(self.editSerial),
         idVendor = tonumber(self.editVid.text) or 0,
         idProduct = tonumber(self.editPid.text) or 0,
-        bMaxPacketSize = tonumber(self.editPktSize.text) or 8,
+        bMaxPacketSize = tonumber(self.editPktSize.currentText) or 8,
         prefix = prefix:upper(),
         Config (cfg)
     }

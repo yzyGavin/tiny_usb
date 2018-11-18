@@ -5,8 +5,8 @@ Device {
     strManufacture = "tiny usb",
     strProduct = "tiny usb bulk demo",
     strSerial = "tu123456",
-    idVendor = 0x4322,
-    idProduct = 0x4321,
+    idVendor = 0x2017,
+    idProduct = 0x0924,
     prefix = "BULK",
     Config {
         bMaxPower = 100,
@@ -32,8 +32,8 @@ Device {
     strManufacture = "tiny usb",
     strProduct = "tiny usb cdc demo",
     strSerial = "tu123456",
-    idVendor = 0x03EB,    -- VID PID for Ateml CDC
-    idProduct = 0x6124,
+    idVendor = 0x2017,    -- VID PID for Ateml CDC
+    idProduct = 0x0925,
     prefix = "CDC",
     Config {
         bMaxPower = 100,
@@ -52,8 +52,8 @@ Device {
     strManufacture = "tiny usb",
     strProduct = "tiny usb cdc7 demo",
     strSerial = "tu123456",
-    idVendor = 0x1234,   -- Win10 can drive the multiple CDC, VID PID can be any one
-    idProduct = 0x0007,
+    idVendor = 0x2017,   -- Win10 can drive the multiple CDC, VID PID can be any one
+    idProduct = 0x0926,
     prefix = "CDC7",
     Config {
         bMaxPower = 100,
@@ -102,8 +102,8 @@ Device {
     strManufacture = "tiny usb",
     strProduct = "tiny usb HID demo",
     strSerial = "tu123456",
-    idVendor = 0x1234,
-    idProduct = 0x0011,
+    idVendor = 0x2017,
+    idProduct = 0x0927,
     prefix = "HID",
     Config {
         bMaxPower = 100,
@@ -125,8 +125,8 @@ Device {
     strManufacture = "tiny usb",
     strProduct = "tiny usb 7 HID demo",
     strSerial = "tu123456",
-    idVendor = 0x1234,
-    idProduct = 0x0017,
+    idVendor = 0x2017,
+    idProduct = 0x0928,
     prefix = "HID7",
     Config {
         USB_HID{

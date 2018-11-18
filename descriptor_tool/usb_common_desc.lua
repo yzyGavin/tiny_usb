@@ -1,7 +1,7 @@
 -- usb_common_desc.lua
 --[[ 
  Author:  admin@xtoolbox.org
- device, config, interface, endpoint, function, IAD descriptor class
+ device, config, interface, endpoint, function, IAD and string descriptor class
 --]]
 require("usb_desc")
 
@@ -18,8 +18,8 @@ function Device(param)
         {bDeviceSubClass    = 0                        },
         {bDeviceProtocol    = 0                        },
         {bMaxPacketSize     = 8                        },
-        {idVendor           = 0x1234                   },
-        {idProduct          = 0x1234                   },
+        {idVendor           = 0x2017                   },
+        {idProduct          = 0x0924                   },
         {bcdDevice          = 0x100                    },
         {iManufacture       = 0                        },
         {iProduct           = 0                        },
