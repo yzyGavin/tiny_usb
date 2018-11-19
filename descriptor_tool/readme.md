@@ -2,9 +2,10 @@
 
 ## 特性 Features
 
-1. 根据配置自动生成USB描述符和端点初始化代码 Auto generate USB descriptors and Endpoint initial codes.
-2. 根据配置生成驱动inf文件并签名 Auto generate driver's inf file and self sign.
-3. 驱动生成功能依赖libwdi项目
+1. 绿色图形化工具生成描述符和驱动，图形化工具不需要安装。GUI tool to generate descriptors and driver inf file, no install need.
+2. 命令行工具根据配置自动生成USB描述符和端点初始化代码 Command line tool generate USB descriptors and Endpoint initial codes.
+3. 根据配置生成驱动inf文件并签名 Auto generate driver's inf file and self sign.
+4. 驱动生成相关功能依赖libwdi项目。 Driver related feature depends on [libwdi][libwdi_proj].
 
 ## 说明
 
@@ -18,7 +19,7 @@
 
 ## 图形化工具 GUI tool
 
-图形化工具采用[XToolbox][xtoolbox_download]开发，XToolbox是一个[lua脚本驱动的Qt应用程序原型开发框架][xtoolbox_intro]，用lua封装了常见的Qt界面元素。不需要安装，可以直接运行。Run directly, no need install.
+图形化工具采用[XToolbox][xtoolbox_download]开发，XToolbox是一个[lua脚本驱动的Qt应用程序原型开发框架][xtoolbox_intro]，用lua封装了常见的Qt界面元素。
 
 ### 新建设备
 
@@ -141,3 +142,4 @@ Device {
 [tiny_usb_desc_demo]: https://github.com/xtoolbox/tiny_usb/blob/master/tiny_usb_stack/descriptor_demo/tiny_usb_desc.c
 [tiny_usb_init_demo]: https://github.com/xtoolbox/tiny_usb/blob/master/tiny_usb_stack/descriptor_demo/tiny_usb_init.h
 [device_list]:https://github.com/xtoolbox/tiny_usb/blob/master/descriptor_tool/device_list.lua
+[libwdi_proj]:https://github.com/pbatard/libwdi
