@@ -20,12 +20,21 @@
 
 图形化工具采用[XToolbox][xtoolbox_download]开发，XToolbox是一个[lua脚本驱动的Qt应用程序原型开发框架][xtoolbox_intro]，用lua封装了常见的Qt界面元素。不需要安装，可以直接运行。Run directly, no need install.
 
+### 新建设备
+
 运行descriptor_tool中的XToolbox.exe后，出现如下界面，在这里面配置设备的VID，PID，字符描述等信息。左下方的"添加设备接口"按键增加设备接口，目前支持CDC,HID和用户自定义设备。选择不同的设备系统会设置不同最大端点号和USB模块内存大小，设备列表定义在[device_list.lua][device_list]中。
+
 ![start_ui](../images/start_ui.png)
+
+
+### 添加接口
 
 增加的接口如下图所示，不同接口需要配置不同的参数，对于通用接口，可以添加更多的端点。对于HID设备，可以定义其报告描述述的内容。
 
 ![interfaces](../images/interface_ui.png)
+
+
+### 生成描述符和端点初始化定义
 
 设备及接口定义好后，预览生成的描述符和端点定义文件。
 
@@ -36,6 +45,8 @@
 * 生成全部代码 将所有设备的描述符和端点定义生成到同一个文件文件中
 
 ![preview_desc](../images/preview_desc.png)
+
+### 生成inf文件
 
 设备及接口定义好后，预览生成的驱动inf文件。
 
