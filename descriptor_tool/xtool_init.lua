@@ -594,6 +594,7 @@ local function dev_show_inf()
     end
     local t = QTextEdit()
     t.plainText = DriverCreate(desc.prefix, desc)
+    t.windowTitle = "Preview " .. dev.windowTitle .. " inf files"
     mdiArea:addSubWindow(t):showMaximized()
 end
 
@@ -616,6 +617,7 @@ local function dev_show_inf_all()
     if #descs > 0 then
         local t = QTextEdit()
         t.plainText = DriverCreate(n, descs)
+        t.windowTitle = "Preview all device inf files"
         mdiArea:addSubWindow(t):showMaximized()
     end
 end
@@ -667,7 +669,7 @@ mainWindow:menuBar(){
             triggered = dev_gen_code, QKeySequence("Ctrl+G"),
         },
         QAction(tr("Generate Code &All")){
-            triggered = dev_gen_code_all, QKeySequence("Ctrl+Alt+A"),
+            triggered = dev_gen_code_all, QKeySequence("Ctrl+Alt+G"),
         },
 
     },
