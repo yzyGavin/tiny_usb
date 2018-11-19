@@ -1,4 +1,6 @@
 -- xtool_init.lua
+--[[ The decriptor GUI tool initial file
+]]
 require("usb_hid")
 require("usb_cdc_acm")
 require("gen_decriptor")

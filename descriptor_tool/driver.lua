@@ -1,4 +1,7 @@
 -- Driver.lua
+--[[
+  -- driver generate script, use the inf template from the libwdi project
+]]
 require("usb_common_desc")
 require("usb_wcid")
 

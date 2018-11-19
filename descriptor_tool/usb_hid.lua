@@ -1,3 +1,4 @@
+-- usb_hid.lua
 --[[ 
  Author:  admin@xtoolbox.org
  USB HID descriptor class

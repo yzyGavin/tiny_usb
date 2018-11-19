@@ -1,3 +1,4 @@
+-- usb_init_ep.lua
 --[[ 
  Author:  admin@xtoolbox.org
  Parse the end point usage and generate ep init code

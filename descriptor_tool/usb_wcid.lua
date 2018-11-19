@@ -1,3 +1,4 @@
+-- usb_wcid.lua
 --[[
      Windows compatible ID related descriptors
      visit https://github.com/pbatard/libwdi/wiki/WCID-Devices for more info

@@ -1,3 +1,4 @@
+-- gen_descriptor.lua
 require("usb_init_ep")
 require("usb_cdc_acm")
 require("usb_hid")

@@ -1,3 +1,4 @@
+-- usb_cdc_acm.lua
 --[[ 
  Author:  admin@xtoolbox.org
  USB CDC ACM descriptor class
