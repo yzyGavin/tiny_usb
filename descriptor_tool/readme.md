@@ -18,8 +18,32 @@
 
 ## 图形化工具 GUI tool
 
-图形化工具采用[XToolbox][xtoolbox_download]开发，XToolbox是一个[lua脚本驱动的Qt应用程序原型开发框架][xtoolbox_intro]，用lua封装了常见的Qt界面元素。
+图形化工具采用[XToolbox][xtoolbox_download]开发，XToolbox是一个[lua脚本驱动的Qt应用程序原型开发框架][xtoolbox_intro]，用lua封装了常见的Qt界面元素。不需要安装，可以直接运行。Run directly, no need install.
+运行descriptor_tool中的XToolbox.exe后，出现如下界面，在这里面配置设备的VID，PID，字符描述等信息。左下方的"添加设备接口"按键增加设备接口，目前支持CDC,HID和用户自定义设备。选择不同的设备系统会设置不同最大端点号和USB模块内存大小，设备列表定义在[device_list.lua][device_list]中。
+![start_ui](../images/start_ui.png)
 
+增加的接口如下图所示，不同接口需要配置不同的参数，对于通用接口，可以添加更多的端点。对于HID设备，可以定义其报告描述述的内容。
+
+![interfaces](../images/interface_ui.png)
+
+设备及接口定义好后，预览生成的描述符和端点定义文件。
+
+* 创建设备 生成一个新的USB设备
+* 预览描述符 查看当前设备的描述符
+* 预览端点定义 查看当前设备的端点定义
+* 生成代码会 生成当前设备的描述符和端点定义文件
+* 生成全部代码 将所有设备的描述符和端点定义生成到同一个文件文件中
+
+![preview_desc](../images/preview_desc.png)
+
+设备及接口定义好后，预览生成的驱动inf文件。
+
+* 预览INF文件 查看当前设备的INF文件，如果一个设备的多个接口配置了不同类型的驱动，则会为每种不同类型的驱动生成一个单独的INF文件。
+* 预览全部INF文件 查看当前设备的端点定义
+* 生成INF文件 生成当前设备的INF文件，并生成对应的自签名cat文件。
+* 生成全部INF文件 生成当前设备的端点定义，并生成对应的自签名cat文件。
+
+![preview_inf](../images/preview_inf.png)
 
 
 ## 命令行工具 command line tool
@@ -104,3 +128,4 @@ Device {
 [what_is_wcid]: https://github.com/xtoolbox/tiny_usb/wiki/WCID-Device
 [tiny_usb_desc_demo]: https://github.com/xtoolbox/tiny_usb/blob/master/tiny_usb_stack/descriptor_demo/tiny_usb_desc.c
 [tiny_usb_init_demo]: https://github.com/xtoolbox/tiny_usb/blob/master/tiny_usb_stack/descriptor_demo/tiny_usb_init.h
+[device_list]:https://github.com/xtoolbox/tiny_usb/blob/master/descriptor_tool/device_list.lua
