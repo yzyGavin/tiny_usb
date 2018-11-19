@@ -19,6 +19,7 @@
 ## 图形化工具 GUI tool
 
 图形化工具采用[XToolbox][xtoolbox_download]开发，XToolbox是一个[lua脚本驱动的Qt应用程序原型开发框架][xtoolbox_intro]，用lua封装了常见的Qt界面元素。不需要安装，可以直接运行。Run directly, no need install.
+
 运行descriptor_tool中的XToolbox.exe后，出现如下界面，在这里面配置设备的VID，PID，字符描述等信息。左下方的"添加设备接口"按键增加设备接口，目前支持CDC,HID和用户自定义设备。选择不同的设备系统会设置不同最大端点号和USB模块内存大小，设备列表定义在[device_list.lua][device_list]中。
 ![start_ui](../images/start_ui.png)
 
