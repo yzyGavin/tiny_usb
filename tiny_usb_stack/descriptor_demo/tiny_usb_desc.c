@@ -196,7 +196,7 @@ __ALIGN(2)  const uint8_t BULK_DeviceDescriptor [18] = {
     0x00,                                         /* bDeviceClass */
     0x00,                                         /* bDeviceSubClass */
     0x00,                                         /* bDeviceProtocol */
-    0x08,                                         /* bMaxPacketSize */
+    0x40,                                         /* bMaxPacketSize */
     LOBYTE(BULK_VID), HIBYTE(BULK_VID),           /* idVendor */
     LOBYTE(BULK_PID), HIBYTE(BULK_PID),           /* idProduct */
     0x00, 0x01,                                   /* bcdDevice */

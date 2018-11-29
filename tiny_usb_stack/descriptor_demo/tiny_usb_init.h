@@ -207,9 +207,9 @@ Device {
 #define BULK_USB_BUF_START                                  (BULK_EP_BUF_DESC_TABLE_SIZE * BULK_EP_NUM)
 
 // EndPoints 0 defines
-#define BULK_EP0_RX_SIZE                                    (8)
+#define BULK_EP0_RX_SIZE                                    (64)
 #define BULK_EP0_RX_ADDR                                    (BULK_USB_BUF_START + 0)
-#define BULK_EP0_TX_SIZE                                    (8)
+#define BULK_EP0_TX_SIZE                                    (64)
 #define BULK_EP0_TX_ADDR                                    (BULK_USB_BUF_START + 8)
 #define BULK_EP0_TYPE                                       USB_EP_CONTROL
 

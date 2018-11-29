@@ -86,6 +86,14 @@ static void tusb_get_descriptor(tusb_device_t* dev, tusb_setup_packet *req)
 					req->wLength > len ? len : req->wLength);
 }
 
+#if defined(USB_OTG_FS) || defined(USB_OTG_HS)
+static void tusb_set_addr (tusb_device_t* dev)
+{
+  USB_OTG_GlobalTypeDef *USBx = dev->handle;
+  USBx_DEVICE->DCFG &= ~ (USB_OTG_DCFG_DAD);
+  USBx_DEVICE->DCFG |= (dev->addr << 4) & USB_OTG_DCFG_DAD ;
+}
+#else
 // Callback function for set address setup
 static void tusb_set_addr(tusb_device_t* dev)
 {
@@ -94,6 +102,7 @@ static void tusb_set_addr(tusb_device_t* dev)
     dev->addr = 0;
   }
 }
+#endif
 
 #if defined(HAS_WCID)
 static void tusb_vendor_request(tusb_device_t* dev, tusb_setup_packet* setup_req)
@@ -148,7 +157,11 @@ static void tusb_standard_request(tusb_device_t* dev, tusb_setup_packet* setup_r
   switch (setup_req->bRequest) {
   case USB_REQ_SET_ADDRESS:
     dev->addr = LO_BYTE(setup_req->wValue);
+#if defined(USB_OTG_FS) || defined(USB_OTG_HS)
+    tusb_set_addr(dev);
+#else
     dev->status_callback = tusb_set_addr;
+#endif
     tusb_send_data(dev, 0, 0, 0);
     break;
   
@@ -179,7 +192,15 @@ static void tusb_standard_request(tusb_device_t* dev, tusb_setup_packet* setup_r
   
   default:
     tusb_send_data(dev, 0, 0, 0);
+#if defined(USB_OTG_FS) || defined(USB_OTG_HS)
+    {
+      PCD_TypeDef* USBx =  dev->handle;
+      USBx_INEP(0)->DIEPCTL &= ~(USB_OTG_DIEPCTL_EPDIS);
+      USBx_INEP(0)->DIEPCTL |= USB_OTG_DIEPCTL_STALL;
+    }
+#else
     PCD_SET_EP_TX_STATUS(GetUSB(dev), 0 , USB_EP_TX_STALL);
+#endif
     break;
   }
 }
@@ -188,7 +209,36 @@ static void tusb_standard_request(tusb_device_t* dev, tusb_setup_packet* setup_r
 void tusb_recv_data(tusb_device_t* dev, uint8_t EPn, uint16_t EP);
 void tusb_send_data_done(tusb_device_t* dev, uint8_t EPn, uint16_t EP);
 uint32_t tusb_read_ep0(tusb_device_t* dev, void* buf);
+void tusb_read_data(tusb_device_t* dev, void* buf, uint32_t len);
 // end point data handler
+#if defined(USB_OTG_FS) || defined(USB_OTG_HS)
+
+void tusb_setup_handler(tusb_device_t* dev)
+{
+  tusb_setup_packet *setup_req = &dev->setup;
+  if( (setup_req->bmRequestType & USB_REQ_TYPE_MASK) == USB_REQ_TYPE_CLASS){
+    tusb_class_request(dev, setup_req);
+#if defined(HAS_WCID)
+  }else if((setup_req->bmRequestType & USB_REQ_TYPE_MASK) == USB_REQ_TYPE_VENDOR){
+    tusb_vendor_request(dev, setup_req);
+#endif
+  }else{
+    tusb_standard_request(dev, setup_req);
+  }
+}
+
+void tusb_ep_tx_handler(tusb_device_t* dev, uint8_t ep)
+{
+  //PCD_TypeDef* USBx = dev->handle;
+  if(ep == 0 && dev->status_callback && dev->Ep[0].tx_size == 0){
+    // invoke status transmitted call back for ep0
+    dev->status_callback(dev);
+    dev->status_callback = 0;
+  }
+  tusb_send_data_done(dev, ep, ep);
+}
+
+#else
 void tusb_ep_handler(tusb_device_t* dev, uint8_t EPn)
 {
 	uint16_t EP = PCD_GET_ENDPOINT(GetUSB(dev), EPn);
@@ -242,14 +292,12 @@ void tusb_ep_handler(tusb_device_t* dev, uint8_t EPn)
     tusb_send_data_done(dev, EPn, EP);
 	}
 }
+#endif
 
 // initial the ep recv buffer
 int tusb_set_recv_buffer(tusb_device_t* dev, uint8_t EPn, void* data, uint16_t len)
 {
   tusb_ep_data* ep = &dev->Ep[EPn];
-  if(len<dev->rx_max_size[EPn]){
-    return -1;
-  }
   ep->rx_buf = (uint8_t*)data;
   ep->rx_size = len;
   ep->rx_count = 0;

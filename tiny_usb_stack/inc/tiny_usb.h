@@ -85,6 +85,14 @@ struct _tusb_device{
 };
 
 
+#if defined(USB_CORE_HANDLE_TYPE)
+#define  DEV_SIZE   (sizeof(tusb_device_t) - sizeof(USB_CORE_HANDLE_TYPE))
+#else
+#define  DEV_SIZE   sizeof(tusb_device_t)
+#endif
+
+
+
 // open USB device, implement by platform
 void tusb_open_device(tusb_device_t* dev);
 
