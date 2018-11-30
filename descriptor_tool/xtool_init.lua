@@ -534,7 +534,7 @@ local function dev_new()
     local dev = UsbDev()
     dev:setProperty("TinyDevice",dev)
     local tw = mdiArea:addSubWindow(dev)
-    tw.w = 500
+    tw.w = 650
     tw.h = 500
     tw:show()
 end

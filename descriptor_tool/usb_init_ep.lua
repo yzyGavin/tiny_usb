@@ -70,6 +70,7 @@ local function getInitCode(epInfo)
     epSizeTable.outMax = 0
     local hasDoubleBuffer = false
     local hasISO = false
+    local totolInSize = 0
     for i=0,epInfo.maxEp do
         local ep = epInfo.usage[i]
         if ep then
@@ -100,6 +101,7 @@ local function getInitCode(epInfo)
                     r = r .. MACRO('EP' .. i .. '_TX1_ADDR', '('..dev.prefix..'USB_BUF_START + ' .. addr ..')')
                     addr = addr + ep.inSize
                     mem_usage = mem_usage .. "EP"..i.." TX1" .. " used: "..ep.inSize .. "  Total: " .. (start+addr) .. "\n"
+                    totolInSize = totolInSize + ep.inSize
                 end
             else
                 if ep.outSize then
@@ -113,6 +115,7 @@ local function getInitCode(epInfo)
                     r = r .. MACRO('EP' .. i .. '_TX_ADDR', '('..dev.prefix..'USB_BUF_START + ' .. addr ..')')
                     addr = addr + ep.inSize
                     mem_usage = mem_usage .. "EP"..i.." TX " .. " used: "..ep.inSize .. "  Total: " .. (start+addr) .. "\n"
+                    totolInSize = totolInSize + ep.inSize
                 end
             end
             r = r .. MACRO('EP' .. i .. '_TYPE', ep_type(ep.type))
@@ -121,6 +124,43 @@ local function getInitCode(epInfo)
     if addr + start > epInfo.maxMem then
         error(dev.prefix..": EndPoint buffer too large, require " .. (addr+start).. ", Only provide " .. epInfo.maxMem .. "\nMem Usage:\n".. mem_usage)
     end
+    
+    local 
+    r = r .. "\n\n// Endpoint define for OTG core\n"
+    r = r .. MACRO("OTG_MAX_OUT_SIZE", epInfo.maxOutSize)
+    r = r .. MACRO("OTG_CONTROL_EP_NUM", epInfo.controlEpCount)
+    r = r .. MACRO("OTG_OUT_EP_NUM", epInfo.outEpCount)
+    local fifoT = {
+        outMax = dev.prefix .. "OTG_MAX_OUT_SIZE",
+        outCnt = dev.prefix .. "OTG_OUT_EP_NUM",
+        ctrlCnt = dev.prefix .. "OTG_CONTROL_EP_NUM",
+    }
+    local rxFifoSize = math.floor(  (epInfo.controlEpCount * 5 + 8) + 
+                                    (epInfo.maxOutSize / 4 + 1 )    +
+                                    (epInfo.outEpCount * 2) + 1       )
+    r = r .. "// RX FIFO size / 4 > (CONTROL_EP_NUM * 5 + 8) +  (MAX_OUT_SIZE / 4 + 1) + (OUT_EP_NUM*2) + 1 = "..rxFifoSize.."\n"
+    rxFifoSize = rxFifoSize * 4
+    if rxFifoSize < 256 then rxFifoSize = 256 end
+    r = r .. MACRO("OTG_RX_FIFO_SIZE",  rxFifoSize)
+    r = r .. MACRO("OTG_RX_FIFO_ADDR", 0 )
+    local fifoUsed = rxFifoSize 
+    local fifoRemain = epInfo.maxMem - fifoUsed
+    r = r .. "// Sum of IN ep max packet size is ".. totolInSize .. "\n"
+    r = r .. "// Remain Fifo size is ".. math.floor(fifoRemain) .. " in bytes, Rx Used "..fifoUsed.." bytes \n"
+    fifoRatio = math.floor(fifoRemain/totolInSize)
+    if fifoRemain < totolInSize then
+        warning("Remain FIFO("..fifoRemain..") is smaller than EP packet size("..totolInSize..")")
+        fifoRatio = 1
+    end
+    for i=0,epInfo.maxEp do
+        local ep = epInfo.usage[i]
+        if ep and ep.inSize then
+            r = r .. MACRO("EP" .. i .. "_TX_FIFO_SIZE", "(" .. dev.prefix .. "EP"..i.."_TX_SIZE * " ..fifoRatio.. ")")
+            r = r .. MACRO("EP" .. i .. "_TX_FIFO_ADDR", fifoUsed)
+            fifoUsed = fifoUsed + fifoRatio * ep.inSize
+        end
+    end
+    
     local txMax, rxMax = "",""
     for i = 0, #epSizeTable do
         local v = epSizeTable[i]
@@ -145,8 +185,8 @@ local function getInitCode(epInfo)
     r = r .. "{" .. rxMax .. "};\n"
     
     
-    r = r .. "\n// EndPoints init function\n"
-    r = r .. "#define "..dev.prefix.."TUSB_INIT(dev) \\\n"
+    r = r .. "\n// EndPoints init function for USB FS core\n"
+    r = r .. "#define "..dev.prefix.."TUSB_INIT_EP_FS(dev) \\\n"
     r = r .. "  do{\\\n"
     for i=0,epInfo.maxEp do
         local ep = epInfo.usage[i]
@@ -180,6 +220,33 @@ local function getInitCode(epInfo)
         end
         end
     end
+    r = r .. "  }while(0)\n\n"
+    
+    
+    r = r .. "\n// EndPoints init function for USB OTG core\n"
+    r = r .. "#define "..dev.prefix.."TUSB_INIT_EP_OTG(dev) \\\n"
+    r = r .. "  do{\\\n"
+    r = r .. "    SET_RX_FIFO(dev, "..dev.prefix.."OTG_RX_FIFO_ADDR, "..dev.prefix.."OTG_RX_FIFO_SIZE);  \\\n"
+    for i=0,epInfo.maxEp do
+        local ep = epInfo.usage[i]
+        if ep then
+        local t = {n=i, EPn = dev.prefix .."EP"..i}
+        r = r .. gsub("    /* Init ep$n */ \\\n", t)
+        if ep.inSize then
+            r = r .. gsub("    INIT_EP_Tx(dev, PCD_ENDP$n, $EPn_TYPE, $EPn_TX_SIZE);  \\\n", t)
+            r = r .. gsub("    SET_TX_FIFO(dev, PCD_ENDP$n, $EPn_TX_FIFO_ADDR, $EPn_TX_FIFO_SIZE);  \\\n", t)
+        end
+        if ep.outSize then
+            r = r .. gsub("    INIT_EP_Rx(dev, PCD_ENDP$n, $EPn_TYPE, $EPn_RX_SIZE);  \\\n", t)
+        end
+        end
+    end
+    r = r .. "  }while(0)\n\n"
+    
+    
+    r = r .. "\n// Tiny USB device init function\n"
+    r = r .. "#define "..dev.prefix.."TUSB_INIT_DEVICE(dev) \\\n"
+    r = r .. "  do{\\\n"
     r = r .. "    /* Init device features */       \\\n"
     r = r .. "    memset(dev, 0, TUSB_DEVICE_SIZE);    \\\n" 
     r = r .. "    dev->status = "..dev.prefix.."DEV_STATUS;         \\\n"
@@ -187,6 +254,22 @@ local function getInitCode(epInfo)
     r = r .. "    dev->tx_max_size = "..dev.prefix.."txEpMaxSize;         \\\n"
     r = r .. "    dev->descriptors = &"..dev.prefix.."descriptors;         \\\n"
     r = r .. "  }while(0)\n\n"
+    
+    r = r .. "\n"
+    r = r .. "#if defined(USB)\n"
+    r = r .. "#define " .. dev.prefix.."TUSB_INIT_EP(dev) " .. dev.prefix.."TUSB_INIT_EP_FS(dev)\n"
+    r = r .. "#endif\n\n"
+    r = r .. "#if defined(USB_OTG_FS) || defined(USB_OTG_HS)\n"
+    r = r .. "#define " .. dev.prefix.."TUSB_INIT_EP(dev) " .. dev.prefix.."TUSB_INIT_EP_OTG(dev)\n"
+    r = r .. "#endif\n\n"
+    
+    
+    r = r .. "#define "..dev.prefix.."TUSB_INIT(dev) \\\n"
+    r = r .. "  do{\\\n"
+    r = r .. "    "..dev.prefix.."TUSB_INIT_EP(dev);   \\\n"
+    r = r .. "    "..dev.prefix.."TUSB_INIT_DEVICE(dev);   \\\n"
+    r = r .. "  }while(0)\n\n"
+    
     r = r .. "// Get End Point count\n"
     if dev.prefix ~= "" then
     r = r .. [[
@@ -230,6 +313,9 @@ function EndPointInfo(deviceDescriptor, maxEp, maxMem)
     r.maxEp = 0
     r.usage = {}
     r.maxMem = maxMem
+    r.maxOutSize = 0
+    r.controlEpCount = 1
+    r.outEpCount = 0
     local ep = {}
     ep.addr = 0
     ep.inSize = dev.bMaxPacketSize
@@ -263,6 +349,11 @@ function EndPointInfo(deviceDescriptor, maxEp, maxMem)
                             warning("EndPoint " .. addr .. " outut size already set, the last one will take effect")
                         end
                         ep.outSize = maybeEp.wMaxPacketSize
+                        if r.maxOutSize < ep.outSize then r.maxOutSize = ep.outSize end
+                        r.outEpCount = r.outEpCount + 1
+                        if maybeEp.bmAttributes == Control then
+                            r.controlEpCount = r.controlEpCount + 1
+                        end
                     end
                     if ep.type and ep.type ~= maybeEp.bmAttributes then
                         warning("Change EndPoint " .. addr .. " attr, the last one will take effect")
