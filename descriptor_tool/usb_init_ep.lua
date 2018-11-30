@@ -181,7 +181,7 @@ local function getInitCode(epInfo)
         end
     end
     r = r .. "    /* Init device features */       \\\n"
-    r = r .. "    memset(dev, 0, sizeof(*dev));    \\\n" 
+    r = r .. "    memset(dev, 0, TUSB_DEVICE_SIZE);    \\\n" 
     r = r .. "    dev->status = "..dev.prefix.."DEV_STATUS;         \\\n"
     r = r .. "    dev->rx_max_size = "..dev.prefix.."rxEpMaxSize;         \\\n"
     r = r .. "    dev->tx_max_size = "..dev.prefix.."txEpMaxSize;         \\\n"

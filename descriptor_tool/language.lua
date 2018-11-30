@@ -33,7 +33,7 @@ local chs = {
 ["Set Interface Name or leave empty"] = "接口名称 或 留空",
 ["Remove"] =  "删除接口",
 ["Control"] =  "控制端点",
-["Max Pkt"] =  "最大数据",
+["Max Pkt"] =  "最大包长",
 ["Interval"] =  "间隔",
 ["Read"] =  "读端点",
 ["Write"] =  "写端点",
@@ -41,9 +41,10 @@ local chs = {
 ["    Report desc"] =  "    报告描述符",
 ["Add EndPoint"] =  "添加端点",
 ["WCID WinUSB"] =  "WinUSB免驱",
-["PktSize"] = "端点0大小",
+["PktSize"] = "端点0最大包长",
 ["What is WCID ?"] = "什么是WCID免驱设备?",
 ["GenEp"] = "通用端点",
+["Trans/Frame"] = "次每帧",
 __name__ = "CHS",
 __context__ = {},
 }
@@ -58,8 +59,17 @@ local logI = function(...)
     logEdit:append(r)
 end
 
+
+local s1,s2 = QDate.currentDate():toString("dddd"):find("星期")
+if s1 then
+    curLang = chs
+else
+    curLang = nil
+end
+
 _G.tr = function(text, context)
     local trans = curLang
+    if not trans then return text end
     if trans and context and trans.__context__[context] then
         trans = trans.__context__[context]
     end

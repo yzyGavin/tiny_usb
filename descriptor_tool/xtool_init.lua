@@ -20,6 +20,9 @@ function EPView:__init(name, optional)
     name = name or ""
     local w = 40
     self.packetSize = QLineEdit("64"){maxW = w, minW = w}
+    self.transferPerFrame = QComboBox{
+        { "1","2","3"}
+    }
     self.attrMap = {
         "Interrupt",
         "Control",
@@ -63,6 +66,7 @@ function EPView:__init(name, optional)
             --QLabel(tr("Type","EP")),
             self.attr,
             QLabel(tr("Max Pkt","EP")), self.packetSize,
+            self.transferPerFrame,QLabel(tr("Trans/Frame","EP")),
             QLabel(tr("Interval", "EP")), self.interval
     }
     self.layout.contentsMargins = QMargins(0,0,0,0)
@@ -87,10 +91,18 @@ function EPView:getAddr()
 end
 function EPView:makeDesc()
     if not self.valid then return nil end
+    
+    local transPerFrame = 0
+    if self.attr.currentText == "Interrupt" or self.attr.currentText == "ISO" then
+        transPerFrame = self.transferPerFrame.currentIndex
+        if transPerFrame < 0 then transPerFrame = 0 end
+        if transPerFrame > 2 then transPerFrame = 2 end
+    end
+    transPerFrame = tonumber(transPerFrame) * (2^11)
     return EndPoint{
         bEndpointAddress = self:getAddr(),
         bmAttributes = _G[self.attr.currentText],
-        wMaxPacketSize = tonumber(self.packetSize.text),
+        wMaxPacketSize = tonumber(self.packetSize.text) + transPerFrame,
         bInterval = tonumber(self.interval.text),
     }
 end
