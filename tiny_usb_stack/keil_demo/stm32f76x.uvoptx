@@ -183,7 +183,12 @@
         <Ww>
           <count>5</count>
           <WinNumber>1</WinNumber>
-          <ItemText>(USB_OTG_OUTEndpointTypeDef*)0x50000B00</ItemText>
+          <ItemText>(USB_OTG_OUTEndpointTypeDef*)0x50000B40</ItemText>
+        </Ww>
+        <Ww>
+          <count>6</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>(USB_OTG_DeviceTypeDef*)0x50000800</ItemText>
         </Ww>
       </WatchWindow1>
       <Tracepoint>
@@ -239,7 +244,7 @@
 
   <Group>
     <GroupName>tiny_usb_stack</GroupName>
-    <tvExp>1</tvExp>
+    <tvExp>0</tvExp>
     <tvExpOptDlg>0</tvExpOptDlg>
     <cbSel>0</cbSel>
     <RteFlg>0</RteFlg>
@@ -271,7 +276,7 @@
 
   <Group>
     <GroupName>stm32f76x</GroupName>
-    <tvExp>1</tvExp>
+    <tvExp>0</tvExp>
     <tvExpOptDlg>0</tvExpOptDlg>
     <cbSel>0</cbSel>
     <RteFlg>0</RteFlg>
@@ -335,7 +340,7 @@
 
   <Group>
     <GroupName>lib</GroupName>
-    <tvExp>1</tvExp>
+    <tvExp>0</tvExp>
     <tvExpOptDlg>0</tvExpOptDlg>
     <cbSel>0</cbSel>
     <RteFlg>0</RteFlg>
