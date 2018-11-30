@@ -152,11 +152,13 @@ local function getInitCode(epInfo)
         warning("Remain FIFO("..fifoRemain..") is smaller than EP packet size("..totolInSize..")")
         fifoRatio = 1
     end
+    -- I don't know why the max count of fifo should <= 7 * EpMaxPkt
+    if fifoRatio > 7 then fifoRatio = 7 end
     for i=0,epInfo.maxEp do
         local ep = epInfo.usage[i]
         if ep and ep.inSize then
-            r = r .. MACRO("EP" .. i .. "_TX_FIFO_SIZE", "(" .. dev.prefix .. "EP"..i.."_TX_SIZE * " ..fifoRatio.. ")")
             r = r .. MACRO("EP" .. i .. "_TX_FIFO_ADDR", fifoUsed)
+            r = r .. MACRO("EP" .. i .. "_TX_FIFO_SIZE", "(" .. dev.prefix .. "EP"..i.."_TX_SIZE * " ..fifoRatio.. ")")
             fifoUsed = fifoUsed + fifoRatio * ep.inSize
         end
     end

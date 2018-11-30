@@ -1,7 +1,7 @@
 /*
  * Name   :  tiny_usb_init.h
  * Author :  admin@xtoolbox.org
- * Date   :  2018-11-16 17:58:46
+ * Date   :  2018-11-30 18:08:17
  * Desc   :  This file is auto generate by the tiny_usb script tool
  *           Visit https://github.com/xtoolbox/tiny_usb for more info
  */
@@ -11,9 +11,6 @@
   Content type is lua script:
   ------------- lua script begin ------------
 -- DEMO USB descriptor for tiny USB stack
-require("usb_cdc_acm")
-require("usb_hid")
-require("usb_wcid")
 return {
 -- Demo descriptor of Bulk device
 Device {
@@ -23,6 +20,7 @@ Device {
     idVendor = 0x4322,
     idProduct = 0x4321,
     prefix = "BULK",
+    bMaxPacketSize = 8,
     Config {
         bMaxPower = 100,
         SelfPower = true,
@@ -67,8 +65,8 @@ Device {
     strManufacture = "tiny usb",
     strProduct = "tiny usb cdc7 demo",
     strSerial = "tu123456",
-    idVendor = 0x1234,   -- Win10 can drive the multiple CDC, VID PID can be any one
-    idProduct = 0x0007,
+    idVendor = 0x2017,   -- Win10 can drive the multiple CDC, VID PID can be any one
+    idProduct = 0x0926,
     prefix = "CDC7",
     Config {
         bMaxPower = 100,
@@ -117,8 +115,8 @@ Device {
     strManufacture = "tiny usb",
     strProduct = "tiny usb HID demo",
     strSerial = "tu123456",
-    idVendor = 0x1234,
-    idProduct = 0x0011,
+    idVendor = 0x2017,
+    idProduct = 0x0927,
     prefix = "HID",
     Config {
         bMaxPower = 100,
@@ -140,8 +138,8 @@ Device {
     strManufacture = "tiny usb",
     strProduct = "tiny usb 7 HID demo",
     strSerial = "tu123456",
-    idVendor = 0x1234,
-    idProduct = 0x0017,
+    idVendor = 0x2017,
+    idProduct = 0x0928,
     prefix = "HID7",
     Config {
         USB_HID{
@@ -207,9 +205,9 @@ Device {
 #define BULK_USB_BUF_START                                  (BULK_EP_BUF_DESC_TABLE_SIZE * BULK_EP_NUM)
 
 // EndPoints 0 defines
-#define BULK_EP0_RX_SIZE                                    (64)
+#define BULK_EP0_RX_SIZE                                    (8)
 #define BULK_EP0_RX_ADDR                                    (BULK_USB_BUF_START + 0)
-#define BULK_EP0_TX_SIZE                                    (64)
+#define BULK_EP0_TX_SIZE                                    (8)
 #define BULK_EP0_TX_ADDR                                    (BULK_USB_BUF_START + 8)
 #define BULK_EP0_TYPE                                       USB_EP_CONTROL
 
@@ -235,6 +233,23 @@ Device {
 #define BULK_EP4_RX_ADDR                                    (BULK_USB_BUF_START + 336)
 #define BULK_EP4_TYPE                                       USB_EP_BULK
 
+
+// Endpoint define for OTG core
+#define BULK_OTG_MAX_OUT_SIZE                               (64)
+#define BULK_OTG_CONTROL_EP_NUM                             (1)
+#define BULK_OTG_OUT_EP_NUM                                 (2)
+// RX FIFO size / 4 > (CONTROL_EP_NUM * 5 + 8) +  (MAX_OUT_SIZE / 4 + 1) + (OUT_EP_NUM*2) + 1 = 35
+#define BULK_OTG_RX_FIFO_SIZE                               (256)
+#define BULK_OTG_RX_FIFO_ADDR                               (0)
+// Sum of IN ep max packet size is 136
+// Remain Fifo size is 1024 in bytes, Rx Used 256 bytes 
+#define BULK_EP0_TX_FIFO_ADDR                               (256)
+#define BULK_EP0_TX_FIFO_SIZE                               (BULK_EP0_TX_SIZE * 7)
+#define BULK_EP1_TX_FIFO_ADDR                               (312)
+#define BULK_EP1_TX_FIFO_SIZE                               (BULK_EP1_TX_SIZE * 7)
+#define BULK_EP3_TX_FIFO_ADDR                               (760)
+#define BULK_EP3_TX_FIFO_SIZE                               (BULK_EP3_TX_SIZE * 7)
+
 // EndPoint max packed sizes
 extern const uint8_t BULK_txEpMaxSize[];
 #define BULK_TXEP_MAX_SIZE                                  \
@@ -245,8 +260,8 @@ extern const uint8_t BULK_rxEpMaxSize[];
 const uint8_t BULK_rxEpMaxSize[] = \
 {BULK_EP0_RX_SIZE, 0, BULK_EP2_RX_SIZE, 0, BULK_EP4_RX_SIZE, };
 
-// EndPoints init function
-#define BULK_TUSB_INIT(dev) \
+// EndPoints init function for USB FS core
+#define BULK_TUSB_INIT_EP_FS(dev) \
   do{\
     /* Init ep0 */ \
     INIT_EP_BiDirection(dev, PCD_ENDP0, BULK_EP0_TYPE);  \
@@ -268,12 +283,54 @@ const uint8_t BULK_rxEpMaxSize[] = \
     INIT_EP_RxOnly(dev, PCD_ENDP4, BULK_EP4_TYPE);       \
     SET_RX_ADDR(dev, PCD_ENDP4, BULK_EP4_RX_ADDR);  \
     SET_RX_CNT(dev, PCD_ENDP4, BULK_EP4_RX_SIZE);  \
+  }while(0)
+
+
+// EndPoints init function for USB OTG core
+#define BULK_TUSB_INIT_EP_OTG(dev) \
+  do{\
+    SET_RX_FIFO(dev, BULK_OTG_RX_FIFO_ADDR, BULK_OTG_RX_FIFO_SIZE);  \
+    /* Init ep0 */ \
+    INIT_EP_Tx(dev, PCD_ENDP0, BULK_EP0_TYPE, BULK_EP0_TX_SIZE);  \
+    SET_TX_FIFO(dev, PCD_ENDP0, BULK_EP0_TX_FIFO_ADDR, BULK_EP0_TX_FIFO_SIZE);  \
+    INIT_EP_Rx(dev, PCD_ENDP0, BULK_EP0_TYPE, BULK_EP0_RX_SIZE);  \
+    /* Init ep1 */ \
+    INIT_EP_Tx(dev, PCD_ENDP1, BULK_EP1_TYPE, BULK_EP1_TX_SIZE);  \
+    SET_TX_FIFO(dev, PCD_ENDP1, BULK_EP1_TX_FIFO_ADDR, BULK_EP1_TX_FIFO_SIZE);  \
+    /* Init ep2 */ \
+    INIT_EP_Rx(dev, PCD_ENDP2, BULK_EP2_TYPE, BULK_EP2_RX_SIZE);  \
+    /* Init ep3 */ \
+    INIT_EP_Tx(dev, PCD_ENDP3, BULK_EP3_TYPE, BULK_EP3_TX_SIZE);  \
+    SET_TX_FIFO(dev, PCD_ENDP3, BULK_EP3_TX_FIFO_ADDR, BULK_EP3_TX_FIFO_SIZE);  \
+    /* Init ep4 */ \
+    INIT_EP_Rx(dev, PCD_ENDP4, BULK_EP4_TYPE, BULK_EP4_RX_SIZE);  \
+  }while(0)
+
+
+// Tiny USB device init function
+#define BULK_TUSB_INIT_DEVICE(dev) \
+  do{\
     /* Init device features */       \
-    memset(dev, 0, sizeof(*dev));    \
+    memset(dev, 0, TUSB_DEVICE_SIZE);    \
     dev->status = BULK_DEV_STATUS;         \
     dev->rx_max_size = BULK_rxEpMaxSize;         \
     dev->tx_max_size = BULK_txEpMaxSize;         \
     dev->descriptors = &BULK_descriptors;         \
+  }while(0)
+
+
+#if defined(USB)
+#define BULK_TUSB_INIT_EP(dev) BULK_TUSB_INIT_EP_FS(dev)
+#endif
+
+#if defined(USB_OTG_FS) || defined(USB_OTG_HS)
+#define BULK_TUSB_INIT_EP(dev) BULK_TUSB_INIT_EP_OTG(dev)
+#endif
+
+#define BULK_TUSB_INIT(dev) \
+  do{\
+    BULK_TUSB_INIT_EP(dev);   \
+    BULK_TUSB_INIT_DEVICE(dev);   \
   }while(0)
 
 // Get End Point count
@@ -348,6 +405,23 @@ extern const uint8_t WCID_StringDescriptor_MSOS[];
 #define CDC_EP3_TX_ADDR                                     (CDC_USB_BUF_START + 272)
 #define CDC_EP3_TYPE                                        USB_EP_INTERRUPT
 
+
+// Endpoint define for OTG core
+#define CDC_OTG_MAX_OUT_SIZE                                (64)
+#define CDC_OTG_CONTROL_EP_NUM                              (1)
+#define CDC_OTG_OUT_EP_NUM                                  (1)
+// RX FIFO size / 4 > (CONTROL_EP_NUM * 5 + 8) +  (MAX_OUT_SIZE / 4 + 1) + (OUT_EP_NUM*2) + 1 = 33
+#define CDC_OTG_RX_FIFO_SIZE                                (256)
+#define CDC_OTG_RX_FIFO_ADDR                                (0)
+// Sum of IN ep max packet size is 80
+// Remain Fifo size is 1024 in bytes, Rx Used 256 bytes 
+#define CDC_EP0_TX_FIFO_ADDR                                (256)
+#define CDC_EP0_TX_FIFO_SIZE                                (CDC_EP0_TX_SIZE * 7)
+#define CDC_EP1_TX_FIFO_ADDR                                (312)
+#define CDC_EP1_TX_FIFO_SIZE                                (CDC_EP1_TX_SIZE * 7)
+#define CDC_EP3_TX_FIFO_ADDR                                (760)
+#define CDC_EP3_TX_FIFO_SIZE                                (CDC_EP3_TX_SIZE * 7)
+
 // EndPoint max packed sizes
 extern const uint8_t CDC_txEpMaxSize[];
 #define CDC_TXEP_MAX_SIZE                                   \
@@ -358,8 +432,8 @@ extern const uint8_t CDC_rxEpMaxSize[];
 const uint8_t CDC_rxEpMaxSize[] = \
 {CDC_EP0_RX_SIZE, 0, CDC_EP2_RX_SIZE, 0, };
 
-// EndPoints init function
-#define CDC_TUSB_INIT(dev) \
+// EndPoints init function for USB FS core
+#define CDC_TUSB_INIT_EP_FS(dev) \
   do{\
     /* Init ep0 */ \
     INIT_EP_BiDirection(dev, PCD_ENDP0, CDC_EP0_TYPE);  \
@@ -377,12 +451,52 @@ const uint8_t CDC_rxEpMaxSize[] = \
     /* Init ep3 */ \
     INIT_EP_TxOnly(dev, PCD_ENDP3, CDC_EP3_TYPE);       \
     SET_TX_ADDR(dev, PCD_ENDP3, CDC_EP3_TX_ADDR);  \
+  }while(0)
+
+
+// EndPoints init function for USB OTG core
+#define CDC_TUSB_INIT_EP_OTG(dev) \
+  do{\
+    SET_RX_FIFO(dev, CDC_OTG_RX_FIFO_ADDR, CDC_OTG_RX_FIFO_SIZE);  \
+    /* Init ep0 */ \
+    INIT_EP_Tx(dev, PCD_ENDP0, CDC_EP0_TYPE, CDC_EP0_TX_SIZE);  \
+    SET_TX_FIFO(dev, PCD_ENDP0, CDC_EP0_TX_FIFO_ADDR, CDC_EP0_TX_FIFO_SIZE);  \
+    INIT_EP_Rx(dev, PCD_ENDP0, CDC_EP0_TYPE, CDC_EP0_RX_SIZE);  \
+    /* Init ep1 */ \
+    INIT_EP_Tx(dev, PCD_ENDP1, CDC_EP1_TYPE, CDC_EP1_TX_SIZE);  \
+    SET_TX_FIFO(dev, PCD_ENDP1, CDC_EP1_TX_FIFO_ADDR, CDC_EP1_TX_FIFO_SIZE);  \
+    /* Init ep2 */ \
+    INIT_EP_Rx(dev, PCD_ENDP2, CDC_EP2_TYPE, CDC_EP2_RX_SIZE);  \
+    /* Init ep3 */ \
+    INIT_EP_Tx(dev, PCD_ENDP3, CDC_EP3_TYPE, CDC_EP3_TX_SIZE);  \
+    SET_TX_FIFO(dev, PCD_ENDP3, CDC_EP3_TX_FIFO_ADDR, CDC_EP3_TX_FIFO_SIZE);  \
+  }while(0)
+
+
+// Tiny USB device init function
+#define CDC_TUSB_INIT_DEVICE(dev) \
+  do{\
     /* Init device features */       \
-    memset(dev, 0, sizeof(*dev));    \
+    memset(dev, 0, TUSB_DEVICE_SIZE);    \
     dev->status = CDC_DEV_STATUS;         \
     dev->rx_max_size = CDC_rxEpMaxSize;         \
     dev->tx_max_size = CDC_txEpMaxSize;         \
     dev->descriptors = &CDC_descriptors;         \
+  }while(0)
+
+
+#if defined(USB)
+#define CDC_TUSB_INIT_EP(dev) CDC_TUSB_INIT_EP_FS(dev)
+#endif
+
+#if defined(USB_OTG_FS) || defined(USB_OTG_HS)
+#define CDC_TUSB_INIT_EP(dev) CDC_TUSB_INIT_EP_OTG(dev)
+#endif
+
+#define CDC_TUSB_INIT(dev) \
+  do{\
+    CDC_TUSB_INIT_EP(dev);   \
+    CDC_TUSB_INIT_DEVICE(dev);   \
   }while(0)
 
 // Get End Point count
@@ -408,8 +522,8 @@ const uint8_t CDC_rxEpMaxSize[] = \
 /////////////////////////////////////////////////////////////////////
 //// EndPoint for device3 define begin
 /////////////////////////////////////////////////////////////////////
-#define CDC7_VID                                            0x1234
-#define CDC7_PID                                            0x0007
+#define CDC7_VID                                            0x2017
+#define CDC7_PID                                            0x0926
 #define CDC7_STRING_COUNT                                   (4)
 // Endpoint usage:
 #ifdef CDC7_BTABLE_ADDRESS
@@ -479,6 +593,33 @@ const uint8_t CDC_rxEpMaxSize[] = \
 #define CDC7_EP7_TX_ADDR                                    (CDC7_USB_BUF_START + 416)
 #define CDC7_EP7_TYPE                                       USB_EP_BULK
 
+
+// Endpoint define for OTG core
+#define CDC7_OTG_MAX_OUT_SIZE                               (64)
+#define CDC7_OTG_CONTROL_EP_NUM                             (1)
+#define CDC7_OTG_OUT_EP_NUM                                 (7)
+// RX FIFO size / 4 > (CONTROL_EP_NUM * 5 + 8) +  (MAX_OUT_SIZE / 4 + 1) + (OUT_EP_NUM*2) + 1 = 45
+#define CDC7_OTG_RX_FIFO_SIZE                               (256)
+#define CDC7_OTG_RX_FIFO_ADDR                               (0)
+// Sum of IN ep max packet size is 216
+// Remain Fifo size is 1024 in bytes, Rx Used 256 bytes 
+#define CDC7_EP0_TX_FIFO_ADDR                               (256)
+#define CDC7_EP0_TX_FIFO_SIZE                               (CDC7_EP0_TX_SIZE * 4)
+#define CDC7_EP1_TX_FIFO_ADDR                               (288)
+#define CDC7_EP1_TX_FIFO_SIZE                               (CDC7_EP1_TX_SIZE * 4)
+#define CDC7_EP2_TX_FIFO_ADDR                               (544)
+#define CDC7_EP2_TX_FIFO_SIZE                               (CDC7_EP2_TX_SIZE * 4)
+#define CDC7_EP3_TX_FIFO_ADDR                               (672)
+#define CDC7_EP3_TX_FIFO_SIZE                               (CDC7_EP3_TX_SIZE * 4)
+#define CDC7_EP4_TX_FIFO_ADDR                               (800)
+#define CDC7_EP4_TX_FIFO_SIZE                               (CDC7_EP4_TX_SIZE * 4)
+#define CDC7_EP5_TX_FIFO_ADDR                               (928)
+#define CDC7_EP5_TX_FIFO_SIZE                               (CDC7_EP5_TX_SIZE * 4)
+#define CDC7_EP6_TX_FIFO_ADDR                               (992)
+#define CDC7_EP6_TX_FIFO_SIZE                               (CDC7_EP6_TX_SIZE * 4)
+#define CDC7_EP7_TX_FIFO_ADDR                               (1056)
+#define CDC7_EP7_TX_FIFO_SIZE                               (CDC7_EP7_TX_SIZE * 4)
+
 // EndPoint max packed sizes
 extern const uint8_t CDC7_txEpMaxSize[];
 #define CDC7_TXEP_MAX_SIZE                                  \
@@ -489,8 +630,8 @@ extern const uint8_t CDC7_rxEpMaxSize[];
 const uint8_t CDC7_rxEpMaxSize[] = \
 {CDC7_EP0_RX_SIZE, CDC7_EP1_RX_SIZE, CDC7_EP2_RX_SIZE, CDC7_EP3_RX_SIZE, CDC7_EP4_RX_SIZE, CDC7_EP5_RX_SIZE, CDC7_EP6_RX_SIZE, CDC7_EP7_RX_SIZE, };
 
-// EndPoints init function
-#define CDC7_TUSB_INIT(dev) \
+// EndPoints init function for USB FS core
+#define CDC7_TUSB_INIT_EP_FS(dev) \
   do{\
     /* Init ep0 */ \
     INIT_EP_BiDirection(dev, PCD_ENDP0, CDC7_EP0_TYPE);  \
@@ -532,12 +673,72 @@ const uint8_t CDC7_rxEpMaxSize[] = \
     SET_TX_ADDR(dev, PCD_ENDP7, CDC7_EP7_TX_ADDR);  \
     SET_RX_ADDR(dev, PCD_ENDP7, CDC7_EP7_RX_ADDR);  \
     SET_RX_CNT(dev, PCD_ENDP7, CDC7_EP7_RX_SIZE);  \
+  }while(0)
+
+
+// EndPoints init function for USB OTG core
+#define CDC7_TUSB_INIT_EP_OTG(dev) \
+  do{\
+    SET_RX_FIFO(dev, CDC7_OTG_RX_FIFO_ADDR, CDC7_OTG_RX_FIFO_SIZE);  \
+    /* Init ep0 */ \
+    INIT_EP_Tx(dev, PCD_ENDP0, CDC7_EP0_TYPE, CDC7_EP0_TX_SIZE);  \
+    SET_TX_FIFO(dev, PCD_ENDP0, CDC7_EP0_TX_FIFO_ADDR, CDC7_EP0_TX_FIFO_SIZE);  \
+    INIT_EP_Rx(dev, PCD_ENDP0, CDC7_EP0_TYPE, CDC7_EP0_RX_SIZE);  \
+    /* Init ep1 */ \
+    INIT_EP_Tx(dev, PCD_ENDP1, CDC7_EP1_TYPE, CDC7_EP1_TX_SIZE);  \
+    SET_TX_FIFO(dev, PCD_ENDP1, CDC7_EP1_TX_FIFO_ADDR, CDC7_EP1_TX_FIFO_SIZE);  \
+    INIT_EP_Rx(dev, PCD_ENDP1, CDC7_EP1_TYPE, CDC7_EP1_RX_SIZE);  \
+    /* Init ep2 */ \
+    INIT_EP_Tx(dev, PCD_ENDP2, CDC7_EP2_TYPE, CDC7_EP2_TX_SIZE);  \
+    SET_TX_FIFO(dev, PCD_ENDP2, CDC7_EP2_TX_FIFO_ADDR, CDC7_EP2_TX_FIFO_SIZE);  \
+    INIT_EP_Rx(dev, PCD_ENDP2, CDC7_EP2_TYPE, CDC7_EP2_RX_SIZE);  \
+    /* Init ep3 */ \
+    INIT_EP_Tx(dev, PCD_ENDP3, CDC7_EP3_TYPE, CDC7_EP3_TX_SIZE);  \
+    SET_TX_FIFO(dev, PCD_ENDP3, CDC7_EP3_TX_FIFO_ADDR, CDC7_EP3_TX_FIFO_SIZE);  \
+    INIT_EP_Rx(dev, PCD_ENDP3, CDC7_EP3_TYPE, CDC7_EP3_RX_SIZE);  \
+    /* Init ep4 */ \
+    INIT_EP_Tx(dev, PCD_ENDP4, CDC7_EP4_TYPE, CDC7_EP4_TX_SIZE);  \
+    SET_TX_FIFO(dev, PCD_ENDP4, CDC7_EP4_TX_FIFO_ADDR, CDC7_EP4_TX_FIFO_SIZE);  \
+    INIT_EP_Rx(dev, PCD_ENDP4, CDC7_EP4_TYPE, CDC7_EP4_RX_SIZE);  \
+    /* Init ep5 */ \
+    INIT_EP_Tx(dev, PCD_ENDP5, CDC7_EP5_TYPE, CDC7_EP5_TX_SIZE);  \
+    SET_TX_FIFO(dev, PCD_ENDP5, CDC7_EP5_TX_FIFO_ADDR, CDC7_EP5_TX_FIFO_SIZE);  \
+    INIT_EP_Rx(dev, PCD_ENDP5, CDC7_EP5_TYPE, CDC7_EP5_RX_SIZE);  \
+    /* Init ep6 */ \
+    INIT_EP_Tx(dev, PCD_ENDP6, CDC7_EP6_TYPE, CDC7_EP6_TX_SIZE);  \
+    SET_TX_FIFO(dev, PCD_ENDP6, CDC7_EP6_TX_FIFO_ADDR, CDC7_EP6_TX_FIFO_SIZE);  \
+    INIT_EP_Rx(dev, PCD_ENDP6, CDC7_EP6_TYPE, CDC7_EP6_RX_SIZE);  \
+    /* Init ep7 */ \
+    INIT_EP_Tx(dev, PCD_ENDP7, CDC7_EP7_TYPE, CDC7_EP7_TX_SIZE);  \
+    SET_TX_FIFO(dev, PCD_ENDP7, CDC7_EP7_TX_FIFO_ADDR, CDC7_EP7_TX_FIFO_SIZE);  \
+    INIT_EP_Rx(dev, PCD_ENDP7, CDC7_EP7_TYPE, CDC7_EP7_RX_SIZE);  \
+  }while(0)
+
+
+// Tiny USB device init function
+#define CDC7_TUSB_INIT_DEVICE(dev) \
+  do{\
     /* Init device features */       \
-    memset(dev, 0, sizeof(*dev));    \
+    memset(dev, 0, TUSB_DEVICE_SIZE);    \
     dev->status = CDC7_DEV_STATUS;         \
     dev->rx_max_size = CDC7_rxEpMaxSize;         \
     dev->tx_max_size = CDC7_txEpMaxSize;         \
     dev->descriptors = &CDC7_descriptors;         \
+  }while(0)
+
+
+#if defined(USB)
+#define CDC7_TUSB_INIT_EP(dev) CDC7_TUSB_INIT_EP_FS(dev)
+#endif
+
+#if defined(USB_OTG_FS) || defined(USB_OTG_HS)
+#define CDC7_TUSB_INIT_EP(dev) CDC7_TUSB_INIT_EP_OTG(dev)
+#endif
+
+#define CDC7_TUSB_INIT(dev) \
+  do{\
+    CDC7_TUSB_INIT_EP(dev);   \
+    CDC7_TUSB_INIT_DEVICE(dev);   \
   }while(0)
 
 // Get End Point count
@@ -559,8 +760,8 @@ const uint8_t CDC7_rxEpMaxSize[] = \
 /////////////////////////////////////////////////////////////////////
 //// EndPoint for device4 define begin
 /////////////////////////////////////////////////////////////////////
-#define HID_VID                                             0x1234
-#define HID_PID                                             0x0011
+#define HID_VID                                             0x2017
+#define HID_PID                                             0x0927
 #define HID_STRING_COUNT                                    (4)
 // Endpoint usage:
 #ifdef HID_BTABLE_ADDRESS
@@ -588,6 +789,21 @@ const uint8_t CDC7_rxEpMaxSize[] = \
 #define HID_EP1_TX_ADDR                                     (HID_USB_BUF_START + 80)
 #define HID_EP1_TYPE                                        USB_EP_INTERRUPT
 
+
+// Endpoint define for OTG core
+#define HID_OTG_MAX_OUT_SIZE                                (64)
+#define HID_OTG_CONTROL_EP_NUM                              (1)
+#define HID_OTG_OUT_EP_NUM                                  (1)
+// RX FIFO size / 4 > (CONTROL_EP_NUM * 5 + 8) +  (MAX_OUT_SIZE / 4 + 1) + (OUT_EP_NUM*2) + 1 = 33
+#define HID_OTG_RX_FIFO_SIZE                                (256)
+#define HID_OTG_RX_FIFO_ADDR                                (0)
+// Sum of IN ep max packet size is 72
+// Remain Fifo size is 1024 in bytes, Rx Used 256 bytes 
+#define HID_EP0_TX_FIFO_ADDR                                (256)
+#define HID_EP0_TX_FIFO_SIZE                                (HID_EP0_TX_SIZE * 7)
+#define HID_EP1_TX_FIFO_ADDR                                (312)
+#define HID_EP1_TX_FIFO_SIZE                                (HID_EP1_TX_SIZE * 7)
+
 // EndPoint max packed sizes
 extern const uint8_t HID_txEpMaxSize[];
 #define HID_TXEP_MAX_SIZE                                   \
@@ -598,8 +814,8 @@ extern const uint8_t HID_rxEpMaxSize[];
 const uint8_t HID_rxEpMaxSize[] = \
 {HID_EP0_RX_SIZE, HID_EP1_RX_SIZE, };
 
-// EndPoints init function
-#define HID_TUSB_INIT(dev) \
+// EndPoints init function for USB FS core
+#define HID_TUSB_INIT_EP_FS(dev) \
   do{\
     /* Init ep0 */ \
     INIT_EP_BiDirection(dev, PCD_ENDP0, HID_EP0_TYPE);  \
@@ -611,12 +827,48 @@ const uint8_t HID_rxEpMaxSize[] = \
     SET_TX_ADDR(dev, PCD_ENDP1, HID_EP1_TX_ADDR);  \
     SET_RX_ADDR(dev, PCD_ENDP1, HID_EP1_RX_ADDR);  \
     SET_RX_CNT(dev, PCD_ENDP1, HID_EP1_RX_SIZE);  \
+  }while(0)
+
+
+// EndPoints init function for USB OTG core
+#define HID_TUSB_INIT_EP_OTG(dev) \
+  do{\
+    SET_RX_FIFO(dev, HID_OTG_RX_FIFO_ADDR, HID_OTG_RX_FIFO_SIZE);  \
+    /* Init ep0 */ \
+    INIT_EP_Tx(dev, PCD_ENDP0, HID_EP0_TYPE, HID_EP0_TX_SIZE);  \
+    SET_TX_FIFO(dev, PCD_ENDP0, HID_EP0_TX_FIFO_ADDR, HID_EP0_TX_FIFO_SIZE);  \
+    INIT_EP_Rx(dev, PCD_ENDP0, HID_EP0_TYPE, HID_EP0_RX_SIZE);  \
+    /* Init ep1 */ \
+    INIT_EP_Tx(dev, PCD_ENDP1, HID_EP1_TYPE, HID_EP1_TX_SIZE);  \
+    SET_TX_FIFO(dev, PCD_ENDP1, HID_EP1_TX_FIFO_ADDR, HID_EP1_TX_FIFO_SIZE);  \
+    INIT_EP_Rx(dev, PCD_ENDP1, HID_EP1_TYPE, HID_EP1_RX_SIZE);  \
+  }while(0)
+
+
+// Tiny USB device init function
+#define HID_TUSB_INIT_DEVICE(dev) \
+  do{\
     /* Init device features */       \
-    memset(dev, 0, sizeof(*dev));    \
+    memset(dev, 0, TUSB_DEVICE_SIZE);    \
     dev->status = HID_DEV_STATUS;         \
     dev->rx_max_size = HID_rxEpMaxSize;         \
     dev->tx_max_size = HID_txEpMaxSize;         \
     dev->descriptors = &HID_descriptors;         \
+  }while(0)
+
+
+#if defined(USB)
+#define HID_TUSB_INIT_EP(dev) HID_TUSB_INIT_EP_FS(dev)
+#endif
+
+#if defined(USB_OTG_FS) || defined(USB_OTG_HS)
+#define HID_TUSB_INIT_EP(dev) HID_TUSB_INIT_EP_OTG(dev)
+#endif
+
+#define HID_TUSB_INIT(dev) \
+  do{\
+    HID_TUSB_INIT_EP(dev);   \
+    HID_TUSB_INIT_DEVICE(dev);   \
   }while(0)
 
 // Get End Point count
@@ -638,8 +890,8 @@ const uint8_t HID_rxEpMaxSize[] = \
 /////////////////////////////////////////////////////////////////////
 //// EndPoint for device5 define begin
 /////////////////////////////////////////////////////////////////////
-#define HID7_VID                                            0x1234
-#define HID7_PID                                            0x0017
+#define HID7_VID                                            0x2017
+#define HID7_PID                                            0x0928
 #define HID7_STRING_COUNT                                   (4)
 // Endpoint usage:
 #ifdef HID7_BTABLE_ADDRESS
@@ -709,6 +961,33 @@ const uint8_t HID_rxEpMaxSize[] = \
 #define HID7_EP7_TX_ADDR                                    (HID7_USB_BUF_START + 416)
 #define HID7_EP7_TYPE                                       USB_EP_INTERRUPT
 
+
+// Endpoint define for OTG core
+#define HID7_OTG_MAX_OUT_SIZE                               (64)
+#define HID7_OTG_CONTROL_EP_NUM                             (1)
+#define HID7_OTG_OUT_EP_NUM                                 (7)
+// RX FIFO size / 4 > (CONTROL_EP_NUM * 5 + 8) +  (MAX_OUT_SIZE / 4 + 1) + (OUT_EP_NUM*2) + 1 = 45
+#define HID7_OTG_RX_FIFO_SIZE                               (256)
+#define HID7_OTG_RX_FIFO_ADDR                               (0)
+// Sum of IN ep max packet size is 216
+// Remain Fifo size is 1024 in bytes, Rx Used 256 bytes 
+#define HID7_EP0_TX_FIFO_ADDR                               (256)
+#define HID7_EP0_TX_FIFO_SIZE                               (HID7_EP0_TX_SIZE * 4)
+#define HID7_EP1_TX_FIFO_ADDR                               (288)
+#define HID7_EP1_TX_FIFO_SIZE                               (HID7_EP1_TX_SIZE * 4)
+#define HID7_EP2_TX_FIFO_ADDR                               (544)
+#define HID7_EP2_TX_FIFO_SIZE                               (HID7_EP2_TX_SIZE * 4)
+#define HID7_EP3_TX_FIFO_ADDR                               (672)
+#define HID7_EP3_TX_FIFO_SIZE                               (HID7_EP3_TX_SIZE * 4)
+#define HID7_EP4_TX_FIFO_ADDR                               (800)
+#define HID7_EP4_TX_FIFO_SIZE                               (HID7_EP4_TX_SIZE * 4)
+#define HID7_EP5_TX_FIFO_ADDR                               (928)
+#define HID7_EP5_TX_FIFO_SIZE                               (HID7_EP5_TX_SIZE * 4)
+#define HID7_EP6_TX_FIFO_ADDR                               (992)
+#define HID7_EP6_TX_FIFO_SIZE                               (HID7_EP6_TX_SIZE * 4)
+#define HID7_EP7_TX_FIFO_ADDR                               (1056)
+#define HID7_EP7_TX_FIFO_SIZE                               (HID7_EP7_TX_SIZE * 4)
+
 // EndPoint max packed sizes
 extern const uint8_t HID7_txEpMaxSize[];
 #define HID7_TXEP_MAX_SIZE                                  \
@@ -719,8 +998,8 @@ extern const uint8_t HID7_rxEpMaxSize[];
 const uint8_t HID7_rxEpMaxSize[] = \
 {HID7_EP0_RX_SIZE, HID7_EP1_RX_SIZE, HID7_EP2_RX_SIZE, HID7_EP3_RX_SIZE, HID7_EP4_RX_SIZE, HID7_EP5_RX_SIZE, HID7_EP6_RX_SIZE, HID7_EP7_RX_SIZE, };
 
-// EndPoints init function
-#define HID7_TUSB_INIT(dev) \
+// EndPoints init function for USB FS core
+#define HID7_TUSB_INIT_EP_FS(dev) \
   do{\
     /* Init ep0 */ \
     INIT_EP_BiDirection(dev, PCD_ENDP0, HID7_EP0_TYPE);  \
@@ -762,12 +1041,72 @@ const uint8_t HID7_rxEpMaxSize[] = \
     SET_TX_ADDR(dev, PCD_ENDP7, HID7_EP7_TX_ADDR);  \
     SET_RX_ADDR(dev, PCD_ENDP7, HID7_EP7_RX_ADDR);  \
     SET_RX_CNT(dev, PCD_ENDP7, HID7_EP7_RX_SIZE);  \
+  }while(0)
+
+
+// EndPoints init function for USB OTG core
+#define HID7_TUSB_INIT_EP_OTG(dev) \
+  do{\
+    SET_RX_FIFO(dev, HID7_OTG_RX_FIFO_ADDR, HID7_OTG_RX_FIFO_SIZE);  \
+    /* Init ep0 */ \
+    INIT_EP_Tx(dev, PCD_ENDP0, HID7_EP0_TYPE, HID7_EP0_TX_SIZE);  \
+    SET_TX_FIFO(dev, PCD_ENDP0, HID7_EP0_TX_FIFO_ADDR, HID7_EP0_TX_FIFO_SIZE);  \
+    INIT_EP_Rx(dev, PCD_ENDP0, HID7_EP0_TYPE, HID7_EP0_RX_SIZE);  \
+    /* Init ep1 */ \
+    INIT_EP_Tx(dev, PCD_ENDP1, HID7_EP1_TYPE, HID7_EP1_TX_SIZE);  \
+    SET_TX_FIFO(dev, PCD_ENDP1, HID7_EP1_TX_FIFO_ADDR, HID7_EP1_TX_FIFO_SIZE);  \
+    INIT_EP_Rx(dev, PCD_ENDP1, HID7_EP1_TYPE, HID7_EP1_RX_SIZE);  \
+    /* Init ep2 */ \
+    INIT_EP_Tx(dev, PCD_ENDP2, HID7_EP2_TYPE, HID7_EP2_TX_SIZE);  \
+    SET_TX_FIFO(dev, PCD_ENDP2, HID7_EP2_TX_FIFO_ADDR, HID7_EP2_TX_FIFO_SIZE);  \
+    INIT_EP_Rx(dev, PCD_ENDP2, HID7_EP2_TYPE, HID7_EP2_RX_SIZE);  \
+    /* Init ep3 */ \
+    INIT_EP_Tx(dev, PCD_ENDP3, HID7_EP3_TYPE, HID7_EP3_TX_SIZE);  \
+    SET_TX_FIFO(dev, PCD_ENDP3, HID7_EP3_TX_FIFO_ADDR, HID7_EP3_TX_FIFO_SIZE);  \
+    INIT_EP_Rx(dev, PCD_ENDP3, HID7_EP3_TYPE, HID7_EP3_RX_SIZE);  \
+    /* Init ep4 */ \
+    INIT_EP_Tx(dev, PCD_ENDP4, HID7_EP4_TYPE, HID7_EP4_TX_SIZE);  \
+    SET_TX_FIFO(dev, PCD_ENDP4, HID7_EP4_TX_FIFO_ADDR, HID7_EP4_TX_FIFO_SIZE);  \
+    INIT_EP_Rx(dev, PCD_ENDP4, HID7_EP4_TYPE, HID7_EP4_RX_SIZE);  \
+    /* Init ep5 */ \
+    INIT_EP_Tx(dev, PCD_ENDP5, HID7_EP5_TYPE, HID7_EP5_TX_SIZE);  \
+    SET_TX_FIFO(dev, PCD_ENDP5, HID7_EP5_TX_FIFO_ADDR, HID7_EP5_TX_FIFO_SIZE);  \
+    INIT_EP_Rx(dev, PCD_ENDP5, HID7_EP5_TYPE, HID7_EP5_RX_SIZE);  \
+    /* Init ep6 */ \
+    INIT_EP_Tx(dev, PCD_ENDP6, HID7_EP6_TYPE, HID7_EP6_TX_SIZE);  \
+    SET_TX_FIFO(dev, PCD_ENDP6, HID7_EP6_TX_FIFO_ADDR, HID7_EP6_TX_FIFO_SIZE);  \
+    INIT_EP_Rx(dev, PCD_ENDP6, HID7_EP6_TYPE, HID7_EP6_RX_SIZE);  \
+    /* Init ep7 */ \
+    INIT_EP_Tx(dev, PCD_ENDP7, HID7_EP7_TYPE, HID7_EP7_TX_SIZE);  \
+    SET_TX_FIFO(dev, PCD_ENDP7, HID7_EP7_TX_FIFO_ADDR, HID7_EP7_TX_FIFO_SIZE);  \
+    INIT_EP_Rx(dev, PCD_ENDP7, HID7_EP7_TYPE, HID7_EP7_RX_SIZE);  \
+  }while(0)
+
+
+// Tiny USB device init function
+#define HID7_TUSB_INIT_DEVICE(dev) \
+  do{\
     /* Init device features */       \
-    memset(dev, 0, sizeof(*dev));    \
+    memset(dev, 0, TUSB_DEVICE_SIZE);    \
     dev->status = HID7_DEV_STATUS;         \
     dev->rx_max_size = HID7_rxEpMaxSize;         \
     dev->tx_max_size = HID7_txEpMaxSize;         \
     dev->descriptors = &HID7_descriptors;         \
+  }while(0)
+
+
+#if defined(USB)
+#define HID7_TUSB_INIT_EP(dev) HID7_TUSB_INIT_EP_FS(dev)
+#endif
+
+#if defined(USB_OTG_FS) || defined(USB_OTG_HS)
+#define HID7_TUSB_INIT_EP(dev) HID7_TUSB_INIT_EP_OTG(dev)
+#endif
+
+#define HID7_TUSB_INIT(dev) \
+  do{\
+    HID7_TUSB_INIT_EP(dev);   \
+    HID7_TUSB_INIT_DEVICE(dev);   \
   }while(0)
 
 // Get End Point count

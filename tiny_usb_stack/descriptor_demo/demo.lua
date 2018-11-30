@@ -5,9 +5,10 @@ Device {
     strManufacture = "tiny usb",
     strProduct = "tiny usb bulk demo",
     strSerial = "tu123456",
-    idVendor = 0x2017,
-    idProduct = 0x0924,
+    idVendor = 0x4322,
+    idProduct = 0x4321,
     prefix = "BULK",
+    bMaxPacketSize = 8,
     Config {
         bMaxPower = 100,
         SelfPower = true,
@@ -32,8 +33,8 @@ Device {
     strManufacture = "tiny usb",
     strProduct = "tiny usb cdc demo",
     strSerial = "tu123456",
-    idVendor = 0x2017,    -- VID PID for Ateml CDC
-    idProduct = 0x0925,
+    idVendor = 0x03EB,    -- VID PID for Ateml CDC
+    idProduct = 0x6124,
     prefix = "CDC",
     Config {
         bMaxPower = 100,

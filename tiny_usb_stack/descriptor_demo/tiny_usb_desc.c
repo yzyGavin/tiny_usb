@@ -1,7 +1,7 @@
 /*
  * Name   :  tiny_usb_desc.c
  * Author :  admin@xtoolbox.org
- * Date   :  2018-11-16 17:58:46
+ * Date   :  2018-11-30 18:08:17
  * Desc   :  This file is auto generate by the tiny_usb script tool
  *           Visit https://github.com/xtoolbox/tiny_usb for more info
  */
@@ -11,9 +11,6 @@
   Content type is lua script:
   ------------- lua script begin ------------
 -- DEMO USB descriptor for tiny USB stack
-require("usb_cdc_acm")
-require("usb_hid")
-require("usb_wcid")
 return {
 -- Demo descriptor of Bulk device
 Device {
@@ -23,6 +20,7 @@ Device {
     idVendor = 0x4322,
     idProduct = 0x4321,
     prefix = "BULK",
+    bMaxPacketSize = 8,
     Config {
         bMaxPower = 100,
         SelfPower = true,
@@ -67,8 +65,8 @@ Device {
     strManufacture = "tiny usb",
     strProduct = "tiny usb cdc7 demo",
     strSerial = "tu123456",
-    idVendor = 0x1234,   -- Win10 can drive the multiple CDC, VID PID can be any one
-    idProduct = 0x0007,
+    idVendor = 0x2017,   -- Win10 can drive the multiple CDC, VID PID can be any one
+    idProduct = 0x0926,
     prefix = "CDC7",
     Config {
         bMaxPower = 100,
@@ -117,8 +115,8 @@ Device {
     strManufacture = "tiny usb",
     strProduct = "tiny usb HID demo",
     strSerial = "tu123456",
-    idVendor = 0x1234,
-    idProduct = 0x0011,
+    idVendor = 0x2017,
+    idProduct = 0x0927,
     prefix = "HID",
     Config {
         bMaxPower = 100,
@@ -140,8 +138,8 @@ Device {
     strManufacture = "tiny usb",
     strProduct = "tiny usb 7 HID demo",
     strSerial = "tu123456",
-    idVendor = 0x1234,
-    idProduct = 0x0017,
+    idVendor = 0x2017,
+    idProduct = 0x0928,
     prefix = "HID7",
     Config {
         USB_HID{
@@ -196,7 +194,7 @@ __ALIGN(2)  const uint8_t BULK_DeviceDescriptor [18] = {
     0x00,                                         /* bDeviceClass */
     0x00,                                         /* bDeviceSubClass */
     0x00,                                         /* bDeviceProtocol */
-    0x40,                                         /* bMaxPacketSize */
+    0x08,                                         /* bMaxPacketSize */
     LOBYTE(BULK_VID), HIBYTE(BULK_VID),           /* idVendor */
     LOBYTE(BULK_PID), HIBYTE(BULK_PID),           /* idProduct */
     0x00, 0x01,                                   /* bcdDevice */
@@ -429,8 +427,8 @@ WEAK __ALIGN(2)  const uint8_t BULK_WCIDProperties [224] = {
     0x01, 0x00,                                   /* wCount */
     /*WCID property field */
   /* DeviceInterfaceGUIDs = 
-       {c1ec0d12-f598-5584-0328-c4600b285cda}
-       {de262ae2-44a6-6ed4-a3b4-1d3a511a9986}  */
+       {32d68452-31d6-bac8-855a-27c822ee4f86}
+       {4f12a222-80e6-d41a-25e6-80a268e08c32}  */
     0xd6, 0x00, 0x00, 0x00,                       /* dwSize */
     0x07, 0x00, 0x00, 0x00,                       /* dwPropertyDataType */
     0x2a, 0x00,                                   /* wPropertyNameLength */
@@ -441,25 +439,25 @@ WEAK __ALIGN(2)  const uint8_t BULK_WCIDProperties [224] = {
     'U', 0x00, 'I', 0x00, 'D', 0x00, 's', 0x00, 
     0x00, 0x00, 
     0x9e, 0x00, 0x00, 0x00,                       /* dwPropertyDataLength */
-    '{', 0x00, 'c', 0x00, '1', 0x00, 'e', 0x00, 
-    'c', 0x00, '0', 0x00, 'd', 0x00, '1', 0x00, 
-    '2', 0x00, '-', 0x00, 'f', 0x00, '5', 0x00, 
-    '9', 0x00, '8', 0x00, '-', 0x00, '5', 0x00, 
-    '5', 0x00, '8', 0x00, '4', 0x00, '-', 0x00, 
-    '0', 0x00, '3', 0x00, '2', 0x00, '8', 0x00, 
-    '-', 0x00, 'c', 0x00, '4', 0x00, '6', 0x00, 
-    '0', 0x00, '0', 0x00, 'b', 0x00, '2', 0x00, 
-    '8', 0x00, '5', 0x00, 'c', 0x00, 'd', 0x00, 
-    'a', 0x00, '}', 0x00, 0x00, 0x00, '{', 0x00, 
-    'd', 0x00, 'e', 0x00, '2', 0x00, '6', 0x00, 
-    '2', 0x00, 'a', 0x00, 'e', 0x00, '2', 0x00, 
-    '-', 0x00, '4', 0x00, '4', 0x00, 'a', 0x00, 
-    '6', 0x00, '-', 0x00, '6', 0x00, 'e', 0x00, 
-    'd', 0x00, '4', 0x00, '-', 0x00, 'a', 0x00, 
-    '3', 0x00, 'b', 0x00, '4', 0x00, '-', 0x00, 
-    '1', 0x00, 'd', 0x00, '3', 0x00, 'a', 0x00, 
-    '5', 0x00, '1', 0x00, '1', 0x00, 'a', 0x00, 
-    '9', 0x00, '9', 0x00, '8', 0x00, '6', 0x00, 
+    '{', 0x00, '3', 0x00, '2', 0x00, 'd', 0x00, 
+    '6', 0x00, '8', 0x00, '4', 0x00, '5', 0x00, 
+    '2', 0x00, '-', 0x00, '3', 0x00, '1', 0x00, 
+    'd', 0x00, '6', 0x00, '-', 0x00, 'b', 0x00, 
+    'a', 0x00, 'c', 0x00, '8', 0x00, '-', 0x00, 
+    '8', 0x00, '5', 0x00, '5', 0x00, 'a', 0x00, 
+    '-', 0x00, '2', 0x00, '7', 0x00, 'c', 0x00, 
+    '8', 0x00, '2', 0x00, '2', 0x00, 'e', 0x00, 
+    'e', 0x00, '4', 0x00, 'f', 0x00, '8', 0x00, 
+    '6', 0x00, '}', 0x00, 0x00, 0x00, '{', 0x00, 
+    '4', 0x00, 'f', 0x00, '1', 0x00, '2', 0x00, 
+    'a', 0x00, '2', 0x00, '2', 0x00, '2', 0x00, 
+    '-', 0x00, '8', 0x00, '0', 0x00, 'e', 0x00, 
+    '6', 0x00, '-', 0x00, 'd', 0x00, '4', 0x00, 
+    '1', 0x00, 'a', 0x00, '-', 0x00, '2', 0x00, 
+    '5', 0x00, 'e', 0x00, '6', 0x00, '-', 0x00, 
+    '8', 0x00, '0', 0x00, 'a', 0x00, '2', 0x00, 
+    '6', 0x00, '8', 0x00, 'e', 0x00, '0', 0x00, 
+    '8', 0x00, 'c', 0x00, '3', 0x00, '2', 0x00, 
     '}', 0x00, 0x00, 0x00, 0x00, 0x00, 
 };
 
