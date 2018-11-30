@@ -51,7 +51,7 @@ void tusb_class_request(tusb_device_t* dev, tusb_setup_packet* setup_req)
   if(setup_req->wLength > 0){
     if (setup_req->bmRequestType & 0x80){
     }else{
-      dev->Ep[0].rx_buf = hid_cmd;
+      tusb_set_recv_buffer(dev, 0, hid_cmd, setup_req->wLength);
       dev->rx0_callback = HID_DataoutRequest;
     }
   }else{

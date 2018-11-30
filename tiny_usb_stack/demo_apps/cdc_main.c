@@ -60,6 +60,7 @@ void tusb_reconfig(tusb_device_t* dev)
   CDC_TUSB_INIT(dev);
   // setup recv buffer for rx end point
   tusb_set_recv_buffer(dev, RX_EP, buf, sizeof(buf));
+  set_rx_valid(dev, RX_EP);
 }
 
 void delay_ms(uint32_t ms)
@@ -69,19 +70,40 @@ void delay_ms(uint32_t ms)
     for(j=0;j<20;++j);
 }
 
+#if defined(USB_OTG_FS)
+tusb_device_t tusb_dev_otg_fs;
+#endif
+#if defined(USB_OTG_HS)
+tusb_device_t tusb_dev_otg_hs;
+#endif
+#if defined(USB)
 tusb_device_t tusb_dev;
+#endif
+
 int main(void)
 {
-  tusb_close_device(&tusb_dev);
+  tusb_device_t* dev;
+#if defined(USB)
+  dev = &tusb_dev;
+#endif
+#if defined(USB_OTG_HS)
+  tusb_dev_otg_hs.handle = USB_OTG_HS;
+  dev = &tusb_dev_otg_hs;
+#endif
+#if defined(USB_OTG_FS)
+  tusb_dev_otg_fs.handle = USB_OTG_FS;
+  dev = &tusb_dev_otg_fs;
+#endif
+  tusb_close_device(dev);
   delay_ms(100);  
-  tusb_open_device(&tusb_dev);
+  tusb_open_device(dev);
   while(1){
     if(recv_count){
       // every data plus 1 and echo back
       for(int i=0;i<recv_count;i++){
         buf[i]++;
       }
-      tusb_send_data(&tusb_dev, TX_EP, buf, recv_count);
+      tusb_send_data(dev, TX_EP, buf, recv_count);
       recv_count = 0; 
     }
   }
