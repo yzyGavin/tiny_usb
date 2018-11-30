@@ -86,9 +86,9 @@ struct _tusb_device{
 
 
 #if defined(USB_CORE_HANDLE_TYPE)
-#define  DEV_SIZE   (sizeof(tusb_device_t) - sizeof(USB_CORE_HANDLE_TYPE))
+#define  TUSB_DEVICE_SIZE   (sizeof(tusb_device_t) - sizeof(USB_CORE_HANDLE_TYPE))
 #else
-#define  DEV_SIZE   sizeof(tusb_device_t)
+#define  TUSB_DEVICE_SIZE   sizeof(tusb_device_t)
 #endif
 
 

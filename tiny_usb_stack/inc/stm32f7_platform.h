@@ -48,20 +48,36 @@
 #define USB_OTG_FS_MAX_EP_NUM   6
 #define USB_OTG_HS_MAX_EP_NUM   9
 
-#define   USB_CORE_HANDLE_TYPE        PCD_TypeDef*
-
+#if defined(USB_OTG_FS) && defined(USB_OTG_HS)
+#define  USB_CORE_HANDLE_TYPE        PCD_TypeDef*
 #define  GetUSB(dev)           ((dev)->handle)
+#endif
 
-// In OTG core, a fifo is used to handle the rx/tx data, all rx ep share a same fifo, each tx ep has a fifo
 
-#define  USB_DEVICE(dev)       ((USB_OTG_DeviceTypeDef *)((uint32_t )GetUSB(dev) + USB_OTG_DEVICE_BASE))
-#define USB_INEP(dev, i)    ((USB_OTG_INEndpointTypeDef *)((uint32_t)GetUSB(dev) + USB_OTG_IN_ENDPOINT_BASE + (i)*USB_OTG_EP_REG_SIZE))
-#define USB_OUTEP(dev, i)   ((USB_OTG_OUTEndpointTypeDef *)((uint32_t)GetUSB(dev) + USB_OTG_OUT_ENDPOINT_BASE + (i)*USB_OTG_EP_REG_SIZE))  
 
-#define  INIT_EP_BiDirection(dev, bEpNum, type, maxpacket)  \
-do{\
-  init_ep_tx(dev, bEpNum, type, maxpacket);\
-  init_ep_rx(dev, bEpNum, type, maxpacket);\
+#define init_ep_tx(dev, EPn, type, mps)                                                    \
+do{                                                                                        \
+  PCD_TypeDef *USBx = GetUSB(dev);                                                         \
+  uint32_t maxpacket = mps;                                                                \
+  USB_OTG_INEndpointTypeDef* INEp = USBx_INEP(EPn);                                        \
+  if(USBx == USB_OTG_FS && EPn == 0){                                                      \
+    maxpacket = __CLZ(maxpacket) - 25;                                                     \
+  }                                                                                        \
+  USBx_DEVICE->DAINTMSK |=  ( (USB_OTG_DAINTMSK_IEPM) & ( (1 << (EPn))) );                 \
+  INEp->DIEPCTL |= ((maxpacket & USB_OTG_DIEPCTL_MPSIZ ) | (type << 18 ) |                 \
+    ((EPn) << 22 ) | (USB_OTG_DIEPCTL_SD0PID_SEVNFRM) | (USB_OTG_DIEPCTL_USBAEP));         \
+}while(0)
+
+#define init_ep_rx(dev, EPn, type, mps)                                                    \
+do{                                                                                        \
+  PCD_TypeDef *USBx = GetUSB(dev);                                                         \
+  uint32_t maxpacket = mps;                                                                \
+  if(EPn == 0){                                                                            \
+    maxpacket = __CLZ(maxpacket) - 25;                                                     \
+  }                                                                                        \
+  USBx_DEVICE->DAINTMSK |=  ( (USB_OTG_DAINTMSK_OEPM) & ( (1 << (EPn))<<16 ) );            \
+  USBx_OUTEP(EPn)->DOEPCTL |= ((maxpacket & USB_OTG_DOEPCTL_MPSIZ ) | (type << 18 ) |      \
+    (USB_OTG_DOEPCTL_SD0PID_SEVNFRM) | (USB_OTG_DIEPCTL_USBAEP));                          \
 }while(0)
 
 #define INIT_EP_Tx(dev, bEpNum, type, maxpacket)  \
@@ -74,22 +90,20 @@ do{\
   init_ep_rx(dev, bEpNum, type, maxpacket);\
 }while(0)
 
+// In OTG core, a fifo is used to handle the rx/tx data, all rx ep share a same fifo, each tx ep has a fifo
 
-#define  SET_TX_ADDR(dev, bEpNum, addr, size) \
+#define  SET_TX_FIFO(dev, bEpNum, addr, size) \
 do{\
   if(bEpNum == 0){\
     GetUSB(dev)->DIEPTXF0_HNPTXFSIZ = (uint32_t)(((uint32_t)( (size)/4) << 16) | ( (addr)/4));\
   }else{\
-    GetUSB(dev)->DIEPTXF[bEpNum - 1] = (uint32_t)(((uint32_t)( (size)/4) << 16) | ( (addr)/4));\
+    GetUSB(dev)->DIEPTXF[bEpNum==0?0: bEpNum- 1] = (uint32_t)(((uint32_t)( (size)/4) << 16) | ( (addr)/4));\
   }\
 }while(0)
 
-// only set for ep0, all rx share one fifo
-#define  SET_RX_ADDR(dev, bEpNum, addr, size) \
+#define  SET_RX_FIFO(dev, addr, size) \
   do{\
-    if(bEpNum == 0){\
-      GetUSB(dev)->GRXFSIZ = (size/4);\
-    }\
+    GetUSB(dev)->GRXFSIZ = (size/4);\
   }while(0)
 
 #endif

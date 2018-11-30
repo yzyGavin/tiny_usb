@@ -69,39 +69,15 @@ uint32_t get_max_in_packet_size(PCD_TypeDef* USBx, uint8_t EPn);
 void tusb_reconfig(tusb_device_t* dev)
 {
   // call the BULK device init macro
-#if defined(USB_OTG_FS) || defined(USB_OTG_HS)
-  INIT_EP_BiDirection(dev, PCD_ENDP0, BULK_EP0_TYPE, BULK_EP0_TX_SIZE);
-  SET_RX_ADDR(dev, PCD_ENDP0, BULK_EP0_RX_ADDR, 512);
-  SET_TX_ADDR(dev, PCD_ENDP0, 512, 256);
-  
-  INIT_EP_Tx(dev, PCD_ENDP1, BULK_EP1_TYPE, BULK_EP3_TX_SIZE);
-  SET_TX_ADDR(dev, PCD_ENDP1, 512+256*1, 256);
-  
-  INIT_EP_Rx(dev, PCD_ENDP2, BULK_EP2_TYPE, BULK_EP4_RX_SIZE);
-  
-  INIT_EP_Tx(dev, PCD_ENDP3, BULK_EP3_TYPE, BULK_EP3_TX_SIZE);
-  SET_TX_ADDR(dev, PCD_ENDP3, 512+256*2, 256);
-  
-  INIT_EP_Rx(dev, PCD_ENDP4, BULK_EP4_TYPE, BULK_EP4_RX_SIZE);
-  
-  memset(dev, 0, DEV_SIZE);
-  dev->status = BULK_DEV_STATUS;
-  dev->rx_max_size = BULK_rxEpMaxSize;
-  dev->tx_max_size = BULK_txEpMaxSize;
-  dev->descriptors = &BULK_descriptors;
-#else
   BULK_TUSB_INIT(dev);
-#endif
   
   // setup recv buffer for rx end point
   tusb_set_recv_buffer(dev, RX_EP, buf, sizeof(buf));
   tusb_set_recv_buffer(dev, RX_EP1, buf1, sizeof(buf1));
   
-#if defined(USB_OTG_FS) || defined(USB_OTG_HS)  
-  // OTG core need enable rx ep after buffer set
+  // enable rx ep after buffer set
   set_rx_valid(dev, RX_EP);
   set_rx_valid(dev, RX_EP1);
-#endif
 }
 
 void delay_ms(uint32_t ms)
@@ -117,11 +93,16 @@ tusb_device_t tusb_dev_otg_fs;
 #if defined(USB_OTG_HS)
 tusb_device_t tusb_dev_otg_hs;
 #endif
+#if defined(USB)
 tusb_device_t tusb_dev;
+#endif
 
 int main(void)
 {
-  tusb_device_t* dev = &tusb_dev;
+  tusb_device_t* dev;
+#if defined(USB)
+  dev = &tusb_dev;
+#endif
 #if defined(USB_OTG_HS)
   tusb_dev_otg_hs.handle = USB_OTG_HS;
   dev = &tusb_dev_otg_hs;
@@ -144,7 +125,7 @@ int main(void)
     }
     
     if(recv_count1){
-      // every data plus 1 and echo back
+      // every data plus 2 and echo back
       for(int i=0;i<recv_count1;i++){
         buf1[i]+=2;
       }

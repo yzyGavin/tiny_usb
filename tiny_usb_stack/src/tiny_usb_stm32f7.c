@@ -243,32 +243,3 @@ void set_rx_valid(tusb_device_t* dev, uint8_t EPn)
 }
 
 
-void init_ep_tx(tusb_device_t* dev, uint8_t EPn, uint32_t type, uint32_t maxpacket)
-{
-  PCD_TypeDef *USBx = dev->handle;
-  USB_OTG_INEndpointTypeDef* INEp = USBx_INEP(EPn);
-  if(USBx == USB_OTG_FS && EPn == 0){
-    maxpacket = __CLZ(maxpacket) - 25;
-  }
-  USBx_DEVICE->DAINTMSK |=  ( (USB_OTG_DAINTMSK_IEPM) & ( (1 << (EPn))) );
-  //if (((INEp->DIEPCTL) & USB_OTG_DIEPCTL_USBAEP) == 0){
-  // Force to set EP0
-      INEp->DIEPCTL |= ((maxpacket & USB_OTG_DIEPCTL_MPSIZ ) | (type << 18 ) |
-        ((EPn) << 22 ) | (USB_OTG_DIEPCTL_SD0PID_SEVNFRM) | (USB_OTG_DIEPCTL_USBAEP));
-  //}
-}
-
-void init_ep_rx(tusb_device_t* dev, uint8_t EPn, uint32_t type, uint32_t maxpacket)
-{
-  PCD_TypeDef *USBx = dev->handle;
-  if(EPn == 0){
-    maxpacket = __CLZ(maxpacket) - 25;
-  }
-  USBx_DEVICE->DAINTMSK |=  ( (USB_OTG_DAINTMSK_OEPM) & ( (1 << (EPn))<<16 ) );
-  //if (((USBx_OUTEP(EPn)->DOEPCTL) & USB_OTG_DOEPCTL_USBAEP) == 0){
-  // Force to set EP0
-      USBx_OUTEP(EPn)->DOEPCTL |= ((maxpacket & USB_OTG_DOEPCTL_MPSIZ ) | (type << 18 ) |
-        (USB_OTG_DOEPCTL_SD0PID_SEVNFRM) | (USB_OTG_DIEPCTL_USBAEP));
-  //}
-}
-

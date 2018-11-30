@@ -272,7 +272,7 @@ void tusb_open_device(tusb_device_t* dev)
   USBx_DEVICE->DAINT = 0xFFFFFFFF;
   USBx_DEVICE->DAINTMSK = 0;
   
-  uint32_t ep_count = USBx == USB_OTG_FS ? 6 : 9;
+  uint32_t ep_count = USBx == USB_OTG_FS ? USB_OTG_FS_MAX_EP_NUM : USB_OTG_HS_MAX_EP_NUM;
   
   for (i = 0; i < ep_count ; i++){
     if ((USBx_INEP(i)->DIEPCTL & USB_OTG_DIEPCTL_EPENA) == USB_OTG_DIEPCTL_EPENA){
