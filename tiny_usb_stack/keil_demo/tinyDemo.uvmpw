@@ -17,6 +17,10 @@
 
   <project>
     <PathAndName>.\stm32f76x.uvprojx</PathAndName>
+  </project>
+
+  <project>
+    <PathAndName>.\stm32f73x.uvprojx</PathAndName>
     <NodeIsActive>1</NodeIsActive>
     <NodeIsExpanded>1</NodeIsExpanded>
   </project>

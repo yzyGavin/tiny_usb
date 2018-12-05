@@ -48,14 +48,14 @@
             <NotGenerated>0</NotGenerated>
             <InvalidFlash>1</InvalidFlash>
           </TargetStatus>
-          <OutputDirectory>.\out\f7xx_bulk\</OutputDirectory>
+          <OutputDirectory>.\out\f73x_bulk\</OutputDirectory>
           <OutputName>stm32f767</OutputName>
           <CreateExecutable>1</CreateExecutable>
           <CreateLib>0</CreateLib>
           <CreateHexFile>1</CreateHexFile>
           <DebugInformation>1</DebugInformation>
           <BrowseInformation>1</BrowseInformation>
-          <ListingPath></ListingPath>
+          <ListingPath>.\out\f73x_bulk\</ListingPath>
           <HexFormatSelection>1</HexFormatSelection>
           <Merge32K>0</Merge32K>
           <CreateBatchFile>0</CreateBatchFile>
@@ -134,11 +134,11 @@
             <RunIndependent>0</RunIndependent>
             <UpdateFlashBeforeDebugging>1</UpdateFlashBeforeDebugging>
             <Capability>1</Capability>
-            <DriverSelection>4107</DriverSelection>
+            <DriverSelection>4096</DriverSelection>
           </Flash1>
           <bUseTDR>1</bUseTDR>
           <Flash2>BIN\UL2CM3.DLL</Flash2>
-          <Flash3></Flash3>
+          <Flash3>"" ()</Flash3>
           <Flash4></Flash4>
           <pFcarmOut></pFcarmOut>
           <pFcarmGrp></pFcarmGrp>
@@ -335,7 +335,7 @@
             <v6Rtti>0</v6Rtti>
             <VariousControls>
               <MiscControls></MiscControls>
-              <Define>USE_HAL_DRIVER,STM32F767xx</Define>
+              <Define>USE_HAL_DRIVER,STM32F767xx,HSE_VALUE=12000000</Define>
               <Undefine></Undefine>
               <IncludePath>../Inc;../Drivers/STM32F7xx_HAL_Driver/Inc;../Drivers/STM32F7xx_HAL_Driver/Inc/Legacy;../Drivers/Middlewares/ST/STM32_USB_Device_Library/Core/Inc;../Drivers/Middlewares/ST/STM32_USB_Device_Library/Class/HID/Inc;../Drivers/CMSIS/Device/ST/STM32F7xx/Include;../Drivers/CMSIS/Include;../descriptor_demo</IncludePath>
             </VariousControls>
@@ -402,14 +402,14 @@
               <FilePath>..\src\stm32f7_init.c</FilePath>
             </File>
             <File>
-              <FileName>system_stm32f7xx.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\demo_apps\system_stm32f7xx.c</FilePath>
+              <FileName>startup_stm32f730xx.s</FileName>
+              <FileType>2</FileType>
+              <FilePath>..\demo_apps\startup_stm32f730xx.s</FilePath>
             </File>
             <File>
-              <FileName>startup_stm32f767xx.s</FileName>
-              <FileType>2</FileType>
-              <FilePath>..\demo_apps\startup_stm32f767xx.s</FilePath>
+              <FileName>system_stm32f7xx_HSE12MHz.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\demo_apps\system_stm32f7xx_HSE12MHz.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -760,14 +760,14 @@
             <NotGenerated>0</NotGenerated>
             <InvalidFlash>1</InvalidFlash>
           </TargetStatus>
-          <OutputDirectory>.\out\f7xx_cdc\</OutputDirectory>
+          <OutputDirectory>.\out\f73x_cdc\</OutputDirectory>
           <OutputName>stm32f767</OutputName>
           <CreateExecutable>1</CreateExecutable>
           <CreateLib>0</CreateLib>
           <CreateHexFile>1</CreateHexFile>
           <DebugInformation>1</DebugInformation>
           <BrowseInformation>1</BrowseInformation>
-          <ListingPath></ListingPath>
+          <ListingPath>.\out\f73x_cdc</ListingPath>
           <HexFormatSelection>1</HexFormatSelection>
           <Merge32K>0</Merge32K>
           <CreateBatchFile>0</CreateBatchFile>
@@ -1047,7 +1047,7 @@
             <v6Rtti>0</v6Rtti>
             <VariousControls>
               <MiscControls></MiscControls>
-              <Define>USE_HAL_DRIVER,STM32F767xx</Define>
+              <Define>USE_HAL_DRIVER,STM32F767xx,HSE_VALUE=12000000</Define>
               <Undefine></Undefine>
               <IncludePath>../Inc;../Drivers/STM32F7xx_HAL_Driver/Inc;../Drivers/STM32F7xx_HAL_Driver/Inc/Legacy;../Drivers/Middlewares/ST/STM32_USB_Device_Library/Core/Inc;../Drivers/Middlewares/ST/STM32_USB_Device_Library/Class/HID/Inc;../Drivers/CMSIS/Device/ST/STM32F7xx/Include;../Drivers/CMSIS/Include;../descriptor_demo</IncludePath>
             </VariousControls>
@@ -1114,14 +1114,14 @@
               <FilePath>..\src\stm32f7_init.c</FilePath>
             </File>
             <File>
-              <FileName>system_stm32f7xx.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\demo_apps\system_stm32f7xx.c</FilePath>
+              <FileName>startup_stm32f730xx.s</FileName>
+              <FileType>2</FileType>
+              <FilePath>..\demo_apps\startup_stm32f730xx.s</FilePath>
             </File>
             <File>
-              <FileName>startup_stm32f767xx.s</FileName>
-              <FileType>2</FileType>
-              <FilePath>..\demo_apps\startup_stm32f767xx.s</FilePath>
+              <FileName>system_stm32f7xx_HSE12MHz.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\demo_apps\system_stm32f7xx_HSE12MHz.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -1490,14 +1490,14 @@
             <NotGenerated>0</NotGenerated>
             <InvalidFlash>1</InvalidFlash>
           </TargetStatus>
-          <OutputDirectory>.\out\f7xx_cdc7\</OutputDirectory>
+          <OutputDirectory>.\out\f73x_cdc7\</OutputDirectory>
           <OutputName>stm32f767</OutputName>
           <CreateExecutable>1</CreateExecutable>
           <CreateLib>0</CreateLib>
           <CreateHexFile>1</CreateHexFile>
           <DebugInformation>1</DebugInformation>
           <BrowseInformation>1</BrowseInformation>
-          <ListingPath></ListingPath>
+          <ListingPath>.\out\f73x_cdc7\</ListingPath>
           <HexFormatSelection>1</HexFormatSelection>
           <Merge32K>0</Merge32K>
           <CreateBatchFile>0</CreateBatchFile>
@@ -1777,7 +1777,7 @@
             <v6Rtti>0</v6Rtti>
             <VariousControls>
               <MiscControls></MiscControls>
-              <Define>USE_HAL_DRIVER,STM32F767xx</Define>
+              <Define>USE_HAL_DRIVER,STM32F767xx,HSE_VALUE=12000000</Define>
               <Undefine></Undefine>
               <IncludePath>../Inc;../Drivers/STM32F7xx_HAL_Driver/Inc;../Drivers/STM32F7xx_HAL_Driver/Inc/Legacy;../Drivers/Middlewares/ST/STM32_USB_Device_Library/Core/Inc;../Drivers/Middlewares/ST/STM32_USB_Device_Library/Class/HID/Inc;../Drivers/CMSIS/Device/ST/STM32F7xx/Include;../Drivers/CMSIS/Include;../descriptor_demo</IncludePath>
             </VariousControls>
@@ -1844,14 +1844,14 @@
               <FilePath>..\src\stm32f7_init.c</FilePath>
             </File>
             <File>
-              <FileName>system_stm32f7xx.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\demo_apps\system_stm32f7xx.c</FilePath>
+              <FileName>startup_stm32f730xx.s</FileName>
+              <FileType>2</FileType>
+              <FilePath>..\demo_apps\startup_stm32f730xx.s</FilePath>
             </File>
             <File>
-              <FileName>startup_stm32f767xx.s</FileName>
-              <FileType>2</FileType>
-              <FilePath>..\demo_apps\startup_stm32f767xx.s</FilePath>
+              <FileName>system_stm32f7xx_HSE12MHz.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\demo_apps\system_stm32f7xx_HSE12MHz.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -2220,14 +2220,14 @@
             <NotGenerated>0</NotGenerated>
             <InvalidFlash>1</InvalidFlash>
           </TargetStatus>
-          <OutputDirectory>.\out\f7xx_hid\</OutputDirectory>
+          <OutputDirectory>.\out\f73x_hid\</OutputDirectory>
           <OutputName>stm32f767</OutputName>
           <CreateExecutable>1</CreateExecutable>
           <CreateLib>0</CreateLib>
           <CreateHexFile>1</CreateHexFile>
           <DebugInformation>1</DebugInformation>
           <BrowseInformation>1</BrowseInformation>
-          <ListingPath></ListingPath>
+          <ListingPath>.\out\f73x_hid\</ListingPath>
           <HexFormatSelection>1</HexFormatSelection>
           <Merge32K>0</Merge32K>
           <CreateBatchFile>0</CreateBatchFile>
@@ -2507,7 +2507,7 @@
             <v6Rtti>0</v6Rtti>
             <VariousControls>
               <MiscControls></MiscControls>
-              <Define>USE_HAL_DRIVER,STM32F767xx</Define>
+              <Define>USE_HAL_DRIVER,STM32F767xx,HSE_VALUE=12000000</Define>
               <Undefine></Undefine>
               <IncludePath>../Inc;../Drivers/STM32F7xx_HAL_Driver/Inc;../Drivers/STM32F7xx_HAL_Driver/Inc/Legacy;../Drivers/Middlewares/ST/STM32_USB_Device_Library/Core/Inc;../Drivers/Middlewares/ST/STM32_USB_Device_Library/Class/HID/Inc;../Drivers/CMSIS/Device/ST/STM32F7xx/Include;../Drivers/CMSIS/Include;../descriptor_demo</IncludePath>
             </VariousControls>
@@ -2574,14 +2574,14 @@
               <FilePath>..\src\stm32f7_init.c</FilePath>
             </File>
             <File>
-              <FileName>system_stm32f7xx.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\demo_apps\system_stm32f7xx.c</FilePath>
+              <FileName>startup_stm32f730xx.s</FileName>
+              <FileType>2</FileType>
+              <FilePath>..\demo_apps\startup_stm32f730xx.s</FilePath>
             </File>
             <File>
-              <FileName>startup_stm32f767xx.s</FileName>
-              <FileType>2</FileType>
-              <FilePath>..\demo_apps\startup_stm32f767xx.s</FilePath>
+              <FileName>system_stm32f7xx_HSE12MHz.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\demo_apps\system_stm32f7xx_HSE12MHz.c</FilePath>
             </File>
           </Files>
         </Group>
