@@ -66,69 +66,37 @@ static void Wait_CoreReset(USB_OTG_GlobalTypeDef *USBx)
 static void USB_HS_PHYCInit(USB_OTG_GlobalTypeDef *USBx)
 {
   uint32_t count = 0;
-
   /* Enable LDO */
   USB_HS_PHYC->USB_HS_PHYC_LDO |= USB_HS_PHYC_LDO_ENABLE;
-
   /* wait for LDO Ready */
   while((USB_HS_PHYC->USB_HS_PHYC_LDO & USB_HS_PHYC_LDO_STATUS) == RESET);
 
   /* Controls PHY frequency operation selection */
-  if (HSE_VALUE == 12000000) /* HSE = 12MHz */
-  {
+  if (HSE_VALUE == 12000000){       /* HSE = 12MHz */
     USB_HS_PHYC->USB_HS_PHYC_PLL = (uint32_t)(0x0 << 1);
-  }
-  else if (HSE_VALUE == 12500000) /* HSE = 12.5MHz */
-  {
+  }else if (HSE_VALUE == 12500000){ /* HSE = 12.5MHz */
     USB_HS_PHYC->USB_HS_PHYC_PLL = (uint32_t)(0x2 << 1);
-  }
-  else if (HSE_VALUE == 16000000) /* HSE = 16MHz */
-  {
+  }else if (HSE_VALUE == 16000000){ /* HSE = 16MHz */
     USB_HS_PHYC->USB_HS_PHYC_PLL = (uint32_t)(0x3 << 1);
-  }
-
-  else if (HSE_VALUE == 24000000) /* HSE = 24MHz */
-  {
+  }else if (HSE_VALUE == 24000000){ /* HSE = 24MHz */
     USB_HS_PHYC->USB_HS_PHYC_PLL = (uint32_t)(0x4 << 1);
-  }
-  else if (HSE_VALUE == 25000000) /* HSE = 25MHz */
-  {
+  }else if (HSE_VALUE == 25000000){ /* HSE = 25MHz */
     USB_HS_PHYC->USB_HS_PHYC_PLL = (uint32_t)(0x5 << 1);
-  }
-  else if (HSE_VALUE == 32000000) /* HSE = 32MHz */
-  {
+  }else if (HSE_VALUE == 32000000){ /* HSE = 32MHz */
     USB_HS_PHYC->USB_HS_PHYC_PLL = (uint32_t)(0x7 << 1);
   }
-
   /* Control the tuning interface of the High Speed PHY */
   USB_HS_PHYC->USB_HS_PHYC_TUNE |= USB_HS_PHYC_TUNE_VALUE;
-
   /* Enable PLL internal PHY */
   USB_HS_PHYC->USB_HS_PHYC_PLL |= USB_HS_PHYC_PLL_PLLEN;
-
   /* 2ms Delay required to get internal phy clock stable */
-  HAL_Delay(2);
+  delay(2000);
 }
 #endif
 
-
-//static void set_rx_fifo(USB_OTG_GlobalTypeDef *USBx, uint16_t size)
-//{
-//  USBx->GRXFSIZ = size;
-//}
-
-//static void set_tx_fifo(USB_OTG_GlobalTypeDef *USBx, uint8_t ep, uint16_t offset, uint16_t size)
-//{
-//  if(ep == 0){
-//    USBx->DIEPTXF0_HNPTXFSIZ = (uint32_t)(((uint32_t)size << 16) | offset);
-//  }else{
-//    USBx->DIEPTXF[ep - 1] = (uint32_t)(((uint32_t)size << 16) | offset);
-//  }
-//}
-
 void tusb_close_device(tusb_device_t* dev)
 {
-  USB_OTG_GlobalTypeDef* USBx = dev->handle;
+  USB_OTG_GlobalTypeDef* USBx = GetUSB(dev);
   USBx->GAHBCFG &= ~USB_OTG_GAHBCFG_GINT;
   
   uint32_t i;
@@ -162,16 +130,14 @@ void tusb_close_device(tusb_device_t* dev)
 
 void tusb_open_device(tusb_device_t* dev)
 {
-  USB_OTG_GlobalTypeDef* USBx = dev->handle;
-  uint32_t i;
-  
-  if(USBx == USB_OTG_FS){
+  USB_OTG_GlobalTypeDef* USBx = GetUSB(dev);
+  if(GetUSB(dev) == USB_OTG_FS){
     // Init the FS core
 #if defined(OTG_FS_EMBEDDED_PHY)
     // open the OTG FS core
     // 1.  setup IO pins
     __HAL_RCC_GPIOA_CLK_ENABLE();
-    GPIO_InitTypeDef GPIO_InitStruct;
+    //GPIO_InitTypeDef GPIO_InitStruct;
   
     /**USB_OTG_FS GPIO Configuration    
     PA8     ------> USB_OTG_FS_SOF
@@ -180,18 +146,39 @@ void tusb_open_device(tusb_device_t* dev)
     PA11     ------> USB_OTG_FS_DM
     PA12     ------> USB_OTG_FS_DP 
     */
-    GPIO_InitStruct.Pin = GPIO_PIN_11|GPIO_PIN_12;
-    GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
-    GPIO_InitStruct.Alternate = GPIO_AF10_OTG_FS;
-    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+    
+    // Mode = AF
+    GPIOA->MODER &= ~(GPIO_MODER_MODER11 | GPIO_MODER_MODER12);
+    GPIOA->MODER |= (GPIO_MODER_MODER11_1 | GPIO_MODER_MODER12_1);
+    // OType = PushPull
+    GPIOA->OTYPER &= ~(GPIO_OTYPER_OT_11 | GPIO_OTYPER_OT_12);
+    // OSpeed = Very High
+    GPIOA->OSPEEDR |= (GPIO_OSPEEDER_OSPEEDR11_0 | GPIO_OSPEEDER_OSPEEDR11_1
+                     | GPIO_OSPEEDER_OSPEEDR12_0 | GPIO_OSPEEDER_OSPEEDR12_1);
+
+#define AFH(val, pin)   ((val)<< (( (pin)-8)*4))
+    // AF = OTG_FS
+    GPIOA->AFR[1] &= ~( AFH(0xf,11) | AFH(0xf,12) );
+    GPIOA->AFR[1] |= ( AFH(GPIO_AF10_OTG_FS,11) | AFH(GPIO_AF10_OTG_FS,12) );
+    
+    //GPIO_InitStruct.Pin = GPIO_PIN_11|GPIO_PIN_12;
+    //GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+    //GPIO_InitStruct.Pull = GPIO_NOPULL;
+    //GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+    //GPIO_InitStruct.Alternate = GPIO_AF10_OTG_FS;
+    //HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
     
 #if defined(ENABLE_VBUS_DETECT)
-    GPIO_InitStruct.Pin = GPIO_PIN_9;
-    GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
-    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+    //GPIO_InitStruct.Pin = GPIO_PIN_9;
+    //GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+    //GPIO_InitStruct.Pull = GPIO_NOPULL;
+    //HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+    
+    // Mode = Input
+    GPIOA->MODER &= ~(GPIO_MODER_MODER9);
+    // No pull
+    GPIOA->PUPDR &= ~(GPIO_PUPDR_PUPDR9_0 | GPIO_PUPDR_PUPDR9_1);
+    
 #endif
 
     __HAL_RCC_USB_OTG_FS_CLK_ENABLE();
@@ -208,7 +195,7 @@ void tusb_open_device(tusb_device_t* dev)
     /* Deactivate the power down*/
     USBx->GCCFG = USB_OTG_GCCFG_PWRDWN;
 #endif
-  }else if(USBx == USB_OTG_HS){
+  }else if(GetUSB(dev) == USB_OTG_HS){
     // Init the HS core
     __HAL_RCC_USB_OTG_HS_CLK_ENABLE();
     NVIC_SetPriority(OTG_HS_IRQn, 0);
@@ -272,7 +259,9 @@ void tusb_open_device(tusb_device_t* dev)
   USBx_DEVICE->DAINT = 0xFFFFFFFF;
   USBx_DEVICE->DAINTMSK = 0;
   
+  /* ep will init in the reset handler
   uint32_t ep_count = USBx == USB_OTG_FS ? USB_OTG_FS_MAX_EP_NUM : USB_OTG_HS_MAX_EP_NUM;
+  uint32_t i;
   
   for (i = 0; i < ep_count ; i++){
     if ((USBx_INEP(i)->DIEPCTL & USB_OTG_DIEPCTL_EPENA) == USB_OTG_DIEPCTL_EPENA){
@@ -291,6 +280,7 @@ void tusb_open_device(tusb_device_t* dev)
     USBx_OUTEP(i)->DOEPINT = 0xFF;
     USBx_OUTEP(i)->DOEPCTL &= ~USB_OTG_DOEPCTL_STALL;
   }
+  */
     
   USBx_DEVICE->DIEPMSK &= ~(USB_OTG_DIEPMSK_TXFURM);
   
@@ -333,7 +323,7 @@ void tusb_read_data(tusb_device_t* dev, void* buf, uint32_t len);
 
 void otg_handler(tusb_device_t* dev)
 {
-  USB_OTG_GlobalTypeDef *USBx = dev->handle;
+  USB_OTG_GlobalTypeDef *USBx = GetUSB(dev);
   uint32_t MAX_EP_NUM = USBx == USB_OTG_FS ? USB_OTG_FS_MAX_EP_NUM : USB_OTG_HS_MAX_EP_NUM;
   
 #define  INTR()   (USBx->GINTSTS & USBx->GINTMSK)

@@ -59,6 +59,15 @@ typedef struct _pma_record{
 
 // There is only one USB device in STM32F0/STM32F1, just return the USB directly
 #define  GetUSB(dev)           (USB)
+
+
+#ifndef NEED_MAX_PACKET
+#define NEED_MAX_PACKET
+#endif
+#define  GetInMaxPacket(dev, EPn)   ((dev)->tx_max_size[(EPn)])
+#define  GetOutMaxPacket(dev, EPn)  ((dev)->rx_max_size[(EPn)])
+
+
 #define  PMATable(dev)     ( (pma_data*) ((uint32_t)GetUSB(dev) + 0x400U) )
 #define  GetPMAAddr(dev, offset)    \
   (PMATable(dev) + ( (offset) / sizeof(((pma_data*)0)->data)) )

@@ -111,11 +111,11 @@ int main(void)
   dev = &tusb_dev;
 #endif
 #if defined(USB_OTG_HS)
-  tusb_dev_otg_hs.handle = USB_OTG_HS;
+  SetUSB(&tusb_dev_otg_hs, USB_OTG_HS);
   dev = &tusb_dev_otg_hs;
 #endif
 #if defined(USB_OTG_FS)
-  tusb_dev_otg_fs.handle = USB_OTG_FS;
+  SetUSB(&tusb_dev_otg_fs, USB_OTG_FS);
   dev = &tusb_dev_otg_fs;
 #endif
   tusb_close_device(dev);

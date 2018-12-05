@@ -150,16 +150,16 @@ int tusb_send_data(tusb_device_t* dev, uint8_t EPn, const void* data, uint16_t l
       pma0 = PMA_TX0(dev, EPn);
       pma1 = PMA_TX1(dev, EPn);
     }
-    copy_tx(dev, ep, pma0, data, len, dev->tx_max_size[EPn]);
-    if( ep->tx_size || ep->tx_last_size == dev->tx_max_size[EPn]){
-      copy_tx(dev, ep, pma1, ep->tx_buf, ep->tx_size, dev->tx_max_size[EPn]);
+    copy_tx(dev, ep, pma0, data, len, GetInMaxPacket(dev, EPn));
+    if( ep->tx_size || ep->tx_last_size == GetInMaxPacket(dev, EPn) ){
+      copy_tx(dev, ep, pma1, ep->tx_buf, ep->tx_size, GetInMaxPacket(dev, EPn));
     }
     // toggle it
     TUSB_RX_DTOG(GetUSB(dev), EPn, EP);
   }else if( ISO_EP && ((EP & USB_EP_TYPE_MASK) == USB_EP_ISOCHRONOUS ) ){
     pma_record* pma = EP & USB_EP_DTOG_TX ? PMA_TX0(dev, EPn) : PMA_TX1(dev, EPn);
     ep->tx_pushed = 0;
-    copy_tx(dev, ep, pma, data, len, dev->tx_max_size[EPn]);
+    copy_tx(dev, ep, pma, data, len, GetInMaxPacket(dev, EPn));
     TUSB_SET_TX_STATUS(GetUSB(dev), EPn, EP, USB_EP_TX_VALID);
   }else{
     // normal ep send data
@@ -167,7 +167,7 @@ int tusb_send_data(tusb_device_t* dev, uint8_t EPn, const void* data, uint16_t l
       return -1;
     }
     ep->tx_pushed = 0;
-    copy_tx(dev, ep, PMA_TX(dev, EPn), data, len, dev->tx_max_size[EPn]);
+    copy_tx(dev, ep, PMA_TX(dev, EPn), data, len, GetInMaxPacket(dev, EPn));
     TUSB_SET_TX_STATUS(GetUSB(dev), EPn, EP, USB_EP_TX_VALID);
   }
   return 0;
@@ -194,8 +194,8 @@ void tusb_send_data_done(tusb_device_t* dev, uint8_t EPn, uint16_t EP)
     ep->tx_pushed = 0;
     pma = PMA_TX(dev, EPn);
   }
-  if(ep->tx_size || ep->tx_last_size == dev->tx_max_size[EPn]){
-    copy_tx(dev, ep, pma, ep->tx_buf, ep->tx_size, dev->tx_max_size[EPn]);
+  if(ep->tx_size || ep->tx_last_size == GetInMaxPacket(dev, EPn)){
+    copy_tx(dev, ep, pma, ep->tx_buf, ep->tx_size, GetInMaxPacket(dev, EPn));
     PCD_SET_EP_TX_STATUS(GetUSB(dev), EPn, USB_EP_TX_VALID);
     return;
   }
@@ -221,7 +221,7 @@ void set_rx_valid(tusb_device_t* dev, uint8_t EPn)
       uint32_t len = tusb_pma_rx(dev, pma, ep->rx_buf + ep->rx_count);
       pma->cnt = 0;
       ep->rx_count += len;
-      if(len != dev->rx_max_size[EPn] || ep->rx_count >= ep->rx_size){
+      if(len != GetOutMaxPacket(dev, EPn) || ep->rx_count >= ep->rx_size){
         if(tusb_on_rx_done(dev, EPn, ep->rx_buf, ep->rx_count) == 0){
           ep->rx_count = 0;
         }else{
@@ -268,7 +268,7 @@ void tusb_recv_data(tusb_device_t* dev, uint8_t EPn, uint16_t EP)
     uint32_t len = tusb_pma_rx(dev, pma, ep->rx_buf + ep->rx_count);
     pma->cnt = 0;
     ep->rx_count += len;
-    if(len != dev->rx_max_size[EPn] || ep->rx_count >= ep->rx_size){
+    if(len != GetOutMaxPacket(dev, EPn) || ep->rx_count >= ep->rx_size){
       if(tusb_on_rx_done(dev, EPn, ep->rx_buf, ep->rx_count) == 0){
         ep->rx_count = 0;
       }else{

@@ -246,7 +246,10 @@ local function getInitCode(epInfo)
     r = r .. "  }while(0)\n\n"
     
     
-    r = r .. "\n// Tiny USB device init function\n"
+    r = r .. "\n"
+    r = r .. "#if defined(USB)\n"
+    r = r .. "#define " .. dev.prefix.."TUSB_INIT_EP(dev) " .. dev.prefix.."TUSB_INIT_EP_FS(dev)\n"
+    r = r .. "\n// Tiny USB device init function for FS core\n"
     r = r .. "#define "..dev.prefix.."TUSB_INIT_DEVICE(dev) \\\n"
     r = r .. "  do{\\\n"
     r = r .. "    /* Init device features */       \\\n"
@@ -257,12 +260,18 @@ local function getInitCode(epInfo)
     r = r .. "    dev->descriptors = &"..dev.prefix.."descriptors;         \\\n"
     r = r .. "  }while(0)\n\n"
     
-    r = r .. "\n"
-    r = r .. "#if defined(USB)\n"
-    r = r .. "#define " .. dev.prefix.."TUSB_INIT_EP(dev) " .. dev.prefix.."TUSB_INIT_EP_FS(dev)\n"
+    
     r = r .. "#endif\n\n"
     r = r .. "#if defined(USB_OTG_FS) || defined(USB_OTG_HS)\n"
     r = r .. "#define " .. dev.prefix.."TUSB_INIT_EP(dev) " .. dev.prefix.."TUSB_INIT_EP_OTG(dev)\n"
+    r = r .. "\n// Tiny USB device init function for OTG core\n"
+    r = r .. "#define "..dev.prefix.."TUSB_INIT_DEVICE(dev) \\\n"
+    r = r .. "  do{\\\n"
+    r = r .. "    /* Init device features */       \\\n"
+    r = r .. "    memset(dev, 0, TUSB_DEVICE_SIZE);    \\\n" 
+    r = r .. "    dev->status = "..dev.prefix.."DEV_STATUS;         \\\n"
+    r = r .. "    dev->descriptors = &"..dev.prefix.."descriptors;         \\\n"
+    r = r .. "  }while(0)\n\n"
     r = r .. "#endif\n\n"
     
     

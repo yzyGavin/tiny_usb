@@ -705,13 +705,6 @@
         </Group>
         <Group>
           <GroupName>lib</GroupName>
-          <Files>
-            <File>
-              <FileName>stm32f7xx_hal_gpio.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\Drivers\STM32F7xx_HAL_Driver\Src\stm32f7xx_hal_gpio.c</FilePath>
-            </File>
-          </Files>
         </Group>
         <Group>
           <GroupName>::CMSIS</GroupName>
@@ -1366,13 +1359,6 @@
         </Group>
         <Group>
           <GroupName>lib</GroupName>
-          <Files>
-            <File>
-              <FileName>stm32f7xx_hal_gpio.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\Drivers\STM32F7xx_HAL_Driver\Src\stm32f7xx_hal_gpio.c</FilePath>
-            </File>
-          </Files>
         </Group>
         <Group>
           <GroupName>::CMSIS</GroupName>
@@ -2096,13 +2082,6 @@
         </Group>
         <Group>
           <GroupName>lib</GroupName>
-          <Files>
-            <File>
-              <FileName>stm32f7xx_hal_gpio.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\Drivers\STM32F7xx_HAL_Driver\Src\stm32f7xx_hal_gpio.c</FilePath>
-            </File>
-          </Files>
         </Group>
         <Group>
           <GroupName>::CMSIS</GroupName>
@@ -2826,13 +2805,6 @@
         </Group>
         <Group>
           <GroupName>lib</GroupName>
-          <Files>
-            <File>
-              <FileName>stm32f7xx_hal_gpio.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\Drivers\STM32F7xx_HAL_Driver\Src\stm32f7xx_hal_gpio.c</FilePath>
-            </File>
-          </Files>
         </Group>
         <Group>
           <GroupName>::CMSIS</GroupName>

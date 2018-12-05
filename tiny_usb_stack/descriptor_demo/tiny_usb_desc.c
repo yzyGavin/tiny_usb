@@ -1,7 +1,7 @@
 /*
  * Name   :  tiny_usb_desc.c
  * Author :  admin@xtoolbox.org
- * Date   :  2018-11-30 18:08:17
+ * Date   :  2018-12-05 17:08:25
  * Desc   :  This file is auto generate by the tiny_usb script tool
  *           Visit https://github.com/xtoolbox/tiny_usb for more info
  */

@@ -60,7 +60,7 @@ WEAK int tusb_on_rx_done(tusb_device_t* dev, uint8_t EPn, const void* data, uint
 
 void tusb_read_data(tusb_device_t* dev, void* buf, uint32_t len)
 {
-  USB_OTG_GlobalTypeDef *USBx = dev->handle;
+  USB_OTG_GlobalTypeDef *USBx = GetUSB(dev);
   __packed uint32_t * dest = (__packed uint32_t *)buf;
   len = (len + 3) / 4;
   while(len){
@@ -98,19 +98,17 @@ static uint32_t get_max_out_packet_size(PCD_TypeDef* USBx, uint8_t EPn)
 
 int tusb_send_data(tusb_device_t* dev, uint8_t EPn, const void* data, uint16_t len)
 {
-  PCD_TypeDef* USBx = dev->handle;
+  PCD_TypeDef* USBx = GetUSB(dev);
   tusb_ep_data* ep = &dev->Ep[EPn];
-  uint32_t maxpacket = get_max_in_packet_size(USBx, EPn);
+  uint32_t maxpacket = GetInMaxPacket(dev, EPn);
   uint32_t pktCnt;
   uint32_t total_len = len;
   USB_OTG_INEndpointTypeDef* epin = USBx_INEP(EPn);
   ep->tx_buf = (const uint8_t*)data;
-  //track(EPn, len, 1, 0);
   if(epin->DIEPCTL & USB_OTG_DIEPCTL_EPENA){
     return -1;
   }
-  // normal ep send data
-  ep->tx_pushed = 0;
+
   if(EPn == 0){
     // EP0 always send 1 packet
     if(len > maxpacket){
@@ -155,10 +153,10 @@ int tusb_send_data(tusb_device_t* dev, uint8_t EPn, const void* data, uint16_t l
 void tusb_fifo_empty(tusb_device_t* dev, uint8_t EPn)
 {
   tusb_ep_data* ep = &dev->Ep[EPn];
-  PCD_TypeDef* USBx = dev->handle;
+  PCD_TypeDef* USBx = GetUSB(dev);
   USB_OTG_INEndpointTypeDef* epin = USBx_INEP(EPn);
   uint32_t xfer_size = epin->DIEPTSIZ & USB_OTG_DIEPTSIZ_XFRSIZ;
-  uint32_t maxpacket = get_max_in_packet_size(USBx, EPn);
+  uint32_t maxpacket = GetInMaxPacket(dev, EPn);
   uint32_t fifo_len = epin->DTXFSTS & USB_OTG_DTXFSTS_INEPTFSAV;
   const uint8_t* src = (const uint8_t*)ep->tx_buf;
   uint32_t len32b;
@@ -189,7 +187,7 @@ void tusb_fifo_empty(tusb_device_t* dev, uint8_t EPn)
 // called by the ep data interrupt handler when last packet tranfer done
 void tusb_send_data_done(tusb_device_t* dev, uint8_t EPn, uint16_t EP)
 {
-  PCD_TypeDef* USBx = dev->handle;
+  PCD_TypeDef* USBx = GetUSB(dev);
   tusb_ep_data* ep = &dev->Ep[EPn];
   uint32_t maxpacket = get_max_in_packet_size(USBx, EPn);
   //track(EPn, ep->tx_size, 3, ep->tx_last_size);
@@ -208,10 +206,10 @@ void tusb_send_data_done(tusb_device_t* dev, uint8_t EPn, uint16_t EP)
 // un-like the USB FS core, we need buffer size to set the ep valid
 void set_rx_valid(tusb_device_t* dev, uint8_t EPn)
 {
-  PCD_TypeDef* USBx = dev->handle;
+  PCD_TypeDef* USBx = GetUSB(dev);
   USB_OTG_OUTEndpointTypeDef* epout = USBx_OUTEP(EPn);
   tusb_ep_data* ep = &dev->Ep[EPn];
-  uint32_t maxpacket = get_max_out_packet_size(USBx, EPn);
+  uint32_t maxpacket = GetOutMaxPacket(dev, EPn);
   uint32_t pktCnt;
   uint32_t len = ep->rx_size;
   ep->rx_count = 0;

@@ -89,7 +89,7 @@ static void tusb_get_descriptor(tusb_device_t* dev, tusb_setup_packet *req)
 #if defined(USB_OTG_FS) || defined(USB_OTG_HS)
 static void tusb_set_addr (tusb_device_t* dev)
 {
-  USB_OTG_GlobalTypeDef *USBx = dev->handle;
+  USB_OTG_GlobalTypeDef *USBx = GetUSB(dev);
   USBx_DEVICE->DCFG &= ~ (USB_OTG_DCFG_DAD);
   USBx_DEVICE->DCFG |= (dev->addr << 4) & USB_OTG_DCFG_DAD ;
 }
@@ -194,7 +194,7 @@ static void tusb_standard_request(tusb_device_t* dev, tusb_setup_packet* setup_r
     tusb_send_data(dev, 0, 0, 0);
 #if defined(USB_OTG_FS) || defined(USB_OTG_HS)
     {
-      PCD_TypeDef* USBx =  dev->handle;
+      PCD_TypeDef* USBx =  GetUSB(dev);
       USBx_INEP(0)->DIEPCTL &= ~(USB_OTG_DIEPCTL_EPDIS);
       USBx_INEP(0)->DIEPCTL |= USB_OTG_DIEPCTL_STALL;
     }
@@ -263,7 +263,7 @@ void tusb_ep_handler(tusb_device_t* dev, uint8_t EPn)
           uint32_t len = tusb_read_ep0(dev, dev->Ep[0].rx_buf);
           // shift the rx pointer
           dev->Ep[0].rx_buf = dev->Ep[0].rx_buf + len;
-          if(len < dev->tx_max_size[0]){
+          if(len < GetInMaxPacket(dev, 0)){
             // when got ep 0 data, invoke the setup data out call back
             if(dev->rx0_callback){
               dev->rx0_callback(dev);

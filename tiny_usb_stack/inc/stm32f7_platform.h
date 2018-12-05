@@ -51,7 +51,26 @@
 #if defined(USB_OTG_FS) && defined(USB_OTG_HS)
 #define  USB_CORE_HANDLE_TYPE        PCD_TypeDef*
 #define  GetUSB(dev)           ((dev)->handle)
+#define  SetUSB(dev, usbx)     do{ (dev)->handle = usbx;  }while(0)
+#else
+#if defined(USB_OTG_FS)
+#define  GetUSB(dev)           USB_OTG_FS
+#define  SetUSB(dev, usbx)
+#elif defined(USB_OTG_HS)
+#define  GetUSB(dev)           USB_OTG_HS
+#define  SetUSB(dev, usbx)
+#else
+#error OTG_FS and OTG_HS all missed
 #endif
+#endif
+
+
+#if defined (NEED_MAX_PACKET)
+#undef NEED_MAX_PACKET
+#endif
+
+#define  GetInMaxPacket(dev, EPn)  get_max_in_packet_size(GetUSB(dev), EPn)
+#define  GetOutMaxPacket(dev, EPn) get_max_out_packet_size(GetUSB(dev), EPn)
 
 
 
@@ -97,6 +116,7 @@ do{\
   if(bEpNum == 0){\
     GetUSB(dev)->DIEPTXF0_HNPTXFSIZ = (uint32_t)(((uint32_t)( (size)/4) << 16) | ( (addr)/4));\
   }else{\
+                       /*avoid the compiler warning */\
     GetUSB(dev)->DIEPTXF[bEpNum==0?0: bEpNum- 1] = (uint32_t)(((uint32_t)( (size)/4) << 16) | ( (addr)/4));\
   }\
 }while(0)
@@ -106,5 +126,7 @@ do{\
     GetUSB(dev)->GRXFSIZ = (size/4);\
   }while(0)
 
+
+  
 #endif
 

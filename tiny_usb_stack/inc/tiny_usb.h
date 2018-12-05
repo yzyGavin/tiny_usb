@@ -45,8 +45,12 @@ typedef struct _tusb_ep_data
   uint16_t        tx_size;      // data remain to transfer
   uint16_t        rx_size;      // rx buffer size
   uint16_t        rx_count;     // current received data
+#if defined(USB_OTG_FS) || defined(USB_OTG_HS)
+  uint16_t        tx_last_size;
+#else
   uint8_t         tx_last_size; // last tx data length
   uint8_t         tx_pushed;    // data packet number in the PMA buffer
+#endif
 }tusb_ep_data;
 
 typedef const uint8_t* desc_t;
@@ -74,8 +78,10 @@ struct _tusb_device{
   uint16_t  status;                       // device status
   tusb_callback_t status_callback;        // status transfer done callback
   tusb_callback_t rx0_callback;           // ep0 rx callback
+#if defined(NEED_MAX_PACKET)
   const uint8_t* rx_max_size;             // RX max size buffer
   const uint8_t* tx_max_size;             // TX max size buffer
+#endif
   tusb_setup_packet  setup;               // setup packet buffer
   tusb_ep_data   Ep[EP_NUM];              // end point
   const tusb_descriptors*  descriptors;   // device descriptors, can be override at runtime
