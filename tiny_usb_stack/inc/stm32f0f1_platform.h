@@ -78,7 +78,7 @@ typedef struct _pma_record{
 // BTABLE address will not change in this kind device, so just return the fixed value
 #define GetBTABLE(dev)  (BTABLE_ADDRESS)
 
-typedef union _pma_table {
+typedef union _pma_ep_desc {
   struct _normal{
     pma_record     tx;
     pma_record     rx;
@@ -91,7 +91,7 @@ typedef union _pma_table {
     pma_record     rx0;
     pma_record     rx1;
   }dbl_rx;
-}pma_table;
+}pma_ep_desc;
 
 // easy way to aceess the field
 #define  pma_tx        normal.tx
@@ -121,16 +121,16 @@ typedef union _pma_table {
 #define  rx1_block  dbl_rx.rx1.block
 
 
-#define PMA_TABLE(dev)    ((pma_table*) (GetBTABLE(dev) + PMATable(dev)) )
-#define EPT(dev, bEpNum)  (PMA_TABLE(dev)[bEpNum])
+#define PMA_DESC(dev)    ((pma_ep_desc*) (GetBTABLE(dev) + PMATable(dev)) )
+#define EPT(dev, bEpNum)  (PMA_DESC(dev)[bEpNum])
 
 
-#define  PMA_TX(dev, bEpNum)   (&(PMA_TABLE(dev)[bEpNum].pma_tx))
-#define  PMA_RX(dev, bEpNum)   (&(PMA_TABLE(dev)[bEpNum].pma_rx))
-#define  PMA_TX0(dev, bEpNum)  (&(PMA_TABLE(dev)[bEpNum].pma_tx0))
-#define  PMA_TX1(dev, bEpNum)  (&(PMA_TABLE(dev)[bEpNum].pma_tx1))
-#define  PMA_RX0(dev, bEpNum)  (&(PMA_TABLE(dev)[bEpNum].pma_rx0))
-#define  PMA_RX1(dev, bEpNum)  (&(PMA_TABLE(dev)[bEpNum].pma_rx1))
+#define  PMA_TX(dev, bEpNum)   (&(PMA_DESC(dev)[bEpNum].pma_tx))
+#define  PMA_RX(dev, bEpNum)   (&(PMA_DESC(dev)[bEpNum].pma_rx))
+#define  PMA_TX0(dev, bEpNum)  (&(PMA_DESC(dev)[bEpNum].pma_tx0))
+#define  PMA_TX1(dev, bEpNum)  (&(PMA_DESC(dev)[bEpNum].pma_tx1))
+#define  PMA_RX0(dev, bEpNum)  (&(PMA_DESC(dev)[bEpNum].pma_rx0))
+#define  PMA_RX1(dev, bEpNum)  (&(PMA_DESC(dev)[bEpNum].pma_rx1))
 
 #define  SET_TX_ADDR(dev, bEpNum, addr)  do { EPT(dev, bEpNum).tx_addr = (addr); }while(0)
 
