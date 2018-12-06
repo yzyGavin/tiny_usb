@@ -260,16 +260,16 @@ void tusb_ep_handler(tusb_device_t* dev, uint8_t EPn)
 			}else{
         // Handle ep 0 data packet
         if(dev->Ep[0].rx_buf){
-          uint32_t len = tusb_read_ep0(dev, dev->Ep[0].rx_buf);
-          // shift the rx pointer
-          dev->Ep[0].rx_buf = dev->Ep[0].rx_buf + len;
-          if(len < GetInMaxPacket(dev, 0)){
+          tusb_ep_data* ep = &dev->Ep[0];
+          uint32_t len = tusb_read_ep0(dev, ep->rx_buf + ep->rx_count);
+          ep->rx_count += len;
+          if(len < GetOutMaxPacket(dev, 0) || ep->rx_count >= ep->rx_size){
             // when got ep 0 data, invoke the setup data out call back
             if(dev->rx0_callback){
               dev->rx0_callback(dev);
               dev->rx0_callback = 0;
             }
-            dev->Ep[0].rx_buf = 0;
+            ep->rx_buf = 0;
           }
         }else{
           // recv ep0 data, but not processed, drop it
