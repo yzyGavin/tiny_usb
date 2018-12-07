@@ -42,44 +42,44 @@
 
 void tusb_close_device(tusb_device_t* dev)
 {
-	RCC->APB2ENR |= RCC_APB2ENR_IOPAEN;
+  RCC->APB2ENR |= RCC_APB2ENR_IOPAEN;
 #if defined(HAS_DOUBLE_BUFFER)
   NVIC_DisableIRQ(USB_HP_CAN1_TX_IRQn);
 #endif
-	NVIC_DisableIRQ(USB_LP_CAN1_RX0_IRQn);
-	GetUSB()->ISTR = (0);
-	// Turn USB Macrocell off (FRES + PWDN)
+  NVIC_DisableIRQ(USB_LP_CAN1_RX0_IRQn);
+  GetUSB()->ISTR = (0);
+  // Turn USB Macrocell off (FRES + PWDN)
   GetUSB()->CNTR = (USB_CNTR_FRES | USB_CNTR_PDWN);
   
-	// PA_12 output mode: OD = 0
-	GPIOA->CRH |= GPIO_CRH_CNF12_0;
-	GPIOA->CRH &= (~GPIO_CRH_CNF12_1);
-	GPIOA->CRH |= GPIO_CRH_MODE12;// PA_12 set as: Output mode, max speed 50 MHz.
-	GPIOA->BRR = GPIO_BRR_BR12;
+  // PA_12 output mode: OD = 0
+  GPIOA->CRH |= GPIO_CRH_CNF12_0;
+  GPIOA->CRH &= (~GPIO_CRH_CNF12_1);
+  GPIOA->CRH |= GPIO_CRH_MODE12;// PA_12 set as: Output mode, max speed 50 MHz.
+  GPIOA->BRR = GPIO_BRR_BR12;
 
-	// Disable USB Clock on APB1
-	RCC->APB1ENR &=  ~RCC_APB1ENR_USBEN;
+  // Disable USB Clock on APB1
+  RCC->APB1ENR &=  ~RCC_APB1ENR_USBEN;
 }
 
 void tusb_open_device(tusb_device_t* dev)
 {
   // PA12 = Input
-	RCC->APB2ENR |= RCC_APB2ENR_IOPAEN;
-	GPIOA->CRH |= GPIO_CRH_CNF12_0;
-	GPIOA->CRH &= ~GPIO_CRH_CNF12_1;
-	GPIOA->CRH &= ~GPIO_CRH_MODE12;  
+  RCC->APB2ENR |= RCC_APB2ENR_IOPAEN;
+  GPIOA->CRH |= GPIO_CRH_CNF12_0;
+  GPIOA->CRH &= ~GPIO_CRH_CNF12_1;
+  GPIOA->CRH &= ~GPIO_CRH_MODE12;  
   
   RCC->APB1ENR |= RCC_APB1ENR_USBEN;
   
-	GetUSB(dev)->CNTR = (USB_CNTR_FRES);
-	GetUSB(dev)->CNTR = (0);
+  GetUSB(dev)->CNTR = (USB_CNTR_FRES);
+  GetUSB(dev)->CNTR = (0);
 
   // wait reset finish
-	while (!((GetUSB(dev)->ISTR) & USB_ISTR_RESET));
+  while (!((GetUSB(dev)->ISTR) & USB_ISTR_RESET));
   
-	GetUSB(dev)->ISTR = (0);
+  GetUSB(dev)->ISTR = (0);
   GetUSB(dev)->BTABLE = (BTABLE_ADDRESS);
-	GetUSB(dev)->CNTR = (IMR_MSK);
+  GetUSB(dev)->CNTR = (IMR_MSK);
 #if defined(HAS_DOUBLE_BUFFER)
   NVIC_EnableIRQ(USB_HP_CAN1_TX_IRQn);
 #endif
@@ -134,52 +134,52 @@ void USB_LP_CAN1_RX0_IRQHandler(void)
      tusb_ep_handler(dev, wIstr & USB_ISTR_EP_ID);
   }
   
-	if (wIstr & USB_ISTR_RESET) {
-		GetUSB(dev)->ISTR = (USB_CLR_RESET);
+  if (wIstr & USB_ISTR_RESET) {
+    GetUSB(dev)->ISTR = (USB_CLR_RESET);
     GetUSB(dev)->BTABLE = (BTABLE_ADDRESS);
     tusb_reconfig(dev);
     GetUSB(dev)->DADDR = (0 | USB_DADDR_EF);
-	}
+  }
 if( IMR_MSK & USB_ISTR_PMAOVR){
-	if (wIstr & USB_ISTR_PMAOVR) {
-		GetUSB(dev)->ISTR = (USB_CLR_PMAOVR);
-	}
+  if (wIstr & USB_ISTR_PMAOVR) {
+    GetUSB(dev)->ISTR = (USB_CLR_PMAOVR);
+  }
 }
 if( IMR_MSK & USB_ISTR_SUSP){
-	if (wIstr & USB_ISTR_SUSP) {
-		GetUSB(dev)->ISTR = (USB_CLR_SUSP);
-		if (GetUSB(dev)->DADDR & 0x007f) {
-			GetUSB(dev)->DADDR = (0);
-			GetUSB(dev)->CNTR &= ~USB_CNTR_SUSPM;
-		}
+  if (wIstr & USB_ISTR_SUSP) {
+    GetUSB(dev)->ISTR = (USB_CLR_SUSP);
+    if (GetUSB(dev)->DADDR & 0x007f) {
+      GetUSB(dev)->DADDR = (0);
+      GetUSB(dev)->CNTR &= ~USB_CNTR_SUSPM;
+    }
     tsub_suspend(dev);
-	}
+  }
 }
 if( IMR_MSK & USB_ISTR_ERR){
-	if (wIstr & USB_ISTR_ERR) {
-		GetUSB(dev)->ISTR = (USB_CLR_ERR);
-	}
+  if (wIstr & USB_ISTR_ERR) {
+    GetUSB(dev)->ISTR = (USB_CLR_ERR);
+  }
 }
   
 if( IMR_MSK & USB_ISTR_WKUP){
-	if (wIstr & USB_ISTR_WKUP) {
-		GetUSB(dev)->ISTR = (USB_CLR_WKUP);
+  if (wIstr & USB_ISTR_WKUP) {
+    GetUSB(dev)->ISTR = (USB_CLR_WKUP);
     tsub_resume(dev);
-	}
+  }
 }
 
 if( IMR_MSK & USB_ISTR_SOF){
-	if (wIstr & USB_ISTR_SOF) {
-		GetUSB(dev)->ISTR = (USB_CLR_SOF);
-	}
+  if (wIstr & USB_ISTR_SOF) {
+    GetUSB(dev)->ISTR = (USB_CLR_SOF);
+  }
 }
 if( IMR_MSK & USB_ISTR_ESOF){
-	if (wIstr & USB_ISTR_ESOF) {
-		GetUSB(dev)->ISTR = (USB_CLR_ESOF);
-	}
+  if (wIstr & USB_ISTR_ESOF) {
+    GetUSB(dev)->ISTR = (USB_CLR_ESOF);
+  }
 }
 
-	GetUSB(dev)->ISTR = (0);
+  GetUSB(dev)->ISTR = (0);
 }
 
 

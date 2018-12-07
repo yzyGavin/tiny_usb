@@ -54,16 +54,16 @@ static void tusb_get_descriptor(tusb_device_t* dev, tusb_setup_packet *req)
 {
   const uint8_t* desc = 0;
   uint16_t len = 0;
-	switch (HI_BYTE(req->wValue)) {
-		case USB_DESC_TYPE_DEVICE:
+  switch (HI_BYTE(req->wValue)) {
+    case USB_DESC_TYPE_DEVICE:
       desc = dev->descriptors->device;
       if(desc) len = desc[0];
       break;
-		case USB_DESC_TYPE_CONFIGURATION:
+    case USB_DESC_TYPE_CONFIGURATION:
       desc = dev->descriptors->config;
       if(desc)len = *((uint16_t*)desc + 1);
       break;
-		case USB_DESC_TYPE_REPORT:
+    case USB_DESC_TYPE_REPORT:
       desc = tusb_get_report_descriptor(dev, req, &len);
       break;
     case USB_DESC_TYPE_STRING:
@@ -81,9 +81,9 @@ static void tusb_get_descriptor(tusb_device_t* dev, tusb_setup_packet *req)
 #endif
       break;
     }
-	}
+  }
   tusb_send_data(dev, 0, desc,
-					req->wLength > len ? len : req->wLength);
+          req->wLength > len ? len : req->wLength);
 }
 
 #if defined(USB_OTG_FS) || defined(USB_OTG_HS)
@@ -123,7 +123,7 @@ static void tusb_vendor_request(tusb_device_t* dev, tusb_setup_packet* setup_req
   }
   // TODO: Handle length more than 0xffff
   tusb_send_data(dev, 0, desc,
-					setup_req->wLength > len ? len : setup_req->wLength);
+          setup_req->wLength > len ? len : setup_req->wLength);
 }
 #endif
 
@@ -241,10 +241,10 @@ void tusb_ep_tx_handler(tusb_device_t* dev, uint8_t ep)
 #else
 void tusb_ep_handler(tusb_device_t* dev, uint8_t EPn)
 {
-	uint16_t EP = PCD_GET_ENDPOINT(GetUSB(dev), EPn);
-	if (EP & USB_EP_CTR_RX) {
-		if (EPn == 0) {
-			if (EP & USB_EP_SETUP) {
+  uint16_t EP = PCD_GET_ENDPOINT(GetUSB(dev), EPn);
+  if (EP & USB_EP_CTR_RX) {
+    if (EPn == 0) {
+      if (EP & USB_EP_SETUP) {
         // Handle setup packet
         tusb_read_ep0(dev, &dev->setup);
         tusb_setup_packet *setup_req = &dev->setup;
@@ -257,7 +257,7 @@ void tusb_ep_handler(tusb_device_t* dev, uint8_t EPn)
         }else{
           tusb_standard_request(dev, setup_req);
         }
-			}else{
+      }else{
         // Handle ep 0 data packet
         if(dev->Ep[0].rx_buf){
           tusb_ep_data* ep = &dev->Ep[0];
@@ -277,11 +277,11 @@ void tusb_ep_handler(tusb_device_t* dev, uint8_t EPn)
       }
       TUSB_CLEAR_RX_CTR(GetUSB(dev), PCD_ENDP0, EP);
       TUSB_SET_RX_STATUS(GetUSB(dev), PCD_ENDP0, EP, USB_EP_RX_VALID);
-		}else{
+    }else{
       TUSB_CLEAR_RX_CTR(GetUSB(dev), EPn, EP);
       tusb_recv_data(dev, EPn, EP);
     }
-	}
+  }
   if ( (EP & USB_EP_CTR_TX)) { // something transmitted
     if(EPn == 0 && dev->status_callback){
       // invoke status transmitted call back for ep0
@@ -290,7 +290,7 @@ void tusb_ep_handler(tusb_device_t* dev, uint8_t EPn)
     }
     TUSB_CLEAR_TX_CTR(GetUSB(dev), EPn, EP);
     tusb_send_data_done(dev, EPn, EP);
-	}
+  }
 }
 #endif
 

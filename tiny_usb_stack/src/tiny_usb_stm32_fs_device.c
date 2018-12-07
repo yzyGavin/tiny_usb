@@ -58,18 +58,18 @@ static void tusb_pma_tx(tusb_device_t* dev, pma_record* pma, const void* data, u
 #ifdef ALIGNED
   const uint16_t *src = ( const uint16_t *)data;
   for (uint8_t i = 0; i < count; i++) {
-		dest->data = *src;
-		dest++;
-		src++;
-	}
+    dest->data = *src;
+    dest++;
+    src++;
+  }
 #else
   const uint8_t *src = ( const uint8_t *)data;
   for (uint8_t i = 0; i < count; i++) {
     uint16_t v = src[0] | (src[1]<<8);
     src+=2;
-		dest->data = v;
-		dest++;
-	}
+    dest->data = v;
+    dest++;
+  }
 #endif
 }
 
@@ -82,21 +82,21 @@ static uint32_t tusb_pma_rx(tusb_device_t* dev, pma_record* pma, void* data)
 #ifdef ALIGNED
   uint16_t *dest = (uint16_t *) data;
   for (uint32_t i = 0; i < count; i++) {
-		*dest = src->data;
-		dest++;
-		src++;
-	}
+    *dest = src->data;
+    dest++;
+    src++;
+  }
 #else
   uint8_t *dest = (uint8_t *) data;
   for (uint32_t i = 0; i < count; i++) {
-		uint16_t v = src->data;
+    uint16_t v = src->data;
     *dest = (uint8_t)v;
     dest++;
     v>>=8;
     *dest = (uint8_t)v;
     dest++;
-		src++;
-	}
+    src++;
+  }
 #endif
   return len;
 }

@@ -28,11 +28,11 @@
 #include "tiny_usb_platform.h"
 
 typedef struct _tusb_setup_packet{
-	uint8_t  bmRequestType;
-	uint8_t  bRequest;
-	uint16_t wValue;
-	uint16_t wIndex;
-	uint16_t wLength;
+  uint8_t  bmRequestType;
+  uint8_t  bRequest;
+  uint16_t wValue;
+  uint16_t wIndex;
+  uint16_t wLength;
 } tusb_setup_packet;
 
 #define LO_BYTE(x)   (uint8_t)(x)
