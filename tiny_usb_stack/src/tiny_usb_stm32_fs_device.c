@@ -32,9 +32,9 @@ void set_rx_valid(tusb_device_t* dev, uint8_t EPn);
 
 
 // Private functions used by tiny usb core
-void tusb_send_data_done(tusb_device_t* dev, uint8_t EPn, uint16_t EP);
+void tusb_send_data_done(tusb_device_t* dev, uint8_t EPn);
 uint32_t tusb_read_ep0(tusb_device_t* dev, void* buf);
-void tusb_recv_data(tusb_device_t* dev, uint8_t EPn, uint16_t EP);
+void tusb_recv_data(tusb_device_t* dev, uint8_t EPn);
 
 
 // Public callback function override by user
@@ -174,10 +174,10 @@ int tusb_send_data(tusb_device_t* dev, uint8_t EPn, const void* data, uint16_t l
 }
 
 // called by the ep data interrupt handler when last packet tranfer done
-void tusb_send_data_done(tusb_device_t* dev, uint8_t EPn, uint16_t EP)
+void tusb_send_data_done(tusb_device_t* dev, uint8_t EPn)
 {
   tusb_ep_data* ep = &dev->Ep[EPn];
-  //uint16_t  EP = PCD_GET_ENDPOINT(GetUSB(dev), EPn);
+  uint16_t  EP = PCD_GET_ENDPOINT(GetUSB(dev), EPn);
   pma_record* pma;
   if(DOUBLE_BUFF && (EP & (USB_EP_TYPE_MASK | USB_EP_KIND)) == (USB_EP_BULK | USB_EP_KIND)){
     // double buffer bulk end point, toggle first then copy data
@@ -246,9 +246,10 @@ uint32_t tusb_read_ep0(tusb_device_t* dev, void* buf)
 }
 
 // called by the ep data interrupt handler when got data
-void tusb_recv_data(tusb_device_t* dev, uint8_t EPn, uint16_t EP)
+void tusb_recv_data(tusb_device_t* dev, uint8_t EPn)
 {
   tusb_ep_data* ep = &dev->Ep[EPn];
+  uint16_t  EP = PCD_GET_ENDPOINT(GetUSB(dev), EPn);
   pma_record* pma = 0;
   if(DOUBLE_BUFF && (EP & (USB_EP_TYPE_MASK | USB_EP_KIND)) == (USB_EP_BULK | USB_EP_KIND)){
     // double buffer bulk end point

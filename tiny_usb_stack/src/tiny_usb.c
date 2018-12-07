@@ -173,6 +173,7 @@ static void tusb_standard_request(tusb_device_t* dev, tusb_setup_packet* setup_r
     tusb_send_data(dev, 0, (uint16_t *) &dev->status, 2);
     break;
   
+  // Only support one configuration, so just save and return the config value
   case USB_REQ_GET_CONFIGURATION:
     tusb_send_data(dev, 0, (uint16_t *) &dev->config, 1);
     break;
@@ -181,7 +182,7 @@ static void tusb_standard_request(tusb_device_t* dev, tusb_setup_packet* setup_r
     dev->config = LO_BYTE(setup_req->wValue);
     tusb_send_data(dev, 0, 0, 0);
     break;
-  
+  // Only support one alt setting, so just save and return the alt value
   case USB_REQ_GET_INTERFACE:
     tusb_send_data(dev, 0, &dev->alt_cfg, 1);
     break;
@@ -191,28 +192,27 @@ static void tusb_standard_request(tusb_device_t* dev, tusb_setup_packet* setup_r
     break;
   
   default:
-    tusb_send_data(dev, 0, 0, 0);
+    // Error condition, stall both tx and rx
 #if defined(USB_OTG_FS) || defined(USB_OTG_HS)
     {
       PCD_TypeDef* USBx =  GetUSB(dev);
-      USBx_INEP(0)->DIEPCTL &= ~(USB_OTG_DIEPCTL_EPDIS);
       USBx_INEP(0)->DIEPCTL |= USB_OTG_DIEPCTL_STALL;
+      USBx_OUTEP(0)->DOEPCTL |= USB_OTG_DOEPCTL_STALL;
     }
 #else
-    PCD_SET_EP_TX_STATUS(GetUSB(dev), 0 , USB_EP_TX_STALL);
+    PCD_SET_EP_TXRX_STATUS(GetUSB(dev), 0, USB_EP_RX_STALL, USB_EP_TX_STALL); 
 #endif
     break;
   }
 }
 
 // forward declare for some internal function
-void tusb_recv_data(tusb_device_t* dev, uint8_t EPn, uint16_t EP);
-void tusb_send_data_done(tusb_device_t* dev, uint8_t EPn, uint16_t EP);
+void tusb_recv_data(tusb_device_t* dev, uint8_t EPn);
+void tusb_send_data_done(tusb_device_t* dev, uint8_t EPn);
 uint32_t tusb_read_ep0(tusb_device_t* dev, void* buf);
 void tusb_read_data(tusb_device_t* dev, void* buf, uint32_t len);
-// end point data handler
-#if defined(USB_OTG_FS) || defined(USB_OTG_HS)
 
+// Setup packet handler
 void tusb_setup_handler(tusb_device_t* dev)
 {
   tusb_setup_packet *setup_req = &dev->setup;
@@ -227,18 +227,20 @@ void tusb_setup_handler(tusb_device_t* dev)
   }
 }
 
+// Ep tx done handler
 void tusb_ep_tx_handler(tusb_device_t* dev, uint8_t ep)
 {
   //PCD_TypeDef* USBx = dev->handle;
-  if(ep == 0 && dev->status_callback && dev->Ep[0].tx_size == 0){
+  if(ep == 0 && dev->status_callback){
     // invoke status transmitted call back for ep0
     dev->status_callback(dev);
     dev->status_callback = 0;
   }
-  tusb_send_data_done(dev, ep, ep);
+  tusb_send_data_done(dev, ep);
 }
 
-#else
+#if defined(USB)
+// end point handler for USB_FS core
 void tusb_ep_handler(tusb_device_t* dev, uint8_t EPn)
 {
   uint16_t EP = PCD_GET_ENDPOINT(GetUSB(dev), EPn);
@@ -247,16 +249,7 @@ void tusb_ep_handler(tusb_device_t* dev, uint8_t EPn)
       if (EP & USB_EP_SETUP) {
         // Handle setup packet
         tusb_read_ep0(dev, &dev->setup);
-        tusb_setup_packet *setup_req = &dev->setup;
-        if( (setup_req->bmRequestType & USB_REQ_TYPE_MASK) == USB_REQ_TYPE_CLASS){
-          tusb_class_request(dev, setup_req);
-#if defined(HAS_WCID)
-        }else if((setup_req->bmRequestType & USB_REQ_TYPE_MASK) == USB_REQ_TYPE_VENDOR){
-          tusb_vendor_request(dev, setup_req);
-#endif
-        }else{
-          tusb_standard_request(dev, setup_req);
-        }
+        tusb_setup_handler(dev);
       }else{
         // Handle ep 0 data packet
         if(dev->Ep[0].rx_buf){
@@ -279,17 +272,12 @@ void tusb_ep_handler(tusb_device_t* dev, uint8_t EPn)
       TUSB_SET_RX_STATUS(GetUSB(dev), PCD_ENDP0, EP, USB_EP_RX_VALID);
     }else{
       TUSB_CLEAR_RX_CTR(GetUSB(dev), EPn, EP);
-      tusb_recv_data(dev, EPn, EP);
+      tusb_recv_data(dev, EPn);
     }
   }
   if ( (EP & USB_EP_CTR_TX)) { // something transmitted
-    if(EPn == 0 && dev->status_callback){
-      // invoke status transmitted call back for ep0
-      dev->status_callback(dev);
-      dev->status_callback = 0;
-    }
     TUSB_CLEAR_TX_CTR(GetUSB(dev), EPn, EP);
-    tusb_send_data_done(dev, EPn, EP);
+    tusb_ep_tx_handler(dev, EPn);
   }
 }
 #endif
