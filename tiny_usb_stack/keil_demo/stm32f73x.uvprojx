@@ -382,14 +382,14 @@
           <GroupName>tiny_usb_stack</GroupName>
           <Files>
             <File>
-              <FileName>tiny_usb_stm32f7.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\src\tiny_usb_stm32f7.c</FilePath>
-            </File>
-            <File>
               <FileName>tiny_usb.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\src\tiny_usb.c</FilePath>
+            </File>
+            <File>
+              <FileName>tiny_usb_stm32_otg_device.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\src\tiny_usb_stm32_otg_device.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -1087,14 +1087,14 @@
           <GroupName>tiny_usb_stack</GroupName>
           <Files>
             <File>
-              <FileName>tiny_usb_stm32f7.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\src\tiny_usb_stm32f7.c</FilePath>
-            </File>
-            <File>
               <FileName>tiny_usb.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\src\tiny_usb.c</FilePath>
+            </File>
+            <File>
+              <FileName>tiny_usb_stm32_otg_device.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\src\tiny_usb_stm32_otg_device.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -1810,14 +1810,14 @@
           <GroupName>tiny_usb_stack</GroupName>
           <Files>
             <File>
-              <FileName>tiny_usb_stm32f7.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\src\tiny_usb_stm32f7.c</FilePath>
-            </File>
-            <File>
               <FileName>tiny_usb.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\src\tiny_usb.c</FilePath>
+            </File>
+            <File>
+              <FileName>tiny_usb_stm32_otg_device.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\src\tiny_usb_stm32_otg_device.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -2533,14 +2533,14 @@
           <GroupName>tiny_usb_stack</GroupName>
           <Files>
             <File>
-              <FileName>tiny_usb_stm32f7.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\src\tiny_usb_stm32f7.c</FilePath>
-            </File>
-            <File>
               <FileName>tiny_usb.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\src\tiny_usb.c</FilePath>
+            </File>
+            <File>
+              <FileName>tiny_usb_stm32_otg_device.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\src\tiny_usb_stm32_otg_device.c</FilePath>
             </File>
           </Files>
         </Group>

@@ -387,9 +387,9 @@
               <FilePath>..\src\tiny_usb.c</FilePath>
             </File>
             <File>
-              <FileName>tiny_usb_stm32f0f1.c</FileName>
+              <FileName>tiny_usb_stm32_fs_device.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\src\tiny_usb_stm32f0f1.c</FilePath>
+              <FilePath>..\src\tiny_usb_stm32_fs_device.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -1089,9 +1089,9 @@
               <FilePath>..\src\tiny_usb.c</FilePath>
             </File>
             <File>
-              <FileName>tiny_usb_stm32f0f1.c</FileName>
+              <FileName>tiny_usb_stm32_fs_device.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\src\tiny_usb_stm32f0f1.c</FilePath>
+              <FilePath>..\src\tiny_usb_stm32_fs_device.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -1809,9 +1809,9 @@
               <FilePath>..\src\tiny_usb.c</FilePath>
             </File>
             <File>
-              <FileName>tiny_usb_stm32f0f1.c</FileName>
+              <FileName>tiny_usb_stm32_fs_device.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\src\tiny_usb_stm32f0f1.c</FilePath>
+              <FilePath>..\src\tiny_usb_stm32_fs_device.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -2529,9 +2529,9 @@
               <FilePath>..\src\tiny_usb.c</FilePath>
             </File>
             <File>
-              <FileName>tiny_usb_stm32f0f1.c</FileName>
+              <FileName>tiny_usb_stm32_fs_device.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\src\tiny_usb_stm32f0f1.c</FilePath>
+              <FilePath>..\src\tiny_usb_stm32_fs_device.c</FilePath>
             </File>
           </Files>
         </Group>
