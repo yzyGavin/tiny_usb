@@ -36,7 +36,7 @@
 #define HID_REQ_GET_REPORT            0x01
 
 
-__ALIGN(2) static uint8_t hid_cmd[16];
+__ALIGN_BEGIN static uint8_t hid_cmd[16] __ALIGN_END;
 static uint8_t USBD_HID_IdleState;
 static uint8_t USBD_HID_Protocol;
 void HID_DataoutRequest(tusb_device_t* dev)

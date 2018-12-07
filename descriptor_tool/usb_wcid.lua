@@ -78,7 +78,7 @@ function WCIDFeature(param)
     desc.outputHeader = function(desc)
         local prefix = desc.prefix or ""
         return "#define  "..prefix.."WCID_DESCRIPTOR_SIZE  (".. desc.dwLength .. ")\n"
-        .. "WEAK __ALIGN(2)  const uint8_t "..prefix.."WCIDDescriptor ["..desc.dwLength.."] = {\n"
+        .. "WEAK __ALIGN_BEGIN const uint8_t "..prefix.."WCIDDescriptor ["..desc.dwLength.."] __ALIGN_END = {\n"
     end
     
     desc.outputTail = function(desc)
@@ -163,7 +163,7 @@ function WCIDProperties(param)
     desc.outputHeader = function(desc)
         local prefix = desc.prefix or ""
         return "#define  "..prefix.."WCID_PROPERTIES_SIZE  (".. desc.dwLength .. ")\n"
-        .. "WEAK __ALIGN(2)  const uint8_t "..prefix.."WCIDProperties ["..desc.dwLength.."] = {\n"
+        .. "WEAK __ALIGN_BEGIN const uint8_t "..prefix.."WCIDProperties ["..desc.dwLength.."] __ALIGN_END = {\n"
     end
     
     desc.outputTail = function(desc)

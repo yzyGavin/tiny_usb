@@ -91,7 +91,7 @@ function Device(param)
     desc.declare = "#define  "..desc.prefix.."DEVICE_DESCRIPTOR_SIZE  (".. desc.bLength .. ")\n"
      .. "extern const uint8_t "..desc.prefix.."DeviceDescriptor ["..desc.bLength.."];\n"
     desc.outputHeader = "#define  "..desc.prefix.."DEVICE_DESCRIPTOR_SIZE  (".. desc.bLength .. ")\n"
-    .. "__ALIGN(2)  const uint8_t "..desc.prefix.."DeviceDescriptor ["..desc.bLength.."] = {\n"
+    .. "__ALIGN_BEGIN  const uint8_t "..desc.prefix.."DeviceDescriptor ["..desc.bLength.."] __ALIGN_END = {\n"
     -- output tail and followed config descriptor and string descriptor
     desc.outputTail = function(desc)
         local r = "};\n\n"
@@ -205,7 +205,7 @@ function Config(param)
         desc.declare = desc.declare .. "#define  "..desc.prefix.."CONFIG_DESCRIPTOR_SIZE  (".. desc.wTotalLength .. ")\n"
         .. "extern const uint8_t "..desc.prefix.."ConfigDescriptor ["..desc.wTotalLength.."];\n"
         local r = r .. "#define  "..desc.prefix.."CONFIG_DESCRIPTOR_SIZE  (".. desc.wTotalLength .. ")\n"
-        .. "__ALIGN(2)  const uint8_t "..desc.prefix.."ConfigDescriptor ["..desc.wTotalLength.."] = {\n"
+        .. "__ALIGN_BEGIN const uint8_t "..desc.prefix.."ConfigDescriptor ["..desc.wTotalLength.."] __ALIGN_END = {\n"
         return r
     end
     
@@ -399,7 +399,7 @@ function StringDescriptor(param)
         local prefix = desc.prefix or ""
         local r = "#define "..prefix.."STRING_DESCRIPTOR" .. (desc.index or 0) .. '_STR          "'..disStr(desc.string)..'"\n'
         r = r .. "#define "..prefix.."STRING_DESCRIPTOR" .. (desc.index or 0) .. '_SIZE          ('..desc.bLength..')\n'
-        return r .. "WEAK __ALIGN(2) const uint8_t  "..prefix.."StringDescriptor".. (desc.index or 0) .." [" .. desc.bLength .. "]= {\n"
+        return r .. "WEAK __ALIGN_BEGIN const uint8_t  "..prefix.."StringDescriptor".. (desc.index or 0) .." [" .. desc.bLength .. "] __ALIGN_END = {\n"
     end
     desc.outputTail = "};\n"
     return desc

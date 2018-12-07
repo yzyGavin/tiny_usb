@@ -45,7 +45,7 @@ extern const uint8_t $prefix$ReportDescriptor_if$ifn$[$prefix$REPORT_DESCRIPTOR_
         
         r = r .. string.gsub([[
 #define $prefix$REPORT_DESCRIPTOR_SIZE_IF$ifn$ $size$
-WEAK __ALIGN(2) const uint8_t $prefix$ReportDescriptor_if$ifn$[$prefix$REPORT_DESCRIPTOR_SIZE_IF$ifn$] = {
+WEAK __ALIGN_BEGIN const uint8_t $prefix$ReportDescriptor_if$ifn$[$prefix$REPORT_DESCRIPTOR_SIZE_IF$ifn$] __ALIGN_END = {
 ]], "%$(%w+)%$", {prefix = hid.prefix, ifn = hid.bInterfaceNumber, size = #hid.report })
         if hid.report.text then
         r = r .. "\n" .. hid.report.text .. "\n"

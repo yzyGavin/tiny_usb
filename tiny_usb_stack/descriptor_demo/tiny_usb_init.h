@@ -1,7 +1,7 @@
 /*
  * Name   :  tiny_usb_init.h
  * Author :  admin@xtoolbox.org
- * Date   :  2018-12-07 15:30:20
+ * Date   :  2018-12-07 15:47:53
  * Desc   :  This file is auto generate by the tiny_usb script tool
  *           Visit https://github.com/xtoolbox/tiny_usb for more info
  */

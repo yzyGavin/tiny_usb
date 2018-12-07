@@ -41,13 +41,7 @@
 
 #include "tiny_usb_init.h"
 
-#if defined(ALIGNED)
-#define  __ALIGN(x) __align(x)
-#else
-#define  __ALIGN(x)
-#endif
-
-#define WEAK     __attribute__((weak))
+#define WEAK     __weak
 
 
 #endif /* __USBD_CONF__H__ */

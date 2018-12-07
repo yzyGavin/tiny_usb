@@ -105,7 +105,7 @@ static uint16_t VCP_Ctrl (uint32_t Cmd, uint8_t* Buf, uint32_t Len)
   return 0;
 }
 
-__ALIGN(2) static uint8_t cdc_cmd[8];
+__ALIGN_BEGIN static uint8_t cdc_cmd[8] __ALIGN_END;
 void CDC_DataoutRequest(tusb_device_t* dev)
 {
   uint32_t len = dev->Ep[0].rx_buf - cdc_cmd;
