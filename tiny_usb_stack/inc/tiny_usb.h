@@ -40,16 +40,14 @@ typedef struct _tusb_setup_packet{
 
 typedef struct _tusb_ep_data
 {
-  const uint8_t*  tx_buf;
-  uint8_t*        rx_buf;
+  const uint8_t*  tx_buf;       // tx buffer
+  uint8_t*        rx_buf;       // rx buffer
   uint16_t        tx_size;      // data remain to transfer
   uint16_t        rx_size;      // rx buffer size
   uint16_t        rx_count;     // current received data
-#if defined(USB_OTG_FS) || defined(USB_OTG_HS)
-  uint16_t        tx_last_size;
-#else
-  uint8_t         tx_last_size; // last tx data length
-  uint8_t         tx_pushed;    // data packet number in the PMA buffer
+  uint16_t        tx_last_size; // last tx data length
+#if defined(USB)
+  uint32_t        tx_pushed;    // data packet number in the PMA buffer
 #endif
 }tusb_ep_data;
 
@@ -140,7 +138,7 @@ int tusb_on_rx_done(tusb_device_t* dev, uint8_t EPn, const void* data, uint16_t 
 void tusb_reconfig(tusb_device_t* dev);
 
 // called when got class specified request
-// WEAK function, default send a zero length IN packet
+// WEAK function, default send a zero length IN packet (which means status IN)
 void tusb_class_request(tusb_device_t* dev, tusb_setup_packet* setup_req);
 
 // get device report descripor when need
