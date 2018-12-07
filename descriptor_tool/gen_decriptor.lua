@@ -49,7 +49,13 @@ function outputCode(fname, script, content, isBody)
 #ifndef ]]..defname..[[
 
 #define ]]..defname..[[
+// include this file in "usbd_conf.h"
 
+// forward declare the tusb_descriptors struct
+typedef struct _tusb_descriptors tusb_descriptors;
+]])
+    else
+    f:write([[
 #include "tiny_usb.h"
 ]])
     end

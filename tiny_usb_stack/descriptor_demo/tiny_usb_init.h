@@ -1,7 +1,7 @@
 /*
  * Name   :  tiny_usb_init.h
  * Author :  admin@xtoolbox.org
- * Date   :  2018-12-05 17:08:25
+ * Date   :  2018-12-07 15:30:20
  * Desc   :  This file is auto generate by the tiny_usb script tool
  *           Visit https://github.com/xtoolbox/tiny_usb for more info
  */
@@ -184,8 +184,10 @@ Device {
   ------------- lua script end   ------------
  */
 #ifndef ____TINY_USB_STACK_DESCRIPTOR_DEMO_TINY_USB_INIT_H_
-#define ____TINY_USB_STACK_DESCRIPTOR_DEMO_TINY_USB_INIT_H_
-#include "tiny_usb.h"
+#define ____TINY_USB_STACK_DESCRIPTOR_DEMO_TINY_USB_INIT_H_// include this file in "usbd_conf.h"
+
+// forward declare the tusb_descriptors struct
+typedef struct _tusb_descriptors tusb_descriptors;
 /////////////////////////////////////////////////////////////////////
 //// EndPoint for device1 define begin
 /////////////////////////////////////////////////////////////////////
@@ -367,6 +369,18 @@ extern const uint8_t WCID_StringDescriptor_MSOS[];
 #endif
 
 // Descriptor declare
+#define  BULK_DEVICE_DESCRIPTOR_SIZE  (18)
+extern const uint8_t BULK_DeviceDescriptor [18];
+#define  BULK_CONFIG_DESCRIPTOR_SIZE  (55)
+extern const uint8_t BULK_ConfigDescriptor [55];
+#define BULK_DEV_STATUS0      USB_CONFIG_SELF_POWERED
+#define BULK_DEV_STATUS1      USB_CONFIG_REMOTE_WAKEUP
+#define BULK_DEV_STATUS    ((BULK_DEV_STATUS0) |(BULK_DEV_STATUS1) )
+
+extern const uint8_t* const BULK_StringDescriptors[BULK_STRING_COUNT];
+extern const tusb_descriptors BULK_descriptors;
+
+
 /////////////////////////////////////////////////////////////////////
 //// EndPoint for device1 define end
 /////////////////////////////////////////////////////////////////////
@@ -531,6 +545,18 @@ const uint8_t CDC_rxEpMaxSize[] = \
 
 // Enable double buffer related code
 #define  HAS_DOUBLE_BUFFER
+
+
+#define  CDC_DEVICE_DESCRIPTOR_SIZE  (18)
+extern const uint8_t CDC_DeviceDescriptor [18];
+#define  CDC_CONFIG_DESCRIPTOR_SIZE  (67)
+extern const uint8_t CDC_ConfigDescriptor [67];
+#define CDC_DEV_STATUS0      USB_CONFIG_SELF_POWERED
+#define CDC_DEV_STATUS1      USB_CONFIG_REMOTE_WAKEUP
+#define CDC_DEV_STATUS    ((CDC_DEV_STATUS0) |(CDC_DEV_STATUS1) )
+
+extern const uint8_t* const CDC_StringDescriptors[CDC_STRING_COUNT];
+extern const tusb_descriptors CDC_descriptors;
 
 
 /////////////////////////////////////////////////////////////////////
@@ -781,6 +807,18 @@ const uint8_t CDC7_rxEpMaxSize[] = \
 #endif
 
 
+#define  CDC7_DEVICE_DESCRIPTOR_SIZE  (18)
+extern const uint8_t CDC7_DeviceDescriptor [18];
+#define  CDC7_CONFIG_DESCRIPTOR_SIZE  (471)
+extern const uint8_t CDC7_ConfigDescriptor [471];
+#define CDC7_DEV_STATUS0      USB_CONFIG_SELF_POWERED
+#define CDC7_DEV_STATUS1      USB_CONFIG_REMOTE_WAKEUP
+#define CDC7_DEV_STATUS    ((CDC7_DEV_STATUS0) |(CDC7_DEV_STATUS1) )
+
+extern const uint8_t* const CDC7_StringDescriptors[CDC7_STRING_COUNT];
+extern const tusb_descriptors CDC7_descriptors;
+
+
 /////////////////////////////////////////////////////////////////////
 //// EndPoint for device3 define end
 /////////////////////////////////////////////////////////////////////
@@ -919,6 +957,20 @@ const uint8_t HID_rxEpMaxSize[] = \
 #undef   EP_NUM
 #define  EP_NUM  HID_EP_NUM
 #endif
+
+
+#define  HID_DEVICE_DESCRIPTOR_SIZE  (18)
+extern const uint8_t HID_DeviceDescriptor [18];
+#define HID_REPORT_DESCRIPTOR_SIZE_IF0 24
+extern const uint8_t HID_ReportDescriptor_if0[HID_REPORT_DESCRIPTOR_SIZE_IF0];
+#define  HID_CONFIG_DESCRIPTOR_SIZE  (41)
+extern const uint8_t HID_ConfigDescriptor [41];
+#define HID_DEV_STATUS0      USB_CONFIG_SELF_POWERED
+#define HID_DEV_STATUS1      USB_CONFIG_REMOTE_WAKEUP
+#define HID_DEV_STATUS    ((HID_DEV_STATUS0) |(HID_DEV_STATUS1) )
+
+extern const uint8_t* const HID_StringDescriptors[HID_STRING_COUNT];
+extern const tusb_descriptors HID_descriptors;
 
 
 /////////////////////////////////////////////////////////////////////
@@ -1167,6 +1219,32 @@ const uint8_t HID7_rxEpMaxSize[] = \
 #undef   EP_NUM
 #define  EP_NUM  HID7_EP_NUM
 #endif
+
+
+#define  HID7_DEVICE_DESCRIPTOR_SIZE  (18)
+extern const uint8_t HID7_DeviceDescriptor [18];
+#define HID7_REPORT_DESCRIPTOR_SIZE_IF0 24
+extern const uint8_t HID7_ReportDescriptor_if0[HID7_REPORT_DESCRIPTOR_SIZE_IF0];
+#define HID7_REPORT_DESCRIPTOR_SIZE_IF1 24
+extern const uint8_t HID7_ReportDescriptor_if1[HID7_REPORT_DESCRIPTOR_SIZE_IF1];
+#define HID7_REPORT_DESCRIPTOR_SIZE_IF2 24
+extern const uint8_t HID7_ReportDescriptor_if2[HID7_REPORT_DESCRIPTOR_SIZE_IF2];
+#define HID7_REPORT_DESCRIPTOR_SIZE_IF3 24
+extern const uint8_t HID7_ReportDescriptor_if3[HID7_REPORT_DESCRIPTOR_SIZE_IF3];
+#define HID7_REPORT_DESCRIPTOR_SIZE_IF4 24
+extern const uint8_t HID7_ReportDescriptor_if4[HID7_REPORT_DESCRIPTOR_SIZE_IF4];
+#define HID7_REPORT_DESCRIPTOR_SIZE_IF5 24
+extern const uint8_t HID7_ReportDescriptor_if5[HID7_REPORT_DESCRIPTOR_SIZE_IF5];
+#define HID7_REPORT_DESCRIPTOR_SIZE_IF6 24
+extern const uint8_t HID7_ReportDescriptor_if6[HID7_REPORT_DESCRIPTOR_SIZE_IF6];
+#define  HID7_CONFIG_DESCRIPTOR_SIZE  (233)
+extern const uint8_t HID7_ConfigDescriptor [233];
+#define HID7_DEV_STATUS0      (0)
+#define HID7_DEV_STATUS1      (0)
+#define HID7_DEV_STATUS    ((HID7_DEV_STATUS0) |(HID7_DEV_STATUS1) )
+
+extern const uint8_t* const HID7_StringDescriptors[HID7_STRING_COUNT];
+extern const tusb_descriptors HID7_descriptors;
 
 
 /////////////////////////////////////////////////////////////////////

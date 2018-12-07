@@ -40,7 +40,7 @@ local function outputReportDescriptor(hid)
     if hid.report then
         hid.declare = string.gsub([[
 #define $prefix$REPORT_DESCRIPTOR_SIZE_IF$ifn$ $size$
-const uint8_t $prefix$ReportDescriptor_if$ifn$[$prefix$REPORT_DESCRIPTOR_SIZE_IF$ifn$];
+extern const uint8_t $prefix$ReportDescriptor_if$ifn$[$prefix$REPORT_DESCRIPTOR_SIZE_IF$ifn$];
 ]], "%$(%w+)%$", {prefix = hid.prefix, ifn = hid.bInterfaceNumber, size = #hid.report })
         
         r = r .. string.gsub([[

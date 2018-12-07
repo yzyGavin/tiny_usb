@@ -89,7 +89,7 @@ function Device(param)
     desc.idVendor = desc.prefix .. "VID"
     desc.idProduct = desc.prefix .. "PID"
     desc.declare = "#define  "..desc.prefix.."DEVICE_DESCRIPTOR_SIZE  (".. desc.bLength .. ")\n"
-     .. "const uint8_t "..desc.prefix.."DeviceDescriptor ["..desc.bLength.."];\n"
+     .. "extern const uint8_t "..desc.prefix.."DeviceDescriptor ["..desc.bLength.."];\n"
     desc.outputHeader = "#define  "..desc.prefix.."DEVICE_DESCRIPTOR_SIZE  (".. desc.bLength .. ")\n"
     .. "__ALIGN(2)  const uint8_t "..desc.prefix.."DeviceDescriptor ["..desc.bLength.."] = {\n"
     -- output tail and followed config descriptor and string descriptor
@@ -103,7 +103,7 @@ function Device(param)
         end
         r = r .. "// Strings \n"
         local str_holder = ""--"#define ".. desc.prefix .."STRING_COUNT   " .. #desc.strings .. "\n"
-        desc.declare = desc.declare .. "const uint8_t* const "..desc.prefix.."StringDescriptors[".. desc.prefix .."STRING_COUNT];\n"
+        desc.declare = desc.declare .. "extern const uint8_t* const "..desc.prefix.."StringDescriptors[".. desc.prefix .."STRING_COUNT];\n"
         str_holder = str_holder .. "const uint8_t* const "..desc.prefix.."StringDescriptors[".. desc.prefix .."STRING_COUNT] = {\n"
         for i, str in ipairs(desc.strings) do
             str_holder = str_holder .. desc.prefix .."StringDescriptor" .. (i-1)  .. ",\n"
@@ -111,7 +111,7 @@ function Device(param)
         end
         r = r .. str_holder .. "};\n\n"
         r = r .. MakeWCID(desc)
-        desc.declare = desc.declare .. [[const tusb_descriptors ]]..desc.prefix..[[descriptors;]] .. "\n"
+        desc.declare = desc.declare .. [[extern const tusb_descriptors ]]..desc.prefix..[[descriptors;]] .. "\n"
         r = r .. "//  Device descriptors\n"
         r = r .. [[
 const tusb_descriptors ]]..desc.prefix..[[descriptors = {
@@ -203,7 +203,7 @@ function Config(param)
             end
         end
         desc.declare = desc.declare .. "#define  "..desc.prefix.."CONFIG_DESCRIPTOR_SIZE  (".. desc.wTotalLength .. ")\n"
-        .. "const uint8_t "..desc.prefix.."ConfigDescriptor ["..desc.wTotalLength.."];\n"
+        .. "extern const uint8_t "..desc.prefix.."ConfigDescriptor ["..desc.wTotalLength.."];\n"
         local r = r .. "#define  "..desc.prefix.."CONFIG_DESCRIPTOR_SIZE  (".. desc.wTotalLength .. ")\n"
         .. "__ALIGN(2)  const uint8_t "..desc.prefix.."ConfigDescriptor ["..desc.wTotalLength.."] = {\n"
         return r
@@ -232,7 +232,7 @@ function Config(param)
             desc.declare = desc.declare .. "#define "..desc.prefix.."DEV_STATUS1      USB_CONFIG_REMOTE_WAKEUP\n"
             r = r .. "#define "..desc.prefix.."DEV_STATUS1      USB_CONFIG_REMOTE_WAKEUP\n"
         else
-            desc.declare = desc.declare .. "#define "..desc.prefix.."DEV_STATUS1      USB_CONFIG_REMOTE_WAKEUP\n"
+            desc.declare = desc.declare .. "#define "..desc.prefix.."DEV_STATUS1      (0)\n"
             r = r .. "#define "..desc.prefix.."DEV_STATUS1      (0)\n"
         end
         desc.declare = desc.declare .. "#define "..desc.prefix.."DEV_STATUS    (("..desc.prefix.."DEV_STATUS0) |("..desc.prefix.."DEV_STATUS1) )\n\n"

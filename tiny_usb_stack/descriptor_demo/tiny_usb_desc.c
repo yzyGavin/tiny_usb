@@ -1,7 +1,7 @@
 /*
  * Name   :  tiny_usb_desc.c
  * Author :  admin@xtoolbox.org
- * Date   :  2018-12-05 17:08:25
+ * Date   :  2018-12-07 15:30:20
  * Desc   :  This file is auto generate by the tiny_usb script tool
  *           Visit https://github.com/xtoolbox/tiny_usb for more info
  */
@@ -183,6 +183,7 @@ Device {
 
   ------------- lua script end   ------------
  */
+#include "tiny_usb.h"
 /////////////////////////////////////////////////////////////////////
 //// Descriptor for device1 define begin
 /////////////////////////////////////////////////////////////////////

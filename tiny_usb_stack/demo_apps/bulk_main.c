@@ -24,7 +24,7 @@
 
 #include "tiny_usb.h"
 #include "string.h"
-#include "tiny_usb_desc.c"
+
 
 #define  RX_EP   PCD_ENDP2
 #define  TX_EP   PCD_ENDP1
@@ -135,4 +135,5 @@ int main(void)
   }
 }
 
-
+// include the descriptors here instead of add to project
+#include "tiny_usb_desc.c"

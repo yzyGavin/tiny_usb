@@ -312,7 +312,7 @@ local function getInitCode(epInfo)
     r = r .. "#endif\n\n"
     r = r .. "// Descriptor declare\n"
     end
-    --r = r .. (dev.declare or "") .. "\n\n"
+    r = r .. (dev.declare or "") .. "\n\n"
     return r
 end
 

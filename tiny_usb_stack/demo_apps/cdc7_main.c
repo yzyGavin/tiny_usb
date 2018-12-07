@@ -24,8 +24,6 @@
 
 #include "tiny_usb.h"
 #include "string.h"
-#include "tiny_usb_desc.c"
-
 
 #define  INTERFACE_CNT   7
 #define  MAX_EP          7
@@ -116,3 +114,5 @@ int main(void)
   }
 }
 
+// include the descriptors here instead of add to project
+#include "tiny_usb_desc.c"
