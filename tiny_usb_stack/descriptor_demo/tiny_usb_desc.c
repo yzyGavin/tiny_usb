@@ -1,7 +1,7 @@
 /*
  * Name   :  tiny_usb_desc.c
  * Author :  admin@xtoolbox.org
- * Date   :  2018-12-07 15:47:53
+ * Date   :  2018-12-12 16:47:47
  * Desc   :  This file is auto generate by the tiny_usb script tool
  *           Visit https://github.com/xtoolbox/tiny_usb for more info
  */
@@ -10,12 +10,12 @@
   Input source name:  ..\tiny_usb_stack\descriptor_demo\demo.lua  
   Content type is lua script:
   ------------- lua script begin ------------
--- DEMO USB descriptor for tiny USB stack
+-- DEMO USB descriptor for teeny USB stack
 return {
 -- Demo descriptor of Bulk device
 Device {
-    strManufacture = "tiny usb",
-    strProduct = "tiny usb bulk demo",
+    strManufacture = "teeny usb",
+    strProduct = "teeny usb bulk demo",
     strSerial = "tu123456",
     idVendor = 0x4322,
     idProduct = 0x4321,
@@ -25,25 +25,47 @@ Device {
         bMaxPower = 100,
         SelfPower = true,
         RemoteWakeup = true,
+        --Interface{
+        --    WCID = WinUSB,
+        --    EndPoint(IN(1),  BulkDouble, 64),
+        --    EndPoint(OUT(2), BulkDouble, 64),
+        --    strInterface = "teenyUsb1",
+        --},
         Interface{
             WCID = WinUSB,
             EndPoint(IN(1),  BulkDouble, 64),
             EndPoint(OUT(2), BulkDouble, 64),
-            strInterface = "TinyUsb1",
+            strInterface = "TeenyUsb2",
         },
+   }
+},
+
+
+Device {
+    strManufacture = "teeny usb",
+    strProduct = "teeny usb iso demo",
+    strSerial = "tu123456",
+    idVendor = 0x4322,
+    idProduct = 0x4322,
+    prefix = "ISO",
+    bMaxPacketSize = 8,
+    Config {
+        bMaxPower = 100,
+        SelfPower = true,
+        RemoteWakeup = true,
         Interface{
             WCID = WinUSB,
-            EndPoint(IN(3),  Bulk, 64),
-            EndPoint(OUT(4), Bulk, 64),
-            strInterface = "TinyUsb2",
+            EndPoint(IN(1),  ISO, 64),
+            EndPoint(OUT(2), ISO, 64),
+            strInterface = "TeenyUsb2",
         },
    }
 },
 
 -- Demo descriptor of CDC device
 Device {
-    strManufacture = "tiny usb",
-    strProduct = "tiny usb cdc demo",
+    strManufacture = "teeny usb",
+    strProduct = "teeny usb cdc demo",
     strSerial = "tu123456",
     idVendor = 0x03EB,    -- VID PID for Ateml CDC
     idProduct = 0x6124,
@@ -62,8 +84,8 @@ Device {
 
 -- Demo descriptor of 7 CDC device
 Device {
-    strManufacture = "tiny usb",
-    strProduct = "tiny usb cdc7 demo",
+    strManufacture = "teeny usb",
+    strProduct = "teeny usb cdc7 demo",
     strSerial = "tu123456",
     idVendor = 0x2017,   -- Win10 can drive the multiple CDC, VID PID can be any one
     idProduct = 0x0926,
@@ -112,8 +134,8 @@ Device {
 
 -- Demo descriptor of HID device
 Device {
-    strManufacture = "tiny usb",
-    strProduct = "tiny usb HID demo",
+    strManufacture = "teeny usb",
+    strProduct = "teeny usb HID demo",
     strSerial = "tu123456",
     idVendor = 0x2017,
     idProduct = 0x0927,
@@ -135,8 +157,8 @@ Device {
 
 -- Demo descriptor of 7 HID device
 Device {
-    strManufacture = "tiny usb",
-    strProduct = "tiny usb 7 HID demo",
+    strManufacture = "teeny usb",
+    strProduct = "teeny usb 7 HID demo",
     strSerial = "tu123456",
     idVendor = 0x2017,
     idProduct = 0x0928,
@@ -206,12 +228,12 @@ __ALIGN_BEGIN  const uint8_t BULK_DeviceDescriptor [18] __ALIGN_END = {
 };
 
 // Configs 
-#define  BULK_CONFIG_DESCRIPTOR_SIZE  (55)
-__ALIGN_BEGIN const uint8_t BULK_ConfigDescriptor [55] __ALIGN_END = {
+#define  BULK_CONFIG_DESCRIPTOR_SIZE  (32)
+__ALIGN_BEGIN const uint8_t BULK_ConfigDescriptor [32] __ALIGN_END = {
     0x09,                                         /* bLength */
     USB_CONFIGURATION_DESCRIPTOR_TYPE,            /* bDescriptorType */
-    0x37, 0x00,                                   /* wTotalLength */
-    0x02,                                         /* bNumInterfaces */
+    0x20, 0x00,                                   /* wTotalLength */
+    0x01,                                         /* bNumInterfaces */
     0x01,                                         /* bConfigurationValue */
     0x00,                                         /* iConfiguration */
     0xe0,                                         /* bmAttributes */
@@ -240,30 +262,6 @@ __ALIGN_BEGIN const uint8_t BULK_ConfigDescriptor [55] __ALIGN_END = {
     0x02,                                         /* bmAttributes */
     0x40, 0x00,                                   /* wMaxPacketSize */
     0x01,                                         /* bInterval */
-    /* Interface descriptor, len: 23*/
-    0x09,                                         /* bLength */
-    USB_INTERFACE_DESCRIPTOR_TYPE,                /* bDescriptorType */
-    0x01,                                         /* bInterfaceNumber */
-    0x00,                                         /* bAlternateSetting */
-    0x02,                                         /* bNumEndpoints */
-    0xff,                                         /* bInterfaceClass */
-    0xff,                                         /* bInterfaceSubClass */
-    0x00,                                         /* bInterfaceProtocol */
-    0x05,                                         /* iInterface */
-    /* EndPoint descriptor */
-    0x07,                                         /* bLength */
-    USB_ENDPOINT_DESCRIPTOR_TYPE,                 /* bDescriptorType */
-    0x83,                                         /* bEndpointAddress */
-    0x02,                                         /* bmAttributes */
-    0x40, 0x00,                                   /* wMaxPacketSize */
-    0x01,                                         /* bInterval */
-    /* EndPoint descriptor */
-    0x07,                                         /* bLength */
-    USB_ENDPOINT_DESCRIPTOR_TYPE,                 /* bDescriptorType */
-    0x04,                                         /* bEndpointAddress */
-    0x02,                                         /* bmAttributes */
-    0x40, 0x00,                                   /* wMaxPacketSize */
-    0x01,                                         /* bInterval */
 };
 
 // Power status
@@ -282,43 +280,45 @@ WEAK __ALIGN_BEGIN const uint8_t  BULK_StringDescriptor0 [4] __ALIGN_END = {
     USB_STRING_DESCRIPTOR_TYPE,                   /* bDescriptorType */
     0x09, 0x04,                                   /* wLangID0 */
 };
-#define BULK_STRING_DESCRIPTOR1_STR          "tiny usb"
-#define BULK_STRING_DESCRIPTOR1_SIZE          (18)
-WEAK __ALIGN_BEGIN const uint8_t  BULK_StringDescriptor1 [18] __ALIGN_END = {
-    0x12,                                         /* bLength */
+#define BULK_STRING_DESCRIPTOR1_STR          "teeny usb"
+#define BULK_STRING_DESCRIPTOR1_SIZE          (20)
+WEAK __ALIGN_BEGIN const uint8_t  BULK_StringDescriptor1 [20] __ALIGN_END = {
+    0x14,                                         /* bLength */
     USB_STRING_DESCRIPTOR_TYPE,                   /* bDescriptorType */
     't', 0x00,                                    /* wcChar0 */
-    'i', 0x00,                                    /* wcChar1 */
-    'n', 0x00,                                    /* wcChar2 */
-    'y', 0x00,                                    /* wcChar3 */
-    ' ', 0x00,                                    /* wcChar4 */
-    'u', 0x00,                                    /* wcChar5 */
-    's', 0x00,                                    /* wcChar6 */
-    'b', 0x00,                                    /* wcChar7 */
+    'e', 0x00,                                    /* wcChar1 */
+    'e', 0x00,                                    /* wcChar2 */
+    'n', 0x00,                                    /* wcChar3 */
+    'y', 0x00,                                    /* wcChar4 */
+    ' ', 0x00,                                    /* wcChar5 */
+    'u', 0x00,                                    /* wcChar6 */
+    's', 0x00,                                    /* wcChar7 */
+    'b', 0x00,                                    /* wcChar8 */
 };
-#define BULK_STRING_DESCRIPTOR2_STR          "tiny usb bulk demo"
-#define BULK_STRING_DESCRIPTOR2_SIZE          (38)
-WEAK __ALIGN_BEGIN const uint8_t  BULK_StringDescriptor2 [38] __ALIGN_END = {
-    0x26,                                         /* bLength */
+#define BULK_STRING_DESCRIPTOR2_STR          "teeny usb bulk demo"
+#define BULK_STRING_DESCRIPTOR2_SIZE          (40)
+WEAK __ALIGN_BEGIN const uint8_t  BULK_StringDescriptor2 [40] __ALIGN_END = {
+    0x28,                                         /* bLength */
     USB_STRING_DESCRIPTOR_TYPE,                   /* bDescriptorType */
     't', 0x00,                                    /* wcChar0 */
-    'i', 0x00,                                    /* wcChar1 */
-    'n', 0x00,                                    /* wcChar2 */
-    'y', 0x00,                                    /* wcChar3 */
-    ' ', 0x00,                                    /* wcChar4 */
-    'u', 0x00,                                    /* wcChar5 */
-    's', 0x00,                                    /* wcChar6 */
-    'b', 0x00,                                    /* wcChar7 */
-    ' ', 0x00,                                    /* wcChar8 */
-    'b', 0x00,                                    /* wcChar9 */
-    'u', 0x00,                                    /* wcChar10 */
-    'l', 0x00,                                    /* wcChar11 */
-    'k', 0x00,                                    /* wcChar12 */
-    ' ', 0x00,                                    /* wcChar13 */
-    'd', 0x00,                                    /* wcChar14 */
-    'e', 0x00,                                    /* wcChar15 */
-    'm', 0x00,                                    /* wcChar16 */
-    'o', 0x00,                                    /* wcChar17 */
+    'e', 0x00,                                    /* wcChar1 */
+    'e', 0x00,                                    /* wcChar2 */
+    'n', 0x00,                                    /* wcChar3 */
+    'y', 0x00,                                    /* wcChar4 */
+    ' ', 0x00,                                    /* wcChar5 */
+    'u', 0x00,                                    /* wcChar6 */
+    's', 0x00,                                    /* wcChar7 */
+    'b', 0x00,                                    /* wcChar8 */
+    ' ', 0x00,                                    /* wcChar9 */
+    'b', 0x00,                                    /* wcChar10 */
+    'u', 0x00,                                    /* wcChar11 */
+    'l', 0x00,                                    /* wcChar12 */
+    'k', 0x00,                                    /* wcChar13 */
+    ' ', 0x00,                                    /* wcChar14 */
+    'd', 0x00,                                    /* wcChar15 */
+    'e', 0x00,                                    /* wcChar16 */
+    'm', 0x00,                                    /* wcChar17 */
+    'o', 0x00,                                    /* wcChar18 */
 };
 #define BULK_STRING_DESCRIPTOR3_STR          "tu123456"
 #define BULK_STRING_DESCRIPTOR3_SIZE          (18)
@@ -334,33 +334,20 @@ WEAK __ALIGN_BEGIN const uint8_t  BULK_StringDescriptor3 [18] __ALIGN_END = {
     '5', 0x00,                                    /* wcChar6 */
     '6', 0x00,                                    /* wcChar7 */
 };
-#define BULK_STRING_DESCRIPTOR4_STR          "TinyUsb1"
-#define BULK_STRING_DESCRIPTOR4_SIZE          (18)
-WEAK __ALIGN_BEGIN const uint8_t  BULK_StringDescriptor4 [18] __ALIGN_END = {
-    0x12,                                         /* bLength */
+#define BULK_STRING_DESCRIPTOR4_STR          "TeenyUsb2"
+#define BULK_STRING_DESCRIPTOR4_SIZE          (20)
+WEAK __ALIGN_BEGIN const uint8_t  BULK_StringDescriptor4 [20] __ALIGN_END = {
+    0x14,                                         /* bLength */
     USB_STRING_DESCRIPTOR_TYPE,                   /* bDescriptorType */
     'T', 0x00,                                    /* wcChar0 */
-    'i', 0x00,                                    /* wcChar1 */
-    'n', 0x00,                                    /* wcChar2 */
-    'y', 0x00,                                    /* wcChar3 */
-    'U', 0x00,                                    /* wcChar4 */
-    's', 0x00,                                    /* wcChar5 */
-    'b', 0x00,                                    /* wcChar6 */
-    '1', 0x00,                                    /* wcChar7 */
-};
-#define BULK_STRING_DESCRIPTOR5_STR          "TinyUsb2"
-#define BULK_STRING_DESCRIPTOR5_SIZE          (18)
-WEAK __ALIGN_BEGIN const uint8_t  BULK_StringDescriptor5 [18] __ALIGN_END = {
-    0x12,                                         /* bLength */
-    USB_STRING_DESCRIPTOR_TYPE,                   /* bDescriptorType */
-    'T', 0x00,                                    /* wcChar0 */
-    'i', 0x00,                                    /* wcChar1 */
-    'n', 0x00,                                    /* wcChar2 */
-    'y', 0x00,                                    /* wcChar3 */
-    'U', 0x00,                                    /* wcChar4 */
-    's', 0x00,                                    /* wcChar5 */
-    'b', 0x00,                                    /* wcChar6 */
-    '2', 0x00,                                    /* wcChar7 */
+    'e', 0x00,                                    /* wcChar1 */
+    'e', 0x00,                                    /* wcChar2 */
+    'n', 0x00,                                    /* wcChar3 */
+    'y', 0x00,                                    /* wcChar4 */
+    'U', 0x00,                                    /* wcChar5 */
+    's', 0x00,                                    /* wcChar6 */
+    'b', 0x00,                                    /* wcChar7 */
+    '2', 0x00,                                    /* wcChar8 */
 };
 const uint8_t* const BULK_StringDescriptors[BULK_STRING_COUNT] = {
 BULK_StringDescriptor0,
@@ -368,7 +355,6 @@ BULK_StringDescriptor1,
 BULK_StringDescriptor2,
 BULK_StringDescriptor3,
 BULK_StringDescriptor4,
-BULK_StringDescriptor5,
 };
 
 
@@ -395,12 +381,12 @@ WEAK __ALIGN_BEGIN const uint8_t  WCID_StringDescriptor_MSOS [18] __ALIGN_END = 
 };
 #endif
 
-#define  BULK_WCID_DESCRIPTOR_SIZE  (64)
-WEAK __ALIGN_BEGIN const uint8_t BULK_WCIDDescriptor [64] __ALIGN_END = {
-    0x40, 0x00, 0x00, 0x00,                       /* dwLength */
+#define  BULK_WCID_DESCRIPTOR_SIZE  (40)
+WEAK __ALIGN_BEGIN const uint8_t BULK_WCIDDescriptor [40] __ALIGN_END = {
+    0x28, 0x00, 0x00, 0x00,                       /* dwLength */
     0x00, 0x01,                                   /* bcdVersion */
     0x04, 0x00,                                   /* wIndex */
-    0x02,                                         /* bCount */
+    0x01,                                         /* bCount */
     0,0,0,0,0,0,0,                                /* Reserved */
     /* WCID Function  */
     0x00,                                         /* bFirstInterfaceNumber */
@@ -410,36 +396,27 @@ WEAK __ALIGN_BEGIN const uint8_t BULK_WCIDDescriptor [64] __ALIGN_END = {
     /* sub CID */
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
     0,0,0,0,0,0,                                  /* Reserved */
-    /* WCID Function  */
-    0x01,                                         /* bFirstInterfaceNumber */
-    0x01,                                         /* bReserved */
-    /* CID */
-    'W', 'I', 'N', 'U', 'S', 'B', 0x00, 0x00, 
-    /* sub CID */
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
-    0,0,0,0,0,0,                                  /* Reserved */
 };
 
-#define  BULK_WCID_PROPERTIES_SIZE  (224)
-WEAK __ALIGN_BEGIN const uint8_t BULK_WCIDProperties [224] __ALIGN_END = {
-    0xe0, 0x00, 0x00, 0x00,                       /* dwLength */
+#define  BULK_WCID_PROPERTIES_SIZE  (142)
+WEAK __ALIGN_BEGIN const uint8_t BULK_WCIDProperties [142] __ALIGN_END = {
+    0x8e, 0x00, 0x00, 0x00,                       /* dwLength */
     0x00, 0x01,                                   /* bcdVersion */
     0x05, 0x00,                                   /* wIndex */
     0x01, 0x00,                                   /* wCount */
     /*WCID property field */
-  /* DeviceInterfaceGUIDs = 
-       {32d68452-31d6-bac8-855a-27c822ee4f86}
-       {4f12a222-80e6-d41a-25e6-80a268e08c32}  */
-    0xd6, 0x00, 0x00, 0x00,                       /* dwSize */
-    0x07, 0x00, 0x00, 0x00,                       /* dwPropertyDataType */
-    0x2a, 0x00,                                   /* wPropertyNameLength */
+  /* DeviceInterfaceGUID = 
+       {32d68452-31d6-bac8-855a-27c822ee4f86}  */
+    0x84, 0x00, 0x00, 0x00,                       /* dwSize */
+    0x01, 0x00, 0x00, 0x00,                       /* dwPropertyDataType */
+    0x28, 0x00,                                   /* wPropertyNameLength */
     'D', 0x00, 'e', 0x00, 'v', 0x00, 'i', 0x00, 
     'c', 0x00, 'e', 0x00, 'I', 0x00, 'n', 0x00, 
     't', 0x00, 'e', 0x00, 'r', 0x00, 'f', 0x00, 
     'a', 0x00, 'c', 0x00, 'e', 0x00, 'G', 0x00, 
-    'U', 0x00, 'I', 0x00, 'D', 0x00, 's', 0x00, 
-    0x00, 0x00, 
-    0x9e, 0x00, 0x00, 0x00,                       /* dwPropertyDataLength */
+    'U', 0x00, 'I', 0x00, 'D', 0x00, 0x00, 0x00, 
+    
+    0x4e, 0x00, 0x00, 0x00,                       /* dwPropertyDataLength */
     '{', 0x00, '3', 0x00, '2', 0x00, 'd', 0x00, 
     '6', 0x00, '8', 0x00, '4', 0x00, '5', 0x00, 
     '2', 0x00, '-', 0x00, '3', 0x00, '1', 0x00, 
@@ -449,17 +426,7 @@ WEAK __ALIGN_BEGIN const uint8_t BULK_WCIDProperties [224] __ALIGN_END = {
     '-', 0x00, '2', 0x00, '7', 0x00, 'c', 0x00, 
     '8', 0x00, '2', 0x00, '2', 0x00, 'e', 0x00, 
     'e', 0x00, '4', 0x00, 'f', 0x00, '8', 0x00, 
-    '6', 0x00, '}', 0x00, 0x00, 0x00, '{', 0x00, 
-    '4', 0x00, 'f', 0x00, '1', 0x00, '2', 0x00, 
-    'a', 0x00, '2', 0x00, '2', 0x00, '2', 0x00, 
-    '-', 0x00, '8', 0x00, '0', 0x00, 'e', 0x00, 
-    '6', 0x00, '-', 0x00, 'd', 0x00, '4', 0x00, 
-    '1', 0x00, 'a', 0x00, '-', 0x00, '2', 0x00, 
-    '5', 0x00, 'e', 0x00, '6', 0x00, '-', 0x00, 
-    '8', 0x00, '0', 0x00, 'a', 0x00, '2', 0x00, 
-    '6', 0x00, '8', 0x00, 'e', 0x00, '0', 0x00, 
-    '8', 0x00, 'c', 0x00, '3', 0x00, '2', 0x00, 
-    '}', 0x00, 0x00, 0x00, 0x00, 0x00, 
+    '6', 0x00, '}', 0x00, 0x00, 0x00, 
 };
 
 
@@ -494,6 +461,258 @@ const tusb_descriptors BULK_descriptors = {
 
 /////////////////////////////////////////////////////////////////////
 //// Descriptor for device2 define begin
+/////////////////////////////////////////////////////////////////////
+#define  ISO_DEVICE_DESCRIPTOR_SIZE  (18)
+__ALIGN_BEGIN  const uint8_t ISO_DeviceDescriptor [18] __ALIGN_END = {
+    0x12,                                         /* bLength */
+    USB_DEVICE_DESCRIPTOR_TYPE,                   /* bDescriptorType */
+    0x00, 0x02,                                   /* bcdUSB */
+    0x00,                                         /* bDeviceClass */
+    0x00,                                         /* bDeviceSubClass */
+    0x00,                                         /* bDeviceProtocol */
+    0x08,                                         /* bMaxPacketSize */
+    LOBYTE(ISO_VID), HIBYTE(ISO_VID),             /* idVendor */
+    LOBYTE(ISO_PID), HIBYTE(ISO_PID),             /* idProduct */
+    0x00, 0x01,                                   /* bcdDevice */
+    0x01,                                         /* iManufacture */
+    0x02,                                         /* iProduct */
+    0x03,                                         /* iSerial */
+    0x01,                                         /* bNumConfigurations */
+};
+
+// Configs 
+#define  ISO_CONFIG_DESCRIPTOR_SIZE  (32)
+__ALIGN_BEGIN const uint8_t ISO_ConfigDescriptor [32] __ALIGN_END = {
+    0x09,                                         /* bLength */
+    USB_CONFIGURATION_DESCRIPTOR_TYPE,            /* bDescriptorType */
+    0x20, 0x00,                                   /* wTotalLength */
+    0x01,                                         /* bNumInterfaces */
+    0x01,                                         /* bConfigurationValue */
+    0x00,                                         /* iConfiguration */
+    0xe0,                                         /* bmAttributes */
+    0x64,                                         /* bMaxPower */
+    /* Interface descriptor, len: 23*/
+    0x09,                                         /* bLength */
+    USB_INTERFACE_DESCRIPTOR_TYPE,                /* bDescriptorType */
+    0x00,                                         /* bInterfaceNumber */
+    0x00,                                         /* bAlternateSetting */
+    0x02,                                         /* bNumEndpoints */
+    0xff,                                         /* bInterfaceClass */
+    0xff,                                         /* bInterfaceSubClass */
+    0x00,                                         /* bInterfaceProtocol */
+    0x04,                                         /* iInterface */
+    /* EndPoint descriptor */
+    0x07,                                         /* bLength */
+    USB_ENDPOINT_DESCRIPTOR_TYPE,                 /* bDescriptorType */
+    0x81,                                         /* bEndpointAddress */
+    0x01,                                         /* bmAttributes */
+    0x40, 0x00,                                   /* wMaxPacketSize */
+    0x01,                                         /* bInterval */
+    /* EndPoint descriptor */
+    0x07,                                         /* bLength */
+    USB_ENDPOINT_DESCRIPTOR_TYPE,                 /* bDescriptorType */
+    0x02,                                         /* bEndpointAddress */
+    0x01,                                         /* bmAttributes */
+    0x40, 0x00,                                   /* wMaxPacketSize */
+    0x01,                                         /* bInterval */
+};
+
+// Power status
+#define ISO_DEV_STATUS0      USB_CONFIG_SELF_POWERED
+#define ISO_DEV_STATUS1      USB_CONFIG_REMOTE_WAKEUP
+#define ISO_DEV_STATUS    ((ISO_DEV_STATUS0) |(ISO_DEV_STATUS1) )
+
+ISO_TXEP_MAX_SIZE
+ISO_RXEP_MAX_SIZE
+
+// Strings 
+#define ISO_STRING_DESCRIPTOR0_STR          "\x09\x04"
+#define ISO_STRING_DESCRIPTOR0_SIZE          (4)
+WEAK __ALIGN_BEGIN const uint8_t  ISO_StringDescriptor0 [4] __ALIGN_END = {
+    0x04,                                         /* bLength */
+    USB_STRING_DESCRIPTOR_TYPE,                   /* bDescriptorType */
+    0x09, 0x04,                                   /* wLangID0 */
+};
+#define ISO_STRING_DESCRIPTOR1_STR          "teeny usb"
+#define ISO_STRING_DESCRIPTOR1_SIZE          (20)
+WEAK __ALIGN_BEGIN const uint8_t  ISO_StringDescriptor1 [20] __ALIGN_END = {
+    0x14,                                         /* bLength */
+    USB_STRING_DESCRIPTOR_TYPE,                   /* bDescriptorType */
+    't', 0x00,                                    /* wcChar0 */
+    'e', 0x00,                                    /* wcChar1 */
+    'e', 0x00,                                    /* wcChar2 */
+    'n', 0x00,                                    /* wcChar3 */
+    'y', 0x00,                                    /* wcChar4 */
+    ' ', 0x00,                                    /* wcChar5 */
+    'u', 0x00,                                    /* wcChar6 */
+    's', 0x00,                                    /* wcChar7 */
+    'b', 0x00,                                    /* wcChar8 */
+};
+#define ISO_STRING_DESCRIPTOR2_STR          "teeny usb iso demo"
+#define ISO_STRING_DESCRIPTOR2_SIZE          (38)
+WEAK __ALIGN_BEGIN const uint8_t  ISO_StringDescriptor2 [38] __ALIGN_END = {
+    0x26,                                         /* bLength */
+    USB_STRING_DESCRIPTOR_TYPE,                   /* bDescriptorType */
+    't', 0x00,                                    /* wcChar0 */
+    'e', 0x00,                                    /* wcChar1 */
+    'e', 0x00,                                    /* wcChar2 */
+    'n', 0x00,                                    /* wcChar3 */
+    'y', 0x00,                                    /* wcChar4 */
+    ' ', 0x00,                                    /* wcChar5 */
+    'u', 0x00,                                    /* wcChar6 */
+    's', 0x00,                                    /* wcChar7 */
+    'b', 0x00,                                    /* wcChar8 */
+    ' ', 0x00,                                    /* wcChar9 */
+    'i', 0x00,                                    /* wcChar10 */
+    's', 0x00,                                    /* wcChar11 */
+    'o', 0x00,                                    /* wcChar12 */
+    ' ', 0x00,                                    /* wcChar13 */
+    'd', 0x00,                                    /* wcChar14 */
+    'e', 0x00,                                    /* wcChar15 */
+    'm', 0x00,                                    /* wcChar16 */
+    'o', 0x00,                                    /* wcChar17 */
+};
+#define ISO_STRING_DESCRIPTOR3_STR          "tu123456"
+#define ISO_STRING_DESCRIPTOR3_SIZE          (18)
+WEAK __ALIGN_BEGIN const uint8_t  ISO_StringDescriptor3 [18] __ALIGN_END = {
+    0x12,                                         /* bLength */
+    USB_STRING_DESCRIPTOR_TYPE,                   /* bDescriptorType */
+    't', 0x00,                                    /* wcChar0 */
+    'u', 0x00,                                    /* wcChar1 */
+    '1', 0x00,                                    /* wcChar2 */
+    '2', 0x00,                                    /* wcChar3 */
+    '3', 0x00,                                    /* wcChar4 */
+    '4', 0x00,                                    /* wcChar5 */
+    '5', 0x00,                                    /* wcChar6 */
+    '6', 0x00,                                    /* wcChar7 */
+};
+#define ISO_STRING_DESCRIPTOR4_STR          "TeenyUsb2"
+#define ISO_STRING_DESCRIPTOR4_SIZE          (20)
+WEAK __ALIGN_BEGIN const uint8_t  ISO_StringDescriptor4 [20] __ALIGN_END = {
+    0x14,                                         /* bLength */
+    USB_STRING_DESCRIPTOR_TYPE,                   /* bDescriptorType */
+    'T', 0x00,                                    /* wcChar0 */
+    'e', 0x00,                                    /* wcChar1 */
+    'e', 0x00,                                    /* wcChar2 */
+    'n', 0x00,                                    /* wcChar3 */
+    'y', 0x00,                                    /* wcChar4 */
+    'U', 0x00,                                    /* wcChar5 */
+    's', 0x00,                                    /* wcChar6 */
+    'b', 0x00,                                    /* wcChar7 */
+    '2', 0x00,                                    /* wcChar8 */
+};
+const uint8_t* const ISO_StringDescriptors[ISO_STRING_COUNT] = {
+ISO_StringDescriptor0,
+ISO_StringDescriptor1,
+ISO_StringDescriptor2,
+ISO_StringDescriptor3,
+ISO_StringDescriptor4,
+};
+
+
+
+#if defined(HAS_WCID)
+
+// Define WCID os string descriptor 
+#ifndef WCID_MSOS_STRING
+#define WCID_MSOS_STRING
+#define WCID_STRING_DESCRIPTOR_MSOS_STR          "MSFT100"
+#define WCID_STRING_DESCRIPTOR_MSOS_SIZE          (18)
+WEAK __ALIGN_BEGIN const uint8_t  WCID_StringDescriptor_MSOS [18] __ALIGN_END = {
+    0x12,                                         /* bLength */
+    USB_STRING_DESCRIPTOR_TYPE,                   /* bDescriptorType */
+    'M', 0x00,                                    /* wcChar0 */
+    'S', 0x00,                                    /* wcChar1 */
+    'F', 0x00,                                    /* wcChar2 */
+    'T', 0x00,                                    /* wcChar3 */
+    '1', 0x00,                                    /* wcChar4 */
+    '0', 0x00,                                    /* wcChar5 */
+    '0', 0x00,                                    /* wcChar6 */
+    WCID_VENDOR_CODE,                             /* bVendorCode */
+    0x00,                                         /* bReserved */
+};
+#endif
+
+#define  ISO_WCID_DESCRIPTOR_SIZE  (40)
+WEAK __ALIGN_BEGIN const uint8_t ISO_WCIDDescriptor [40] __ALIGN_END = {
+    0x28, 0x00, 0x00, 0x00,                       /* dwLength */
+    0x00, 0x01,                                   /* bcdVersion */
+    0x04, 0x00,                                   /* wIndex */
+    0x01,                                         /* bCount */
+    0,0,0,0,0,0,0,                                /* Reserved */
+    /* WCID Function  */
+    0x00,                                         /* bFirstInterfaceNumber */
+    0x01,                                         /* bReserved */
+    /* CID */
+    'W', 'I', 'N', 'U', 'S', 'B', 0x00, 0x00, 
+    /* sub CID */
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
+    0,0,0,0,0,0,                                  /* Reserved */
+};
+
+#define  ISO_WCID_PROPERTIES_SIZE  (142)
+WEAK __ALIGN_BEGIN const uint8_t ISO_WCIDProperties [142] __ALIGN_END = {
+    0x8e, 0x00, 0x00, 0x00,                       /* dwLength */
+    0x00, 0x01,                                   /* bcdVersion */
+    0x05, 0x00,                                   /* wIndex */
+    0x01, 0x00,                                   /* wCount */
+    /*WCID property field */
+  /* DeviceInterfaceGUID = 
+       {6cced06e-5f80-fbc8-6458-a4ce5de288b0}  */
+    0x84, 0x00, 0x00, 0x00,                       /* dwSize */
+    0x01, 0x00, 0x00, 0x00,                       /* dwPropertyDataType */
+    0x28, 0x00,                                   /* wPropertyNameLength */
+    'D', 0x00, 'e', 0x00, 'v', 0x00, 'i', 0x00, 
+    'c', 0x00, 'e', 0x00, 'I', 0x00, 'n', 0x00, 
+    't', 0x00, 'e', 0x00, 'r', 0x00, 'f', 0x00, 
+    'a', 0x00, 'c', 0x00, 'e', 0x00, 'G', 0x00, 
+    'U', 0x00, 'I', 0x00, 'D', 0x00, 0x00, 0x00, 
+    
+    0x4e, 0x00, 0x00, 0x00,                       /* dwPropertyDataLength */
+    '{', 0x00, '6', 0x00, 'c', 0x00, 'c', 0x00, 
+    'e', 0x00, 'd', 0x00, '0', 0x00, '6', 0x00, 
+    'e', 0x00, '-', 0x00, '5', 0x00, 'f', 0x00, 
+    '8', 0x00, '0', 0x00, '-', 0x00, 'f', 0x00, 
+    'b', 0x00, 'c', 0x00, '8', 0x00, '-', 0x00, 
+    '6', 0x00, '4', 0x00, '5', 0x00, '8', 0x00, 
+    '-', 0x00, 'a', 0x00, '4', 0x00, 'c', 0x00, 
+    'e', 0x00, '5', 0x00, 'd', 0x00, 'e', 0x00, 
+    '2', 0x00, '8', 0x00, '8', 0x00, 'b', 0x00, 
+    '0', 0x00, '}', 0x00, 0x00, 0x00, 
+};
+
+
+#endif
+
+//  Device descriptors
+const tusb_descriptors ISO_descriptors = {
+  .device = ISO_DeviceDescriptor,
+  .config = ISO_ConfigDescriptor,
+  .strings = ISO_StringDescriptors,
+  .string_cnt = ISO_STRING_COUNT,
+#if defined(HAS_WCID)
+#if defined(ISO_WCID_DESCRIPTOR_SIZE)
+  .wcid_desc = ISO_WCIDDescriptor,
+#else
+  .wcid_desc = 0,  
+#endif // ISO_WCID_DESCRIPTOR_SIZE)
+
+#if defined(ISO_WCID_PROPERTIES_SIZE)
+  .wcid_properties = ISO_WCIDProperties,
+#else
+  .wcid_properties = 0,  
+#endif // ISO_WCID_PROPERTIES_SIZE
+
+#endif // HAS_WCID
+};
+/////////////////////////////////////////////////////////////////////
+//// Descriptor for device2  define end
+/////////////////////////////////////////////////////////////////////
+
+
+
+/////////////////////////////////////////////////////////////////////
+//// Descriptor for device3 define begin
 /////////////////////////////////////////////////////////////////////
 #define  CDC_DEVICE_DESCRIPTOR_SIZE  (18)
 __ALIGN_BEGIN  const uint8_t CDC_DeviceDescriptor [18] __ALIGN_END = {
@@ -605,42 +824,44 @@ WEAK __ALIGN_BEGIN const uint8_t  CDC_StringDescriptor0 [4] __ALIGN_END = {
     USB_STRING_DESCRIPTOR_TYPE,                   /* bDescriptorType */
     0x09, 0x04,                                   /* wLangID0 */
 };
-#define CDC_STRING_DESCRIPTOR1_STR          "tiny usb"
-#define CDC_STRING_DESCRIPTOR1_SIZE          (18)
-WEAK __ALIGN_BEGIN const uint8_t  CDC_StringDescriptor1 [18] __ALIGN_END = {
-    0x12,                                         /* bLength */
+#define CDC_STRING_DESCRIPTOR1_STR          "teeny usb"
+#define CDC_STRING_DESCRIPTOR1_SIZE          (20)
+WEAK __ALIGN_BEGIN const uint8_t  CDC_StringDescriptor1 [20] __ALIGN_END = {
+    0x14,                                         /* bLength */
     USB_STRING_DESCRIPTOR_TYPE,                   /* bDescriptorType */
     't', 0x00,                                    /* wcChar0 */
-    'i', 0x00,                                    /* wcChar1 */
-    'n', 0x00,                                    /* wcChar2 */
-    'y', 0x00,                                    /* wcChar3 */
-    ' ', 0x00,                                    /* wcChar4 */
-    'u', 0x00,                                    /* wcChar5 */
-    's', 0x00,                                    /* wcChar6 */
-    'b', 0x00,                                    /* wcChar7 */
+    'e', 0x00,                                    /* wcChar1 */
+    'e', 0x00,                                    /* wcChar2 */
+    'n', 0x00,                                    /* wcChar3 */
+    'y', 0x00,                                    /* wcChar4 */
+    ' ', 0x00,                                    /* wcChar5 */
+    'u', 0x00,                                    /* wcChar6 */
+    's', 0x00,                                    /* wcChar7 */
+    'b', 0x00,                                    /* wcChar8 */
 };
-#define CDC_STRING_DESCRIPTOR2_STR          "tiny usb cdc demo"
-#define CDC_STRING_DESCRIPTOR2_SIZE          (36)
-WEAK __ALIGN_BEGIN const uint8_t  CDC_StringDescriptor2 [36] __ALIGN_END = {
-    0x24,                                         /* bLength */
+#define CDC_STRING_DESCRIPTOR2_STR          "teeny usb cdc demo"
+#define CDC_STRING_DESCRIPTOR2_SIZE          (38)
+WEAK __ALIGN_BEGIN const uint8_t  CDC_StringDescriptor2 [38] __ALIGN_END = {
+    0x26,                                         /* bLength */
     USB_STRING_DESCRIPTOR_TYPE,                   /* bDescriptorType */
     't', 0x00,                                    /* wcChar0 */
-    'i', 0x00,                                    /* wcChar1 */
-    'n', 0x00,                                    /* wcChar2 */
-    'y', 0x00,                                    /* wcChar3 */
-    ' ', 0x00,                                    /* wcChar4 */
-    'u', 0x00,                                    /* wcChar5 */
-    's', 0x00,                                    /* wcChar6 */
-    'b', 0x00,                                    /* wcChar7 */
-    ' ', 0x00,                                    /* wcChar8 */
-    'c', 0x00,                                    /* wcChar9 */
-    'd', 0x00,                                    /* wcChar10 */
-    'c', 0x00,                                    /* wcChar11 */
-    ' ', 0x00,                                    /* wcChar12 */
-    'd', 0x00,                                    /* wcChar13 */
-    'e', 0x00,                                    /* wcChar14 */
-    'm', 0x00,                                    /* wcChar15 */
-    'o', 0x00,                                    /* wcChar16 */
+    'e', 0x00,                                    /* wcChar1 */
+    'e', 0x00,                                    /* wcChar2 */
+    'n', 0x00,                                    /* wcChar3 */
+    'y', 0x00,                                    /* wcChar4 */
+    ' ', 0x00,                                    /* wcChar5 */
+    'u', 0x00,                                    /* wcChar6 */
+    's', 0x00,                                    /* wcChar7 */
+    'b', 0x00,                                    /* wcChar8 */
+    ' ', 0x00,                                    /* wcChar9 */
+    'c', 0x00,                                    /* wcChar10 */
+    'd', 0x00,                                    /* wcChar11 */
+    'c', 0x00,                                    /* wcChar12 */
+    ' ', 0x00,                                    /* wcChar13 */
+    'd', 0x00,                                    /* wcChar14 */
+    'e', 0x00,                                    /* wcChar15 */
+    'm', 0x00,                                    /* wcChar16 */
+    'o', 0x00,                                    /* wcChar17 */
 };
 #define CDC_STRING_DESCRIPTOR3_STR          "tu123456"
 #define CDC_STRING_DESCRIPTOR3_SIZE          (18)
@@ -685,13 +906,13 @@ const tusb_descriptors CDC_descriptors = {
 #endif // HAS_WCID
 };
 /////////////////////////////////////////////////////////////////////
-//// Descriptor for device2  define end
+//// Descriptor for device3  define end
 /////////////////////////////////////////////////////////////////////
 
 
 
 /////////////////////////////////////////////////////////////////////
-//// Descriptor for device3 define begin
+//// Descriptor for device4 define begin
 /////////////////////////////////////////////////////////////////////
 #define  CDC7_DEVICE_DESCRIPTOR_SIZE  (18)
 __ALIGN_BEGIN  const uint8_t CDC7_DeviceDescriptor [18] __ALIGN_END = {
@@ -1244,43 +1465,45 @@ WEAK __ALIGN_BEGIN const uint8_t  CDC7_StringDescriptor0 [4] __ALIGN_END = {
     USB_STRING_DESCRIPTOR_TYPE,                   /* bDescriptorType */
     0x09, 0x04,                                   /* wLangID0 */
 };
-#define CDC7_STRING_DESCRIPTOR1_STR          "tiny usb"
-#define CDC7_STRING_DESCRIPTOR1_SIZE          (18)
-WEAK __ALIGN_BEGIN const uint8_t  CDC7_StringDescriptor1 [18] __ALIGN_END = {
-    0x12,                                         /* bLength */
+#define CDC7_STRING_DESCRIPTOR1_STR          "teeny usb"
+#define CDC7_STRING_DESCRIPTOR1_SIZE          (20)
+WEAK __ALIGN_BEGIN const uint8_t  CDC7_StringDescriptor1 [20] __ALIGN_END = {
+    0x14,                                         /* bLength */
     USB_STRING_DESCRIPTOR_TYPE,                   /* bDescriptorType */
     't', 0x00,                                    /* wcChar0 */
-    'i', 0x00,                                    /* wcChar1 */
-    'n', 0x00,                                    /* wcChar2 */
-    'y', 0x00,                                    /* wcChar3 */
-    ' ', 0x00,                                    /* wcChar4 */
-    'u', 0x00,                                    /* wcChar5 */
-    's', 0x00,                                    /* wcChar6 */
-    'b', 0x00,                                    /* wcChar7 */
+    'e', 0x00,                                    /* wcChar1 */
+    'e', 0x00,                                    /* wcChar2 */
+    'n', 0x00,                                    /* wcChar3 */
+    'y', 0x00,                                    /* wcChar4 */
+    ' ', 0x00,                                    /* wcChar5 */
+    'u', 0x00,                                    /* wcChar6 */
+    's', 0x00,                                    /* wcChar7 */
+    'b', 0x00,                                    /* wcChar8 */
 };
-#define CDC7_STRING_DESCRIPTOR2_STR          "tiny usb cdc7 demo"
-#define CDC7_STRING_DESCRIPTOR2_SIZE          (38)
-WEAK __ALIGN_BEGIN const uint8_t  CDC7_StringDescriptor2 [38] __ALIGN_END = {
-    0x26,                                         /* bLength */
+#define CDC7_STRING_DESCRIPTOR2_STR          "teeny usb cdc7 demo"
+#define CDC7_STRING_DESCRIPTOR2_SIZE          (40)
+WEAK __ALIGN_BEGIN const uint8_t  CDC7_StringDescriptor2 [40] __ALIGN_END = {
+    0x28,                                         /* bLength */
     USB_STRING_DESCRIPTOR_TYPE,                   /* bDescriptorType */
     't', 0x00,                                    /* wcChar0 */
-    'i', 0x00,                                    /* wcChar1 */
-    'n', 0x00,                                    /* wcChar2 */
-    'y', 0x00,                                    /* wcChar3 */
-    ' ', 0x00,                                    /* wcChar4 */
-    'u', 0x00,                                    /* wcChar5 */
-    's', 0x00,                                    /* wcChar6 */
-    'b', 0x00,                                    /* wcChar7 */
-    ' ', 0x00,                                    /* wcChar8 */
-    'c', 0x00,                                    /* wcChar9 */
-    'd', 0x00,                                    /* wcChar10 */
-    'c', 0x00,                                    /* wcChar11 */
-    '7', 0x00,                                    /* wcChar12 */
-    ' ', 0x00,                                    /* wcChar13 */
-    'd', 0x00,                                    /* wcChar14 */
-    'e', 0x00,                                    /* wcChar15 */
-    'm', 0x00,                                    /* wcChar16 */
-    'o', 0x00,                                    /* wcChar17 */
+    'e', 0x00,                                    /* wcChar1 */
+    'e', 0x00,                                    /* wcChar2 */
+    'n', 0x00,                                    /* wcChar3 */
+    'y', 0x00,                                    /* wcChar4 */
+    ' ', 0x00,                                    /* wcChar5 */
+    'u', 0x00,                                    /* wcChar6 */
+    's', 0x00,                                    /* wcChar7 */
+    'b', 0x00,                                    /* wcChar8 */
+    ' ', 0x00,                                    /* wcChar9 */
+    'c', 0x00,                                    /* wcChar10 */
+    'd', 0x00,                                    /* wcChar11 */
+    'c', 0x00,                                    /* wcChar12 */
+    '7', 0x00,                                    /* wcChar13 */
+    ' ', 0x00,                                    /* wcChar14 */
+    'd', 0x00,                                    /* wcChar15 */
+    'e', 0x00,                                    /* wcChar16 */
+    'm', 0x00,                                    /* wcChar17 */
+    'o', 0x00,                                    /* wcChar18 */
 };
 #define CDC7_STRING_DESCRIPTOR3_STR          "tu123456"
 #define CDC7_STRING_DESCRIPTOR3_SIZE          (18)
@@ -1325,13 +1548,13 @@ const tusb_descriptors CDC7_descriptors = {
 #endif // HAS_WCID
 };
 /////////////////////////////////////////////////////////////////////
-//// Descriptor for device3  define end
+//// Descriptor for device4  define end
 /////////////////////////////////////////////////////////////////////
 
 
 
 /////////////////////////////////////////////////////////////////////
-//// Descriptor for device4 define begin
+//// Descriptor for device5 define begin
 /////////////////////////////////////////////////////////////////////
 #define  HID_DEVICE_DESCRIPTOR_SIZE  (18)
 __ALIGN_BEGIN  const uint8_t HID_DeviceDescriptor [18] __ALIGN_END = {
@@ -1431,42 +1654,44 @@ WEAK __ALIGN_BEGIN const uint8_t  HID_StringDescriptor0 [4] __ALIGN_END = {
     USB_STRING_DESCRIPTOR_TYPE,                   /* bDescriptorType */
     0x09, 0x04,                                   /* wLangID0 */
 };
-#define HID_STRING_DESCRIPTOR1_STR          "tiny usb"
-#define HID_STRING_DESCRIPTOR1_SIZE          (18)
-WEAK __ALIGN_BEGIN const uint8_t  HID_StringDescriptor1 [18] __ALIGN_END = {
-    0x12,                                         /* bLength */
+#define HID_STRING_DESCRIPTOR1_STR          "teeny usb"
+#define HID_STRING_DESCRIPTOR1_SIZE          (20)
+WEAK __ALIGN_BEGIN const uint8_t  HID_StringDescriptor1 [20] __ALIGN_END = {
+    0x14,                                         /* bLength */
     USB_STRING_DESCRIPTOR_TYPE,                   /* bDescriptorType */
     't', 0x00,                                    /* wcChar0 */
-    'i', 0x00,                                    /* wcChar1 */
-    'n', 0x00,                                    /* wcChar2 */
-    'y', 0x00,                                    /* wcChar3 */
-    ' ', 0x00,                                    /* wcChar4 */
-    'u', 0x00,                                    /* wcChar5 */
-    's', 0x00,                                    /* wcChar6 */
-    'b', 0x00,                                    /* wcChar7 */
+    'e', 0x00,                                    /* wcChar1 */
+    'e', 0x00,                                    /* wcChar2 */
+    'n', 0x00,                                    /* wcChar3 */
+    'y', 0x00,                                    /* wcChar4 */
+    ' ', 0x00,                                    /* wcChar5 */
+    'u', 0x00,                                    /* wcChar6 */
+    's', 0x00,                                    /* wcChar7 */
+    'b', 0x00,                                    /* wcChar8 */
 };
-#define HID_STRING_DESCRIPTOR2_STR          "tiny usb HID demo"
-#define HID_STRING_DESCRIPTOR2_SIZE          (36)
-WEAK __ALIGN_BEGIN const uint8_t  HID_StringDescriptor2 [36] __ALIGN_END = {
-    0x24,                                         /* bLength */
+#define HID_STRING_DESCRIPTOR2_STR          "teeny usb HID demo"
+#define HID_STRING_DESCRIPTOR2_SIZE          (38)
+WEAK __ALIGN_BEGIN const uint8_t  HID_StringDescriptor2 [38] __ALIGN_END = {
+    0x26,                                         /* bLength */
     USB_STRING_DESCRIPTOR_TYPE,                   /* bDescriptorType */
     't', 0x00,                                    /* wcChar0 */
-    'i', 0x00,                                    /* wcChar1 */
-    'n', 0x00,                                    /* wcChar2 */
-    'y', 0x00,                                    /* wcChar3 */
-    ' ', 0x00,                                    /* wcChar4 */
-    'u', 0x00,                                    /* wcChar5 */
-    's', 0x00,                                    /* wcChar6 */
-    'b', 0x00,                                    /* wcChar7 */
-    ' ', 0x00,                                    /* wcChar8 */
-    'H', 0x00,                                    /* wcChar9 */
-    'I', 0x00,                                    /* wcChar10 */
-    'D', 0x00,                                    /* wcChar11 */
-    ' ', 0x00,                                    /* wcChar12 */
-    'd', 0x00,                                    /* wcChar13 */
-    'e', 0x00,                                    /* wcChar14 */
-    'm', 0x00,                                    /* wcChar15 */
-    'o', 0x00,                                    /* wcChar16 */
+    'e', 0x00,                                    /* wcChar1 */
+    'e', 0x00,                                    /* wcChar2 */
+    'n', 0x00,                                    /* wcChar3 */
+    'y', 0x00,                                    /* wcChar4 */
+    ' ', 0x00,                                    /* wcChar5 */
+    'u', 0x00,                                    /* wcChar6 */
+    's', 0x00,                                    /* wcChar7 */
+    'b', 0x00,                                    /* wcChar8 */
+    ' ', 0x00,                                    /* wcChar9 */
+    'H', 0x00,                                    /* wcChar10 */
+    'I', 0x00,                                    /* wcChar11 */
+    'D', 0x00,                                    /* wcChar12 */
+    ' ', 0x00,                                    /* wcChar13 */
+    'd', 0x00,                                    /* wcChar14 */
+    'e', 0x00,                                    /* wcChar15 */
+    'm', 0x00,                                    /* wcChar16 */
+    'o', 0x00,                                    /* wcChar17 */
 };
 #define HID_STRING_DESCRIPTOR3_STR          "tu123456"
 #define HID_STRING_DESCRIPTOR3_SIZE          (18)
@@ -1511,13 +1736,13 @@ const tusb_descriptors HID_descriptors = {
 #endif // HAS_WCID
 };
 /////////////////////////////////////////////////////////////////////
-//// Descriptor for device4  define end
+//// Descriptor for device5  define end
 /////////////////////////////////////////////////////////////////////
 
 
 
 /////////////////////////////////////////////////////////////////////
-//// Descriptor for device5 define begin
+//// Descriptor for device6 define begin
 /////////////////////////////////////////////////////////////////////
 #define  HID7_DEVICE_DESCRIPTOR_SIZE  (18)
 __ALIGN_BEGIN  const uint8_t HID7_DeviceDescriptor [18] __ALIGN_END = {
@@ -1923,44 +2148,46 @@ WEAK __ALIGN_BEGIN const uint8_t  HID7_StringDescriptor0 [4] __ALIGN_END = {
     USB_STRING_DESCRIPTOR_TYPE,                   /* bDescriptorType */
     0x09, 0x04,                                   /* wLangID0 */
 };
-#define HID7_STRING_DESCRIPTOR1_STR          "tiny usb"
-#define HID7_STRING_DESCRIPTOR1_SIZE          (18)
-WEAK __ALIGN_BEGIN const uint8_t  HID7_StringDescriptor1 [18] __ALIGN_END = {
-    0x12,                                         /* bLength */
+#define HID7_STRING_DESCRIPTOR1_STR          "teeny usb"
+#define HID7_STRING_DESCRIPTOR1_SIZE          (20)
+WEAK __ALIGN_BEGIN const uint8_t  HID7_StringDescriptor1 [20] __ALIGN_END = {
+    0x14,                                         /* bLength */
     USB_STRING_DESCRIPTOR_TYPE,                   /* bDescriptorType */
     't', 0x00,                                    /* wcChar0 */
-    'i', 0x00,                                    /* wcChar1 */
-    'n', 0x00,                                    /* wcChar2 */
-    'y', 0x00,                                    /* wcChar3 */
-    ' ', 0x00,                                    /* wcChar4 */
-    'u', 0x00,                                    /* wcChar5 */
-    's', 0x00,                                    /* wcChar6 */
-    'b', 0x00,                                    /* wcChar7 */
+    'e', 0x00,                                    /* wcChar1 */
+    'e', 0x00,                                    /* wcChar2 */
+    'n', 0x00,                                    /* wcChar3 */
+    'y', 0x00,                                    /* wcChar4 */
+    ' ', 0x00,                                    /* wcChar5 */
+    'u', 0x00,                                    /* wcChar6 */
+    's', 0x00,                                    /* wcChar7 */
+    'b', 0x00,                                    /* wcChar8 */
 };
-#define HID7_STRING_DESCRIPTOR2_STR          "tiny usb 7 HID demo"
-#define HID7_STRING_DESCRIPTOR2_SIZE          (40)
-WEAK __ALIGN_BEGIN const uint8_t  HID7_StringDescriptor2 [40] __ALIGN_END = {
-    0x28,                                         /* bLength */
+#define HID7_STRING_DESCRIPTOR2_STR          "teeny usb 7 HID demo"
+#define HID7_STRING_DESCRIPTOR2_SIZE          (42)
+WEAK __ALIGN_BEGIN const uint8_t  HID7_StringDescriptor2 [42] __ALIGN_END = {
+    0x2a,                                         /* bLength */
     USB_STRING_DESCRIPTOR_TYPE,                   /* bDescriptorType */
     't', 0x00,                                    /* wcChar0 */
-    'i', 0x00,                                    /* wcChar1 */
-    'n', 0x00,                                    /* wcChar2 */
-    'y', 0x00,                                    /* wcChar3 */
-    ' ', 0x00,                                    /* wcChar4 */
-    'u', 0x00,                                    /* wcChar5 */
-    's', 0x00,                                    /* wcChar6 */
-    'b', 0x00,                                    /* wcChar7 */
-    ' ', 0x00,                                    /* wcChar8 */
-    '7', 0x00,                                    /* wcChar9 */
-    ' ', 0x00,                                    /* wcChar10 */
-    'H', 0x00,                                    /* wcChar11 */
-    'I', 0x00,                                    /* wcChar12 */
-    'D', 0x00,                                    /* wcChar13 */
-    ' ', 0x00,                                    /* wcChar14 */
-    'd', 0x00,                                    /* wcChar15 */
-    'e', 0x00,                                    /* wcChar16 */
-    'm', 0x00,                                    /* wcChar17 */
-    'o', 0x00,                                    /* wcChar18 */
+    'e', 0x00,                                    /* wcChar1 */
+    'e', 0x00,                                    /* wcChar2 */
+    'n', 0x00,                                    /* wcChar3 */
+    'y', 0x00,                                    /* wcChar4 */
+    ' ', 0x00,                                    /* wcChar5 */
+    'u', 0x00,                                    /* wcChar6 */
+    's', 0x00,                                    /* wcChar7 */
+    'b', 0x00,                                    /* wcChar8 */
+    ' ', 0x00,                                    /* wcChar9 */
+    '7', 0x00,                                    /* wcChar10 */
+    ' ', 0x00,                                    /* wcChar11 */
+    'H', 0x00,                                    /* wcChar12 */
+    'I', 0x00,                                    /* wcChar13 */
+    'D', 0x00,                                    /* wcChar14 */
+    ' ', 0x00,                                    /* wcChar15 */
+    'd', 0x00,                                    /* wcChar16 */
+    'e', 0x00,                                    /* wcChar17 */
+    'm', 0x00,                                    /* wcChar18 */
+    'o', 0x00,                                    /* wcChar19 */
 };
 #define HID7_STRING_DESCRIPTOR3_STR          "tu123456"
 #define HID7_STRING_DESCRIPTOR3_SIZE          (18)
@@ -2005,7 +2232,7 @@ const tusb_descriptors HID7_descriptors = {
 #endif // HAS_WCID
 };
 /////////////////////////////////////////////////////////////////////
-//// Descriptor for device5  define end
+//// Descriptor for device6  define end
 /////////////////////////////////////////////////////////////////////
 
 

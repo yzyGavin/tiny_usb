@@ -1,9 +1,9 @@
--- DEMO USB descriptor for tiny USB stack
+-- DEMO USB descriptor for teeny USB stack
 return {
 -- Demo descriptor of Bulk device
 Device {
-    strManufacture = "tiny usb",
-    strProduct = "tiny usb bulk demo",
+    strManufacture = "teeny usb",
+    strProduct = "teeny usb bulk demo",
     strSerial = "tu123456",
     idVendor = 0x4322,
     idProduct = 0x4321,
@@ -13,25 +13,47 @@ Device {
         bMaxPower = 100,
         SelfPower = true,
         RemoteWakeup = true,
+        --Interface{
+        --    WCID = WinUSB,
+        --    EndPoint(IN(1),  BulkDouble, 64),
+        --    EndPoint(OUT(2), BulkDouble, 64),
+        --    strInterface = "teenyUsb1",
+        --},
         Interface{
             WCID = WinUSB,
             EndPoint(IN(1),  BulkDouble, 64),
             EndPoint(OUT(2), BulkDouble, 64),
-            strInterface = "TinyUsb1",
+            strInterface = "TeenyUsb2",
         },
+   }
+},
+
+
+Device {
+    strManufacture = "teeny usb",
+    strProduct = "teeny usb iso demo",
+    strSerial = "tu123456",
+    idVendor = 0x4322,
+    idProduct = 0x4322,
+    prefix = "ISO",
+    bMaxPacketSize = 8,
+    Config {
+        bMaxPower = 100,
+        SelfPower = true,
+        RemoteWakeup = true,
         Interface{
             WCID = WinUSB,
-            EndPoint(IN(3),  Bulk, 64),
-            EndPoint(OUT(4), Bulk, 64),
-            strInterface = "TinyUsb2",
+            EndPoint(IN(1),  ISO, 64),
+            EndPoint(OUT(2), ISO, 64),
+            strInterface = "TeenyUsb2",
         },
    }
 },
 
 -- Demo descriptor of CDC device
 Device {
-    strManufacture = "tiny usb",
-    strProduct = "tiny usb cdc demo",
+    strManufacture = "teeny usb",
+    strProduct = "teeny usb cdc demo",
     strSerial = "tu123456",
     idVendor = 0x03EB,    -- VID PID for Ateml CDC
     idProduct = 0x6124,
@@ -50,8 +72,8 @@ Device {
 
 -- Demo descriptor of 7 CDC device
 Device {
-    strManufacture = "tiny usb",
-    strProduct = "tiny usb cdc7 demo",
+    strManufacture = "teeny usb",
+    strProduct = "teeny usb cdc7 demo",
     strSerial = "tu123456",
     idVendor = 0x2017,   -- Win10 can drive the multiple CDC, VID PID can be any one
     idProduct = 0x0926,
@@ -100,8 +122,8 @@ Device {
 
 -- Demo descriptor of HID device
 Device {
-    strManufacture = "tiny usb",
-    strProduct = "tiny usb HID demo",
+    strManufacture = "teeny usb",
+    strProduct = "teeny usb HID demo",
     strSerial = "tu123456",
     idVendor = 0x2017,
     idProduct = 0x0927,
@@ -123,8 +145,8 @@ Device {
 
 -- Demo descriptor of 7 HID device
 Device {
-    strManufacture = "tiny usb",
-    strProduct = "tiny usb 7 HID demo",
+    strManufacture = "teeny usb",
+    strProduct = "teeny usb 7 HID demo",
     strSerial = "tu123456",
     idVendor = 0x2017,
     idProduct = 0x0928,

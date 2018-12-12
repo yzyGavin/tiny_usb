@@ -32,10 +32,6 @@
 uint8_t buf[4096];
 __IO uint32_t recv_count = 0;
 
-
-#define  RX_EP1   PCD_ENDP4
-#define  TX_EP1   PCD_ENDP3
-
 uint8_t buf1[4096];
 __IO uint32_t recv_count1 = 0;
 
@@ -43,41 +39,29 @@ __IO uint32_t recv_count1 = 0;
 void tusb_on_tx_done(tusb_device_t* dev, uint8_t EPn)
 {
   if(EPn == TX_EP){
-    set_rx_valid(dev, RX_EP);
-  }else if(EPn == TX_EP1){
-    set_rx_valid(dev, RX_EP1);
+    // ISO enpoint always valid
+    //set_rx_valid(dev, RX_EP);
   }
 }
 
 int tusb_on_rx_done(tusb_device_t* dev, uint8_t EPn, const void* data, uint16_t len)
 {
   if(EPn == RX_EP){
+    // ISO endpoint rx buffer always valid, if return value is other than 0
+    // data will lost until call set_rx_valid
     recv_count = len;
-    if(recv_count == 0){
-      // recv 0 length packet, no data need process
-      return 0;
-    }
-    // otherwise, return -1 means data need process, recv buffer is busy
-    return -1;
-  }else if(EPn == RX_EP1){
-    recv_count1 = len;
-    return recv_count1;
   }
   return 0;
 }
 uint32_t get_max_in_packet_size(PCD_TypeDef* USBx, uint8_t EPn);
 void tusb_reconfig(tusb_device_t* dev)
 {
-  // call the BULK device init macro
-  BULK_TUSB_INIT(dev);
-  
+  // call the ISO device init macro
+  ISO_TUSB_INIT(dev);
   // setup recv buffer for rx end point
   tusb_set_recv_buffer(dev, RX_EP, buf, sizeof(buf));
-  tusb_set_recv_buffer(dev, RX_EP1, buf1, sizeof(buf1));
-  
   // enable rx ep after buffer set
   set_rx_valid(dev, RX_EP);
-  set_rx_valid(dev, RX_EP1);
 }
 
 void delay_ms(uint32_t ms)
@@ -108,7 +92,7 @@ int main(void)
   dev = &tusb_dev_otg_hs;
 #endif
 #if defined(USB_OTG_FS)
-  SetUSB(&tusb_dev_otg_fs, USB_OTG_FS);
+  SetUSB(&tusb_dev_otg_hs, USB_OTG_FS);
   dev = &tusb_dev_otg_fs;
 #endif
   tusb_close_device(dev);
@@ -122,15 +106,6 @@ int main(void)
       }
       tusb_send_data(dev, TX_EP, buf, recv_count);
       recv_count = 0; 
-    }
-    
-    if(recv_count1){
-      // every data plus 2 and echo back
-      for(int i=0;i<recv_count1;i++){
-        buf1[i]+=2;
-      }
-      tusb_send_data(dev, TX_EP1, buf1, recv_count1);
-      recv_count1 = 0; 
     }
   }
 }
