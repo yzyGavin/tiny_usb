@@ -316,7 +316,7 @@ void tusb_open_device(tusb_device_t* dev)
   USBx->GAHBCFG |= USB_OTG_GAHBCFG_GINT;
 }
 
-void tusb_ep_tx_handler(tusb_device_t* dev, uint8_t ep);
+void tusb_send_data_done(tusb_device_t* dev, uint8_t EPn);
 void tusb_fifo_empty(tusb_device_t* dev, uint8_t EPn);
 void tusb_setup_handler(tusb_device_t* dev);
 void tusb_read_data(tusb_device_t* dev, void* buf, uint32_t len);
@@ -371,12 +371,10 @@ void otg_handler(tusb_device_t* dev)
           if(( epint & USB_OTG_DOEPINT_STUP) == USB_OTG_DOEPINT_STUP){
             // Do it in USB_OTG_GINTSTS_RXFLVL interrupt
             tusb_setup_handler(dev);
+            set_rx_valid(dev, 0);
           }
           // clear all interrupt flags
           USBx_OUTEP(ep)->DOEPINT = epint;
-          if(ep == 0){
-            set_rx_valid(dev, 0);
-          }
         }
         ep_intr>>=1;
         ep+=1;
@@ -398,7 +396,7 @@ void otg_handler(tusb_device_t* dev)
           if(epint & USB_OTG_DIEPINT_XFRC){
             USBx_DEVICE->DIEPEMPMSK &= ~(0x1ul << ep);
             epin->DIEPINT = USB_OTG_DIEPINT_XFRC;
-            tusb_ep_tx_handler(dev, ep);
+            tusb_send_data_done(dev, ep);
           }
           
 //          if(( epint & USB_OTG_DIEPINT_TOC) == USB_OTG_DIEPINT_TOC){

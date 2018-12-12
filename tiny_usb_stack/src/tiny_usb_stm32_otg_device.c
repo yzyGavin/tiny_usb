@@ -32,7 +32,7 @@ void set_rx_valid(tusb_device_t* dev, uint8_t EPn);
 
 
 // Private functions used by tiny usb core
-void tusb_send_data_done(tusb_device_t* dev, uint8_t EPn, uint16_t EP);
+void tusb_send_data_done(tusb_device_t* dev, uint8_t EPn);
 uint32_t tusb_read_ep0(tusb_device_t* dev, void* buf);
 void tusb_recv_data(tusb_device_t* dev, uint8_t EPn, uint16_t EP);
 
@@ -185,7 +185,7 @@ void tusb_fifo_empty(tusb_device_t* dev, uint8_t EPn)
 }
 
 // called by the ep data interrupt handler when last packet tranfer done
-void tusb_send_data_done(tusb_device_t* dev, uint8_t EPn, uint16_t EP)
+void tusb_send_data_done(tusb_device_t* dev, uint8_t EPn)
 {
   PCD_TypeDef* USBx = GetUSB(dev);
   tusb_ep_data* ep = &dev->Ep[EPn];
