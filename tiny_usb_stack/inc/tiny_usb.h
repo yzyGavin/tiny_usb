@@ -130,6 +130,8 @@ void tusb_on_tx_done(tusb_device_t* dev, uint8_t EPn);
 // 2. Received data packed size is less than the end point max packet size
 // return value:  0 - means received data processed, the previous set received buffer can be used
 //        otherwise - means the data will be processed later, call set_rx_valid to enable receive again
+//        in case of ISO out endpoint, return 0 will use current receive buffer to rx data again
+//                                     otherwise the follow data will be dropped untill call set_rx_valid
 // WEAK function, default return 0
 int tusb_on_rx_done(tusb_device_t* dev, uint8_t EPn, const void* data, uint16_t len);
 

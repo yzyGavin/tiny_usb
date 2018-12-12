@@ -160,7 +160,8 @@ int tusb_send_data(tusb_device_t* dev, uint8_t EPn, const void* data, uint16_t l
     pma_record* pma = EP & USB_EP_DTOG_TX ? PMA_TX0(dev, EPn) : PMA_TX1(dev, EPn);
     ep->tx_pushed = 0;
     copy_tx(dev, ep, pma, data, len, GetInMaxPacket(dev, EPn));
-    TUSB_SET_TX_STATUS(GetUSB(dev), EPn, EP, USB_EP_TX_VALID);
+    // ISO endpoint don't neet set valid, only need set the tx size
+    // TUSB_SET_TX_STATUS(GetUSB(dev), EPn, EP, USB_EP_TX_VALID);
   }else{
     // normal ep send data
     if( (EP & USB_EPTX_STAT) != USB_EP_TX_NAK){
@@ -179,7 +180,11 @@ void tusb_send_data_done(tusb_device_t* dev, uint8_t EPn)
   tusb_ep_data* ep = &dev->Ep[EPn];
   uint16_t  EP = PCD_GET_ENDPOINT(GetUSB(dev), EPn);
   pma_record* pma;
-  if(DOUBLE_BUFF && (EP & (USB_EP_TYPE_MASK | USB_EP_KIND)) == (USB_EP_BULK | USB_EP_KIND)){
+  
+#define  IS_DOUBLE()  (DOUBLE_BUFF && (EP & (USB_EP_TYPE_MASK | USB_EP_KIND)) == (USB_EP_BULK | USB_EP_KIND))
+#define  IS_ISO()     ( ISO_EP && ((EP & USB_EP_TYPE_MASK) == USB_EP_ISOCHRONOUS ) )
+  
+  if(IS_DOUBLE()){
     // double buffer bulk end point, toggle first then copy data
     if(ep->tx_pushed){ep->tx_pushed--;}
     if(ep->tx_pushed){
@@ -187,9 +192,10 @@ void tusb_send_data_done(tusb_device_t* dev, uint8_t EPn)
       TUSB_RX_DTOG(GetUSB(dev), EPn, EP);
     }
     pma = (EP & USB_EP_DTOG_RX) ? PMA_TX0(dev, EPn) : PMA_TX1(dev, EPn);
-  }else if( ISO_EP && ((EP & USB_EP_TYPE_MASK) == USB_EP_ISOCHRONOUS ) ){
+  }else if( IS_ISO() ){
     ep->tx_pushed = 0;
     pma = (EP & USB_EP_DTOG_TX) ? PMA_TX0(dev, EPn) : PMA_TX1(dev, EPn);
+    pma->cnt = 0;
   }else{
     ep->tx_pushed = 0;
     pma = PMA_TX(dev, EPn);
@@ -200,7 +206,14 @@ void tusb_send_data_done(tusb_device_t* dev, uint8_t EPn)
     return;
   }
   if(ep->tx_pushed == 0){
-    tusb_on_tx_done(dev, EPn);
+    if( IS_ISO() ){
+      if(ep->tx_buf){
+        tusb_on_tx_done(dev, EPn);
+        ep->tx_buf = 0;
+      }
+    }else{
+      tusb_on_tx_done(dev, EPn);
+    }
   }
 }
 
@@ -253,6 +266,7 @@ void tusb_recv_data(tusb_device_t* dev, uint8_t EPn)
   pma_record* pma = 0;
   if(DOUBLE_BUFF && (EP & (USB_EP_TYPE_MASK | USB_EP_KIND)) == (USB_EP_BULK | USB_EP_KIND)){
     // double buffer bulk end point
+    // If rx count is not valid, freeze the DTOG, this will cause ep NAK
     if(ep->rx_count < ep->rx_size){
       TUSB_TX_DTOG(GetUSB(dev), EPn, EP);
       // If App last used buffer is 1, dev will fill data in 0
@@ -261,7 +275,11 @@ void tusb_recv_data(tusb_device_t* dev, uint8_t EPn)
       pma = (EP & USB_EP_DTOG_TX) ? PMA_RX0(dev, EPn) :  PMA_RX1(dev, EPn);
     }
   }else if( ISO_EP && ((EP & USB_EP_TYPE_MASK) == USB_EP_ISOCHRONOUS ) ){
-    pma = (EP & USB_EP_DTOG_RX) ? PMA_TX0(dev, EPn) : PMA_TX1(dev, EPn);
+    // ISO out endpoint will always receive the new packet
+    // if rx count is not valid, current packet in PMA buffer will be dropped
+    if(ep->rx_count < ep->rx_size){
+      pma = (EP & USB_EP_DTOG_RX) ? PMA_TX0(dev, EPn) : PMA_TX1(dev, EPn);
+    }
   }else{
     pma = PMA_RX(dev, EPn);
   }
