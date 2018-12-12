@@ -212,6 +212,11 @@ void tusb_send_data_done(tusb_device_t* dev, uint8_t EPn)
         ep->tx_buf = 0;
       }
     }else{
+      if(EPn == 0 && dev->status_callback){
+        // invoke status transmitted call back for ep0
+        dev->status_callback(dev);
+        dev->status_callback = 0;
+      }
       tusb_on_tx_done(dev, EPn);
     }
   }

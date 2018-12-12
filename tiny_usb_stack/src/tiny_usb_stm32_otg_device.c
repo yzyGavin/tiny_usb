@@ -197,6 +197,10 @@ void tusb_send_data_done(tusb_device_t* dev, uint8_t EPn, uint16_t EP)
     }else if(ep->tx_last_size == maxpacket){
       // Send a ZLP
       tusb_send_data(dev, EPn, ep->tx_buf, 0);
+    }else if(dev->status_callback){
+      // invoke status transmitted call back for ep0
+      dev->status_callback(dev);
+      dev->status_callback = 0;
     }
   }
   // clear the fifo empty mask

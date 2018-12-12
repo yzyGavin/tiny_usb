@@ -227,18 +227,6 @@ void tusb_setup_handler(tusb_device_t* dev)
   }
 }
 
-// Ep tx done handler
-void tusb_ep_tx_handler(tusb_device_t* dev, uint8_t ep)
-{
-  //PCD_TypeDef* USBx = dev->handle;
-  if(ep == 0 && dev->status_callback){
-    // invoke status transmitted call back for ep0
-    dev->status_callback(dev);
-    dev->status_callback = 0;
-  }
-  tusb_send_data_done(dev, ep);
-}
-
 #if defined(USB)
 // end point handler for USB_FS core
 void tusb_ep_handler(tusb_device_t* dev, uint8_t EPn)
@@ -277,7 +265,7 @@ void tusb_ep_handler(tusb_device_t* dev, uint8_t EPn)
   }
   if ( (EP & USB_EP_CTR_TX)) { // something transmitted
     TUSB_CLEAR_TX_CTR(GetUSB(dev), EPn, EP);
-    tusb_ep_tx_handler(dev, EPn);
+    tusb_send_data_done(dev, EPn);
   }
 }
 #endif
