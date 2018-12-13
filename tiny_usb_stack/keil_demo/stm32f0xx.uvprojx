@@ -379,7 +379,7 @@
       </TargetOption>
       <Groups>
         <Group>
-          <GroupName>src</GroupName>
+          <GroupName>teeny_usb_stack</GroupName>
           <Files>
             <File>
               <FileName>tiny_usb.c</FileName>
@@ -1150,7 +1150,7 @@
       </TargetOption>
       <Groups>
         <Group>
-          <GroupName>src</GroupName>
+          <GroupName>teeny_usb_stack</GroupName>
           <Files>
             <File>
               <FileName>tiny_usb.c</FileName>
@@ -1870,7 +1870,7 @@
       </TargetOption>
       <Groups>
         <Group>
-          <GroupName>src</GroupName>
+          <GroupName>teeny_usb_stack</GroupName>
           <Files>
             <File>
               <FileName>tiny_usb.c</FileName>
@@ -2590,7 +2590,7 @@
       </TargetOption>
       <Groups>
         <Group>
-          <GroupName>src</GroupName>
+          <GroupName>teeny_usb_stack</GroupName>
           <Files>
             <File>
               <FileName>tiny_usb.c</FileName>
