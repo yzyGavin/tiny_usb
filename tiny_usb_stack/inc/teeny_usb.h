@@ -1,5 +1,5 @@
 /*
- * tiny usb - light weight usb stack for STM32 micro controllers
+ * teeny usb - light weight usb stack for STM32 micro controllers
  * 
  * Copyright (c) 2018 XToolBox  - admin@xtoolbox.org
  * 

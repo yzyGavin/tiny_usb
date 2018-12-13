@@ -1,5 +1,5 @@
 /*
- * tiny usb - light weight usb stack for STM32 micro controllers
+ * teeny usb - light weight usb stack for STM32 micro controllers
  * 
  * Copyright (c) 2018 XToolBox  - admin@xtoolbox.org
  * 
@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-// tiny usb platform header for STM32F7 device
+// teeny usb platform header for STM32F7 device
 #ifndef __STM32F7_PLATFORM_H__
 #define __STM32F7_PLATFORM_H__
 

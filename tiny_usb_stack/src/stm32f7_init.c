@@ -23,7 +23,7 @@
  */
 
 //  STM32F7 usb hardware handler
-#include "tiny_usb.h"
+#include "teeny_usb.h"
 
 #ifndef RX_FIFO_SIZE
 #define RX_FIFO_SIZE   (128/4)

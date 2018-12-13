@@ -23,8 +23,8 @@
  */
 
 // tiny usb platform header for STM32F1/STM32F0 device
-#ifndef __TINY_USB_PLATFORM_H__
-#define __TINY_USB_PLATFORM_H__
+#ifndef __TEENY_USB_PLATFORM_H__
+#define __TEENY_USB_PLATFORM_H__
 
 #if defined(STM32F042x6) || defined(STM32F048xx) || defined(STM32F072xB) || defined(STM32F078xx) || defined(STM32F070xB)|| defined(STM32F070x6)
 // HAL header for STM32F0xx devices

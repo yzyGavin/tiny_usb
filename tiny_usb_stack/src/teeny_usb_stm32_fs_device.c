@@ -1,5 +1,5 @@
 /*
- * tiny usb - light weight usb stack for STM32 micro controllers
+ * teeny usb - light weight usb stack for STM32 micro controllers
  * 
  * Copyright (c) 2018 XToolBox  - admin@xtoolbox.org
  * 
@@ -23,7 +23,7 @@
  */
 
 #include "string.h"
-#include "tiny_usb.h"
+#include "teeny_usb.h"
 
 // Public functions used by user app
 int tusb_send_data(tusb_device_t* dev, uint8_t EPn, const void* data, uint16_t len);
@@ -31,7 +31,7 @@ int tusb_set_recv_buffer(tusb_device_t* dev, uint8_t EPn, void* data, uint16_t l
 void set_rx_valid(tusb_device_t* dev, uint8_t EPn);
 
 
-// Private functions used by tiny usb core
+// Private functions used by teeny usb core
 void tusb_send_data_done(tusb_device_t* dev, uint8_t EPn);
 uint32_t tusb_read_ep0(tusb_device_t* dev, void* buf);
 void tusb_recv_data(tusb_device_t* dev, uint8_t EPn);

@@ -1,5 +1,5 @@
 /*
- * tiny usb - light weight usb stack for STM32 micro controllers
+ * teeny usb - light weight usb stack for STM32 micro controllers
  * 
  * Copyright (c) 2018 XToolBox  - admin@xtoolbox.org
  * 
@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-// tiny usb platform header for STM32F1/STM32F0 device
+// teeny usb platform header for STM32F1/STM32F0 device
 #ifndef __STM32F0F1_PLATFORM_H__
 #define __STM32F0F1_PLATFORM_H__
 
@@ -206,7 +206,7 @@ typedef union _pma_ep_desc {
   ^ USB_EP_DTOG_TX ) 
 
 
-// Tiny USB style tog, set, clear macros, they all required old ep value
+// Teeny USB style tog, set, clear macros, they all required old ep value
 #define  TUSB_RX_DTOG(USBx, EPn, EPOld) \
   PCD_SET_ENDPOINT(USBx, EPn, (EPOld & USB_EPREG_MASK) | (USB_EP_CTR_RX|USB_EP_CTR_TX|USB_EP_DTOG_RX) )
   

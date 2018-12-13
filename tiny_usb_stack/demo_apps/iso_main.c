@@ -1,5 +1,5 @@
 /*
- * tiny usb - light weight usb stack for STM32 micro controllers
+ * teeny usb - light weight usb stack for STM32 micro controllers
  * 
  * Copyright (c) 2018 XToolBox  - admin@xtoolbox.org
  * 
@@ -111,4 +111,4 @@ int main(void)
 }
 
 // include the descriptors here instead of add to project
-#include "tiny_usb_desc.c"
+#include "teeny_usb_desc.c"

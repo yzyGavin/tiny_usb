@@ -109,4 +109,4 @@ int main(void)
 }
 
 // include the descriptors here instead of add to project
-#include "tiny_usb_desc.c"
+#include "teeny_usb_desc.c"

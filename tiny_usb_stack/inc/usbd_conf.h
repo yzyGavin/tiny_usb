@@ -39,7 +39,7 @@
 #define USB_IAD_DESCRIPTOR_TYPE                 0x0B
 #define USB_DESC_TYPE_REPORT                    0x22
 
-#include "tiny_usb_init.h"
+#include "teeny_usb_init.h"
 
 #define WEAK     __weak
 
