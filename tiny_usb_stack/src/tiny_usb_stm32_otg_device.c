@@ -128,7 +128,7 @@ int tusb_send_data(tusb_device_t* dev, uint8_t EPn, const void* data, uint16_t l
   // clear and set the EPT size field
   epin->DIEPTSIZ =  pktCnt| len;
   
-  if( (epin->DIEPCTL & USB_OTG_DIEPCTL_EPTYP)  ==  ((USB_EP_ISOCHRONOUS)<<(USB_OTG_DIEPCTL_EPTYP_Pos)) ){
+  if(ISO_EP && ( (epin->DIEPCTL & USB_OTG_DIEPCTL_EPTYP)  ==  ((USB_EP_ISOCHRONOUS)<<(USB_OTG_DIEPCTL_EPTYP_Pos)) ) ){
     // ISO ep
     //USBx_INEP(EPn)->DIEPTSIZ &= ~(USB_OTG_DIEPTSIZ_MULCNT);
     epin->DIEPTSIZ |= (USB_OTG_DIEPTSIZ_MULCNT & (1 << 29));
@@ -138,7 +138,8 @@ int tusb_send_data(tusb_device_t* dev, uint8_t EPn, const void* data, uint16_t l
     }else{
       epin->DIEPCTL |= USB_OTG_DIEPCTL_SD0PID_SEVNFRM;
     }
-  }else if(len > 0){
+  }
+  if(len > 0){
     USBx_DEVICE->DIEPEMPMSK |= (1 << EPn);
   }
   // do not fill data here, data will be filled in the empty interrupt

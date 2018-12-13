@@ -29,10 +29,10 @@
 #define  RX_EP   PCD_ENDP2
 #define  TX_EP   PCD_ENDP1
 
-uint8_t buf[4096];
+uint8_t buf[64];
 __IO uint32_t recv_count = 0;
 
-uint8_t buf1[4096];
+uint8_t buf1[64];
 __IO uint32_t recv_count1 = 0;
 
 // if data tx done, set rx valid again
@@ -92,7 +92,7 @@ int main(void)
   dev = &tusb_dev_otg_hs;
 #endif
 #if defined(USB_OTG_FS)
-  SetUSB(&tusb_dev_otg_hs, USB_OTG_FS);
+  SetUSB(&tusb_dev_otg_fs, USB_OTG_FS);
   dev = &tusb_dev_otg_fs;
 #endif
   tusb_close_device(dev);
