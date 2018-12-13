@@ -13,6 +13,8 @@
 
   <project>
     <PathAndName>.\stm32f1xx.uvprojx</PathAndName>
+    <NodeIsActive>1</NodeIsActive>
+    <NodeIsExpanded>1</NodeIsExpanded>
   </project>
 
   <project>
@@ -21,7 +23,6 @@
 
   <project>
     <PathAndName>.\stm32f767ZI_Nucleo.uvprojx</PathAndName>
-    <NodeIsActive>1</NodeIsActive>
     <NodeIsExpanded>1</NodeIsExpanded>
   </project>
 

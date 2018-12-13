@@ -72,7 +72,7 @@ struct _tusb_device{
   uint8_t   config;                       // device config
   uint8_t   addr;                         // device addr
   uint8_t   alt_cfg;                      // device alg config
-  uint8_t   padding;                      // padding
+  uint8_t   remote_wakeup;                // device feature
   uint16_t  status;                       // device status
   tusb_callback_t status_callback;        // status transfer done callback
   tusb_callback_t rx0_callback;           // ep0 rx callback

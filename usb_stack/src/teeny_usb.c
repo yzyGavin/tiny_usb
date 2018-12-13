@@ -190,7 +190,20 @@ static void tusb_standard_request(tusb_device_t* dev, tusb_setup_packet* setup_r
     dev->alt_cfg = LO_BYTE(setup_req->wValue);
     tusb_send_data(dev, 0, 0, 0);
     break;
-  
+  case USB_REQ_SET_FEATURE:
+    if(setup_req->wValue == USB_FEATURE_REMOTE_WAKEUP){
+      dev->remote_wakeup = 1;
+      tusb_send_data(dev, 0, 0, 0);
+      break;
+    }
+    // otherwise fall to default
+  case USB_REQ_CLEAR_FEATURE:
+    if(setup_req->wValue == USB_FEATURE_REMOTE_WAKEUP){
+      dev->remote_wakeup = 0;
+      tusb_send_data(dev, 0, 0, 0);
+      break;
+    }
+    // otherwise fall to default
   default:
     // Error condition, stall both tx and rx
 #if defined(USB_OTG_FS) || defined(USB_OTG_HS)
