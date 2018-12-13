@@ -1,4 +1,4 @@
-Tiny USB
+Teeny USB
 ==========
 Not only a tiny USB stack for STM32 devices, but also a toolset to create USB descriptors and drivers.
 
