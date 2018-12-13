@@ -1,7 +1,7 @@
 /*
  * Name   :  tiny_usb_init.h
  * Author :  admin@xtoolbox.org
- * Date   :  2018-12-12 16:47:47
+ * Date   :  2018-12-13 16:00:10
  * Desc   :  This file is auto generate by the tiny_usb script tool
  *           Visit https://github.com/xtoolbox/tiny_usb for more info
  */
@@ -20,7 +20,7 @@ Device {
     idVendor = 0x4322,
     idProduct = 0x4321,
     prefix = "BULK",
-    bMaxPacketSize = 8,
+    bMaxPacketSize = 64,
     Config {
         bMaxPower = 100,
         SelfPower = true,
@@ -48,7 +48,7 @@ Device {
     idVendor = 0x4322,
     idProduct = 0x4322,
     prefix = "ISO",
-    bMaxPacketSize = 8,
+    bMaxPacketSize = 64,
     Config {
         bMaxPower = 100,
         SelfPower = true,
@@ -229,22 +229,22 @@ typedef struct _tusb_descriptors tusb_descriptors;
 #define BULK_USB_BUF_START                                  (BULK_EP_BUF_DESC_TABLE_SIZE * BULK_EP_NUM)
 
 // EndPoints 0 defines
-#define BULK_EP0_RX_SIZE                                    (8)
+#define BULK_EP0_RX_SIZE                                    (64)
 #define BULK_EP0_RX_ADDR                                    (BULK_USB_BUF_START + 0)
-#define BULK_EP0_TX_SIZE                                    (8)
-#define BULK_EP0_TX_ADDR                                    (BULK_USB_BUF_START + 8)
+#define BULK_EP0_TX_SIZE                                    (64)
+#define BULK_EP0_TX_ADDR                                    (BULK_USB_BUF_START + 64)
 #define BULK_EP0_TYPE                                       USB_EP_CONTROL
 
 // EndPoints 1 defines
 #define BULK_EP1_TX_SIZE                                    (64)
-#define BULK_EP1_TX0_ADDR                                   (BULK_USB_BUF_START + 16)
-#define BULK_EP1_TX1_ADDR                                   (BULK_USB_BUF_START + 80)
+#define BULK_EP1_TX0_ADDR                                   (BULK_USB_BUF_START + 128)
+#define BULK_EP1_TX1_ADDR                                   (BULK_USB_BUF_START + 192)
 #define BULK_EP1_TYPE                                       USB_EP_BULK
 
 // EndPoints 2 defines
 #define BULK_EP2_RX_SIZE                                    (64)
-#define BULK_EP2_RX0_ADDR                                   (BULK_USB_BUF_START + 144)
-#define BULK_EP2_RX1_ADDR                                   (BULK_USB_BUF_START + 208)
+#define BULK_EP2_RX0_ADDR                                   (BULK_USB_BUF_START + 256)
+#define BULK_EP2_RX1_ADDR                                   (BULK_USB_BUF_START + 320)
 #define BULK_EP2_TYPE                                       USB_EP_BULK
 
 
@@ -255,11 +255,11 @@ typedef struct _tusb_descriptors tusb_descriptors;
 // RX FIFO size / 4 > (CONTROL_EP_NUM * 5 + 8) +  (MAX_OUT_SIZE / 4 + 1) + (OUT_EP_NUM*2) + 1 = 33
 #define BULK_OTG_RX_FIFO_SIZE                               (256)
 #define BULK_OTG_RX_FIFO_ADDR                               (0)
-// Sum of IN ep max packet size is 72
-// Remain Fifo size is 768 in bytes, Rx Used 256 bytes 
+// Sum of IN ep max packet size is 128
+// Remain Fifo size is 1104 in bytes, Rx Used 256 bytes 
 #define BULK_EP0_TX_FIFO_ADDR                               (256)
 #define BULK_EP0_TX_FIFO_SIZE                               (BULK_EP0_TX_SIZE * 7)
-#define BULK_EP1_TX_FIFO_ADDR                               (312)
+#define BULK_EP1_TX_FIFO_ADDR                               (704)
 #define BULK_EP1_TX_FIFO_SIZE                               (BULK_EP1_TX_SIZE * 7)
 
 // EndPoint max packed sizes
@@ -404,22 +404,22 @@ extern const tusb_descriptors BULK_descriptors;
 #define ISO_USB_BUF_START                                   (ISO_EP_BUF_DESC_TABLE_SIZE * ISO_EP_NUM)
 
 // EndPoints 0 defines
-#define ISO_EP0_RX_SIZE                                     (8)
+#define ISO_EP0_RX_SIZE                                     (64)
 #define ISO_EP0_RX_ADDR                                     (ISO_USB_BUF_START + 0)
-#define ISO_EP0_TX_SIZE                                     (8)
-#define ISO_EP0_TX_ADDR                                     (ISO_USB_BUF_START + 8)
+#define ISO_EP0_TX_SIZE                                     (64)
+#define ISO_EP0_TX_ADDR                                     (ISO_USB_BUF_START + 64)
 #define ISO_EP0_TYPE                                        USB_EP_CONTROL
 
 // EndPoints 1 defines
 #define ISO_EP1_TX_SIZE                                     (64)
-#define ISO_EP1_TX0_ADDR                                    (ISO_USB_BUF_START + 16)
-#define ISO_EP1_TX1_ADDR                                    (ISO_USB_BUF_START + 80)
+#define ISO_EP1_TX0_ADDR                                    (ISO_USB_BUF_START + 128)
+#define ISO_EP1_TX1_ADDR                                    (ISO_USB_BUF_START + 192)
 #define ISO_EP1_TYPE                                        USB_EP_ISOCHRONOUS
 
 // EndPoints 2 defines
 #define ISO_EP2_RX_SIZE                                     (64)
-#define ISO_EP2_RX0_ADDR                                    (ISO_USB_BUF_START + 144)
-#define ISO_EP2_RX1_ADDR                                    (ISO_USB_BUF_START + 208)
+#define ISO_EP2_RX0_ADDR                                    (ISO_USB_BUF_START + 256)
+#define ISO_EP2_RX1_ADDR                                    (ISO_USB_BUF_START + 320)
 #define ISO_EP2_TYPE                                        USB_EP_ISOCHRONOUS
 
 
@@ -430,11 +430,11 @@ extern const tusb_descriptors BULK_descriptors;
 // RX FIFO size / 4 > (CONTROL_EP_NUM * 5 + 8) +  (MAX_OUT_SIZE / 4 + 1) + (OUT_EP_NUM*2) + 1 = 33
 #define ISO_OTG_RX_FIFO_SIZE                                (256)
 #define ISO_OTG_RX_FIFO_ADDR                                (0)
-// Sum of IN ep max packet size is 72
-// Remain Fifo size is 768 in bytes, Rx Used 256 bytes 
+// Sum of IN ep max packet size is 128
+// Remain Fifo size is 1104 in bytes, Rx Used 256 bytes 
 #define ISO_EP0_TX_FIFO_ADDR                                (256)
 #define ISO_EP0_TX_FIFO_SIZE                                (ISO_EP0_TX_SIZE * 7)
-#define ISO_EP1_TX_FIFO_ADDR                                (312)
+#define ISO_EP1_TX_FIFO_ADDR                                (704)
 #define ISO_EP1_TX_FIFO_SIZE                                (ISO_EP1_TX_SIZE * 7)
 
 // EndPoint max packed sizes
@@ -611,7 +611,7 @@ extern const tusb_descriptors ISO_descriptors;
 #define CDC_OTG_RX_FIFO_SIZE                                (256)
 #define CDC_OTG_RX_FIFO_ADDR                                (0)
 // Sum of IN ep max packet size is 80
-// Remain Fifo size is 768 in bytes, Rx Used 256 bytes 
+// Remain Fifo size is 1104 in bytes, Rx Used 256 bytes 
 #define CDC_EP0_TX_FIFO_ADDR                                (256)
 #define CDC_EP0_TX_FIFO_SIZE                                (CDC_EP0_TX_SIZE * 7)
 #define CDC_EP1_TX_FIFO_ADDR                                (312)
@@ -821,23 +821,23 @@ extern const tusb_descriptors CDC_descriptors;
 #define CDC7_OTG_RX_FIFO_SIZE                               (256)
 #define CDC7_OTG_RX_FIFO_ADDR                               (0)
 // Sum of IN ep max packet size is 216
-// Remain Fifo size is 768 in bytes, Rx Used 256 bytes 
+// Remain Fifo size is 1104 in bytes, Rx Used 256 bytes 
 #define CDC7_EP0_TX_FIFO_ADDR                               (256)
-#define CDC7_EP0_TX_FIFO_SIZE                               (CDC7_EP0_TX_SIZE * 3)
-#define CDC7_EP1_TX_FIFO_ADDR                               (280)
-#define CDC7_EP1_TX_FIFO_SIZE                               (CDC7_EP1_TX_SIZE * 3)
-#define CDC7_EP2_TX_FIFO_ADDR                               (472)
-#define CDC7_EP2_TX_FIFO_SIZE                               (CDC7_EP2_TX_SIZE * 3)
-#define CDC7_EP3_TX_FIFO_ADDR                               (568)
-#define CDC7_EP3_TX_FIFO_SIZE                               (CDC7_EP3_TX_SIZE * 3)
-#define CDC7_EP4_TX_FIFO_ADDR                               (664)
-#define CDC7_EP4_TX_FIFO_SIZE                               (CDC7_EP4_TX_SIZE * 3)
-#define CDC7_EP5_TX_FIFO_ADDR                               (760)
-#define CDC7_EP5_TX_FIFO_SIZE                               (CDC7_EP5_TX_SIZE * 3)
-#define CDC7_EP6_TX_FIFO_ADDR                               (808)
-#define CDC7_EP6_TX_FIFO_SIZE                               (CDC7_EP6_TX_SIZE * 3)
-#define CDC7_EP7_TX_FIFO_ADDR                               (856)
-#define CDC7_EP7_TX_FIFO_SIZE                               (CDC7_EP7_TX_SIZE * 3)
+#define CDC7_EP0_TX_FIFO_SIZE                               (CDC7_EP0_TX_SIZE * 5)
+#define CDC7_EP1_TX_FIFO_ADDR                               (296)
+#define CDC7_EP1_TX_FIFO_SIZE                               (CDC7_EP1_TX_SIZE * 5)
+#define CDC7_EP2_TX_FIFO_ADDR                               (616)
+#define CDC7_EP2_TX_FIFO_SIZE                               (CDC7_EP2_TX_SIZE * 5)
+#define CDC7_EP3_TX_FIFO_ADDR                               (776)
+#define CDC7_EP3_TX_FIFO_SIZE                               (CDC7_EP3_TX_SIZE * 5)
+#define CDC7_EP4_TX_FIFO_ADDR                               (936)
+#define CDC7_EP4_TX_FIFO_SIZE                               (CDC7_EP4_TX_SIZE * 5)
+#define CDC7_EP5_TX_FIFO_ADDR                               (1096)
+#define CDC7_EP5_TX_FIFO_SIZE                               (CDC7_EP5_TX_SIZE * 5)
+#define CDC7_EP6_TX_FIFO_ADDR                               (1176)
+#define CDC7_EP6_TX_FIFO_SIZE                               (CDC7_EP6_TX_SIZE * 5)
+#define CDC7_EP7_TX_FIFO_ADDR                               (1256)
+#define CDC7_EP7_TX_FIFO_SIZE                               (CDC7_EP7_TX_SIZE * 5)
 
 // EndPoint max packed sizes
 extern const uint8_t CDC7_txEpMaxSize[];
@@ -1039,7 +1039,7 @@ extern const tusb_descriptors CDC7_descriptors;
 #define HID_OTG_RX_FIFO_SIZE                                (256)
 #define HID_OTG_RX_FIFO_ADDR                                (0)
 // Sum of IN ep max packet size is 72
-// Remain Fifo size is 768 in bytes, Rx Used 256 bytes 
+// Remain Fifo size is 1104 in bytes, Rx Used 256 bytes 
 #define HID_EP0_TX_FIFO_ADDR                                (256)
 #define HID_EP0_TX_FIFO_SIZE                                (HID_EP0_TX_SIZE * 7)
 #define HID_EP1_TX_FIFO_ADDR                                (312)
@@ -1235,23 +1235,23 @@ extern const tusb_descriptors HID_descriptors;
 #define HID7_OTG_RX_FIFO_SIZE                               (256)
 #define HID7_OTG_RX_FIFO_ADDR                               (0)
 // Sum of IN ep max packet size is 216
-// Remain Fifo size is 768 in bytes, Rx Used 256 bytes 
+// Remain Fifo size is 1104 in bytes, Rx Used 256 bytes 
 #define HID7_EP0_TX_FIFO_ADDR                               (256)
-#define HID7_EP0_TX_FIFO_SIZE                               (HID7_EP0_TX_SIZE * 3)
-#define HID7_EP1_TX_FIFO_ADDR                               (280)
-#define HID7_EP1_TX_FIFO_SIZE                               (HID7_EP1_TX_SIZE * 3)
-#define HID7_EP2_TX_FIFO_ADDR                               (472)
-#define HID7_EP2_TX_FIFO_SIZE                               (HID7_EP2_TX_SIZE * 3)
-#define HID7_EP3_TX_FIFO_ADDR                               (568)
-#define HID7_EP3_TX_FIFO_SIZE                               (HID7_EP3_TX_SIZE * 3)
-#define HID7_EP4_TX_FIFO_ADDR                               (664)
-#define HID7_EP4_TX_FIFO_SIZE                               (HID7_EP4_TX_SIZE * 3)
-#define HID7_EP5_TX_FIFO_ADDR                               (760)
-#define HID7_EP5_TX_FIFO_SIZE                               (HID7_EP5_TX_SIZE * 3)
-#define HID7_EP6_TX_FIFO_ADDR                               (808)
-#define HID7_EP6_TX_FIFO_SIZE                               (HID7_EP6_TX_SIZE * 3)
-#define HID7_EP7_TX_FIFO_ADDR                               (856)
-#define HID7_EP7_TX_FIFO_SIZE                               (HID7_EP7_TX_SIZE * 3)
+#define HID7_EP0_TX_FIFO_SIZE                               (HID7_EP0_TX_SIZE * 5)
+#define HID7_EP1_TX_FIFO_ADDR                               (296)
+#define HID7_EP1_TX_FIFO_SIZE                               (HID7_EP1_TX_SIZE * 5)
+#define HID7_EP2_TX_FIFO_ADDR                               (616)
+#define HID7_EP2_TX_FIFO_SIZE                               (HID7_EP2_TX_SIZE * 5)
+#define HID7_EP3_TX_FIFO_ADDR                               (776)
+#define HID7_EP3_TX_FIFO_SIZE                               (HID7_EP3_TX_SIZE * 5)
+#define HID7_EP4_TX_FIFO_ADDR                               (936)
+#define HID7_EP4_TX_FIFO_SIZE                               (HID7_EP4_TX_SIZE * 5)
+#define HID7_EP5_TX_FIFO_ADDR                               (1096)
+#define HID7_EP5_TX_FIFO_SIZE                               (HID7_EP5_TX_SIZE * 5)
+#define HID7_EP6_TX_FIFO_ADDR                               (1176)
+#define HID7_EP6_TX_FIFO_SIZE                               (HID7_EP6_TX_SIZE * 5)
+#define HID7_EP7_TX_FIFO_ADDR                               (1256)
+#define HID7_EP7_TX_FIFO_SIZE                               (HID7_EP7_TX_SIZE * 5)
 
 // EndPoint max packed sizes
 extern const uint8_t HID7_txEpMaxSize[];

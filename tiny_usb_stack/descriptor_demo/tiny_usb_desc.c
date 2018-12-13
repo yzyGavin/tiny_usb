@@ -1,7 +1,7 @@
 /*
  * Name   :  tiny_usb_desc.c
  * Author :  admin@xtoolbox.org
- * Date   :  2018-12-12 16:47:47
+ * Date   :  2018-12-13 16:00:10
  * Desc   :  This file is auto generate by the tiny_usb script tool
  *           Visit https://github.com/xtoolbox/tiny_usb for more info
  */
@@ -20,7 +20,7 @@ Device {
     idVendor = 0x4322,
     idProduct = 0x4321,
     prefix = "BULK",
-    bMaxPacketSize = 8,
+    bMaxPacketSize = 64,
     Config {
         bMaxPower = 100,
         SelfPower = true,
@@ -48,7 +48,7 @@ Device {
     idVendor = 0x4322,
     idProduct = 0x4322,
     prefix = "ISO",
-    bMaxPacketSize = 8,
+    bMaxPacketSize = 64,
     Config {
         bMaxPower = 100,
         SelfPower = true,
@@ -217,7 +217,7 @@ __ALIGN_BEGIN  const uint8_t BULK_DeviceDescriptor [18] __ALIGN_END = {
     0x00,                                         /* bDeviceClass */
     0x00,                                         /* bDeviceSubClass */
     0x00,                                         /* bDeviceProtocol */
-    0x08,                                         /* bMaxPacketSize */
+    0x40,                                         /* bMaxPacketSize */
     LOBYTE(BULK_VID), HIBYTE(BULK_VID),           /* idVendor */
     LOBYTE(BULK_PID), HIBYTE(BULK_PID),           /* idProduct */
     0x00, 0x01,                                   /* bcdDevice */
@@ -470,7 +470,7 @@ __ALIGN_BEGIN  const uint8_t ISO_DeviceDescriptor [18] __ALIGN_END = {
     0x00,                                         /* bDeviceClass */
     0x00,                                         /* bDeviceSubClass */
     0x00,                                         /* bDeviceProtocol */
-    0x08,                                         /* bMaxPacketSize */
+    0x40,                                         /* bMaxPacketSize */
     LOBYTE(ISO_VID), HIBYTE(ISO_VID),             /* idVendor */
     LOBYTE(ISO_PID), HIBYTE(ISO_PID),             /* idProduct */
     0x00, 0x01,                                   /* bcdDevice */

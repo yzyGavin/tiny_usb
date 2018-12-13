@@ -29,7 +29,7 @@
 #define  RX_EP   PCD_ENDP2
 #define  TX_EP   PCD_ENDP1
 
-uint8_t buf[64];
+uint8_t buf[ISO_EP2_RX_SIZE];
 __IO uint32_t recv_count = 0;
 
 uint8_t buf1[64];

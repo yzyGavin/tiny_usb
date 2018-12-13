@@ -8,7 +8,7 @@ Device {
     idVendor = 0x4322,
     idProduct = 0x4321,
     prefix = "BULK",
-    bMaxPacketSize = 8,
+    bMaxPacketSize = 64,
     Config {
         bMaxPower = 100,
         SelfPower = true,
@@ -36,7 +36,7 @@ Device {
     idVendor = 0x4322,
     idProduct = 0x4322,
     prefix = "ISO",
-    bMaxPacketSize = 8,
+    bMaxPacketSize = 64,
     Config {
         bMaxPower = 100,
         SelfPower = true,
