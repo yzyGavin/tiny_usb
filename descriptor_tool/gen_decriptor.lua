@@ -28,8 +28,8 @@ function outputCode(fname, script, content, isBody)
  * Author :  admin@xtoolbox.org
  * Date   :  ]]..os.date("%Y-%m-%d %H:%M:%S")..[[
 
- * Desc   :  This file is auto generate by the tiny_usb script tool
- *           Visit https://github.com/xtoolbox/tiny_usb for more info
+ * Desc   :  This file is auto generate by the teeny_usb script tool
+ *           Visit https://github.com/xtoolbox/TeenyUSB for more info
  */
 
 /*
@@ -56,7 +56,7 @@ typedef struct _tusb_descriptors tusb_descriptors;
 ]])
     else
     f:write([[
-#include "tiny_usb.h"
+#include "teeny_usb.h"
 ]])
     end
     f:write(content)
@@ -135,8 +135,8 @@ f:close()
 
 local desc = load(s)()
 
-local body = string.gsub(inputName, "([%w_%.]+)$", 'tiny_usb_desc.c')
-local header = string.gsub(inputName, "([%w_%.]+)$", 'tiny_usb_init.h')
+local body = string.gsub(inputName, "([%w_%.]+)$", 'teeny_usb_desc.c')
+local header = string.gsub(inputName, "([%w_%.]+)$", 'teeny_usb_init.h')
 
 local descs, epDefs = collectDescriptor(desc, MAX_EP, MAX_MEM)
 outputCode(body, s, descs)

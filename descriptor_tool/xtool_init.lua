@@ -238,7 +238,7 @@ function GenericView:__init(p)
     self.chkWCIDWinUSB = QCheckBox(tr("WCID WinUSB"))
     self.layout:addLayout(QHBoxLayout{
         self.btnAdd, self.chkWCIDWinUSB, 
-        QLabel([[<a href="https://github.com/xtoolbox/tiny_usb/wiki/WCID-Device">]]..tr("What is WCID ?")..[[</a>]])
+        QLabel([[<a href="https://github.com/xtoolbox/TeenyUSB/wiki/WCID-Device">]]..tr("What is WCID ?")..[[</a>]])
         { openExternalLinks = true },
         strech = "0,0,1",
     })
@@ -310,13 +310,13 @@ function UsbDescView:__init(parent)
     self.editDeviceName = QLineEdit(""){
         placeHolderText = "Name"
     }
-    self.editVendor = QLineEdit("Tiny USB Desc Tool"){
+    self.editVendor = QLineEdit("Teeny USB Desc Tool"){
        placeHolderText = tr("Manufacture string or leave empty"),
     }
-    self.editProduct = QLineEdit("Tiny USB DEMO"){
+    self.editProduct = QLineEdit("Teeny USB DEMO"){
        placeHolderText = tr("Product string or leave empty"),
     }
-    self.editSerial = QLineEdit("TinyUSB000001"){
+    self.editSerial = QLineEdit("TeenyUSB000001"){
        placeHolderText = tr("Serial string or leave empty"),
     }
     self.chkSelfPower = QCheckBox(tr("Self Power"))
@@ -532,7 +532,7 @@ end
 --logEdit:append(""..udv.sizeHint.w ..",".. udv.sizeHint.h)
 local function dev_new()
     local dev = UsbDev()
-    dev:setProperty("TinyDevice",dev)
+    dev:setProperty("TeenyDevice",dev)
     local tw = mdiArea:addSubWindow(dev)
     tw.w = 650
     tw.h = 500
@@ -540,7 +540,7 @@ local function dev_new()
 end
 local function curDev(subWindow)
     subWindow = subWindow or mdiArea.currentSubWindow
-    local dev = subWindow.widget:property("TinyDevice")
+    local dev = subWindow.widget:property("TeenyDevice")
     if dev.udv then return dev end
     return nil
 end
@@ -570,8 +570,8 @@ local function gen_code(desc)
     if not dir or dir == "" then return end
     local s = "-- Generate from UI Tool --"
     arg = { "<Generate from UI Tool>" }
-    outputCode(dir.."/tiny_usb_desc.c", s, descs)
-    outputCode(dir.."/tiny_usb_init.h", s, eps)
+    outputCode(dir.."/teeny_usb_desc.c", s, descs)
+    outputCode(dir.."/teeny_usb_init.h", s, eps)
     log("Code generated in " .. dir)
 end
 
