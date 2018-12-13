@@ -1,5 +1,5 @@
 /*
- * tiny usb - light weight usb stack for STM32 micro controllers
+ * teeny usb - light weight usb stack for STM32 micro controllers
  * 
  * Copyright (c) 2018 XToolBox  - admin@xtoolbox.org
  * 
@@ -23,7 +23,7 @@
  */
  
  
- #include "tiny_usb.h"
+ #include "teeny_usb.h"
 
 
 #define HID_REQ_SET_PROTOCOL          0x0B

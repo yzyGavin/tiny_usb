@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-#include "tiny_usb.h"
+#include "teeny_usb.h"
 #include "string.h"
 
 

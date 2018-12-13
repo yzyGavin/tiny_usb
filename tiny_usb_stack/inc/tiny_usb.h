@@ -25,7 +25,7 @@
 #ifndef __CDC_H__
 #define __CDC_H__
 
-#include "tiny_usb_platform.h"
+#include "teeny_usb_platform.h"
 
 typedef struct _tusb_setup_packet{
   uint8_t  bmRequestType;
