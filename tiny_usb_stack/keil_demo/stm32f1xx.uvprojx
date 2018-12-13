@@ -382,14 +382,14 @@
           <GroupName>teeny_usb_stack</GroupName>
           <Files>
             <File>
-              <FileName>tiny_usb.c</FileName>
+              <FileName>teeny_usb.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\src\tiny_usb.c</FilePath>
+              <FilePath>..\src\teeny_usb.c</FilePath>
             </File>
             <File>
-              <FileName>tiny_usb_stm32_fs_device.c</FileName>
+              <FileName>teeny_usb_stm32_fs_device.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\src\tiny_usb_stm32_fs_device.c</FilePath>
+              <FilePath>..\src\teeny_usb_stm32_fs_device.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -1140,14 +1140,14 @@
           <GroupName>teeny_usb_stack</GroupName>
           <Files>
             <File>
-              <FileName>tiny_usb.c</FileName>
+              <FileName>teeny_usb.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\src\tiny_usb.c</FilePath>
+              <FilePath>..\src\teeny_usb.c</FilePath>
             </File>
             <File>
-              <FileName>tiny_usb_stm32_fs_device.c</FileName>
+              <FileName>teeny_usb_stm32_fs_device.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\src\tiny_usb_stm32_fs_device.c</FilePath>
+              <FilePath>..\src\teeny_usb_stm32_fs_device.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -1916,14 +1916,14 @@
           <GroupName>teeny_usb_stack</GroupName>
           <Files>
             <File>
-              <FileName>tiny_usb.c</FileName>
+              <FileName>teeny_usb.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\src\tiny_usb.c</FilePath>
+              <FilePath>..\src\teeny_usb.c</FilePath>
             </File>
             <File>
-              <FileName>tiny_usb_stm32_fs_device.c</FileName>
+              <FileName>teeny_usb_stm32_fs_device.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\src\tiny_usb_stm32_fs_device.c</FilePath>
+              <FilePath>..\src\teeny_usb_stm32_fs_device.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -2692,14 +2692,14 @@
           <GroupName>teeny_usb_stack</GroupName>
           <Files>
             <File>
-              <FileName>tiny_usb.c</FileName>
+              <FileName>teeny_usb.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\src\tiny_usb.c</FilePath>
+              <FilePath>..\src\teeny_usb.c</FilePath>
             </File>
             <File>
-              <FileName>tiny_usb_stm32_fs_device.c</FileName>
+              <FileName>teeny_usb_stm32_fs_device.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\src\tiny_usb_stm32_fs_device.c</FilePath>
+              <FilePath>..\src\teeny_usb_stm32_fs_device.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -3399,14 +3399,14 @@
           <GroupName>teeny_usb_stack</GroupName>
           <Files>
             <File>
-              <FileName>tiny_usb.c</FileName>
+              <FileName>teeny_usb.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\src\tiny_usb.c</FilePath>
+              <FilePath>..\src\teeny_usb.c</FilePath>
             </File>
             <File>
-              <FileName>tiny_usb_stm32_fs_device.c</FileName>
+              <FileName>teeny_usb_stm32_fs_device.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\src\tiny_usb_stm32_fs_device.c</FilePath>
+              <FilePath>..\src\teeny_usb_stm32_fs_device.c</FilePath>
             </File>
           </Files>
         </Group>
