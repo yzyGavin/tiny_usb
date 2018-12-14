@@ -230,5 +230,11 @@ typedef union _pma_ep_desc {
     EPOld & 0x7FFFU & USB_EPREG_MASK)
 
 
+
+#define  STALL_EP0(dev) \
+do{\
+  PCD_SET_EP_TXRX_STATUS(GetUSB(dev), 0, USB_EP_RX_STALL, USB_EP_TX_STALL); \
+}while(0)
+
 #endif
 

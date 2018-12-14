@@ -86,16 +86,17 @@ static void tusb_get_descriptor(tusb_device_t* dev, tusb_setup_packet *req)
           req->wLength > len ? len : req->wLength);
 }
 
+// Callback function for set address setup
 #if defined(USB_OTG_FS) || defined(USB_OTG_HS)
-static void tusb_set_addr (tusb_device_t* dev)
+static void tusb_otg_set_addr (tusb_device_t* dev)
 {
   USB_OTG_GlobalTypeDef *USBx = GetUSB(dev);
   USBx_DEVICE->DCFG &= ~ (USB_OTG_DCFG_DAD);
   USBx_DEVICE->DCFG |= (dev->addr << 4) & USB_OTG_DCFG_DAD ;
 }
-#else
-// Callback function for set address setup
-static void tusb_set_addr(tusb_device_t* dev)
+#endif
+#if defined(USB) 
+static void tusb_fs_set_addr(tusb_device_t* dev)
 {
   if (dev->addr){
     GetUSB(dev)->DADDR = (dev->addr | USB_DADDR_EF);
@@ -158,9 +159,9 @@ static void tusb_standard_request(tusb_device_t* dev, tusb_setup_packet* setup_r
   case USB_REQ_SET_ADDRESS:
     dev->addr = LO_BYTE(setup_req->wValue);
 #if defined(USB_OTG_FS) || defined(USB_OTG_HS)
-    tusb_set_addr(dev);
+    tusb_otg_set_addr(dev);
 #else
-    dev->status_callback = tusb_set_addr;
+    dev->ep0_tx_done = tusb_fs_set_addr;
 #endif
     tusb_send_data(dev, 0, 0, 0);
     break;
@@ -205,16 +206,8 @@ static void tusb_standard_request(tusb_device_t* dev, tusb_setup_packet* setup_r
     }
     // otherwise fall to default
   default:
-    // Error condition, stall both tx and rx
-#if defined(USB_OTG_FS) || defined(USB_OTG_HS)
-    {
-      PCD_TypeDef* USBx =  GetUSB(dev);
-      USBx_INEP(0)->DIEPCTL |= USB_OTG_DIEPCTL_STALL;
-      USBx_OUTEP(0)->DOEPCTL |= USB_OTG_DOEPCTL_STALL;
-    }
-#else
-    PCD_SET_EP_TXRX_STATUS(GetUSB(dev), 0, USB_EP_RX_STALL, USB_EP_TX_STALL); 
-#endif
+    // Error condition, stall ep0
+    STALL_EP0(dev);
     break;
   }
 }
@@ -240,49 +233,6 @@ void tusb_setup_handler(tusb_device_t* dev)
   }
 }
 
-#if defined(USB)
-// end point handler for USB_FS core
-void tusb_ep_handler(tusb_device_t* dev, uint8_t EPn)
-{
-  uint16_t EP = PCD_GET_ENDPOINT(GetUSB(dev), EPn);
-  if (EP & USB_EP_CTR_RX) {
-    if (EPn == 0) {
-      if (EP & USB_EP_SETUP) {
-        // Handle setup packet
-        tusb_read_ep0(dev, &dev->setup);
-        tusb_setup_handler(dev);
-      }else{
-        // Handle ep 0 data packet
-        if(dev->Ep[0].rx_buf){
-          tusb_ep_data* ep = &dev->Ep[0];
-          uint32_t len = tusb_read_ep0(dev, ep->rx_buf + ep->rx_count);
-          ep->rx_count += len;
-          if(len < GetOutMaxPacket(dev, 0) || ep->rx_count >= ep->rx_size){
-            // when got ep 0 data, invoke the setup data out call back
-            if(dev->rx0_callback){
-              dev->rx0_callback(dev);
-              dev->rx0_callback = 0;
-            }
-            ep->rx_buf = 0;
-          }
-        }else{
-          // recv ep0 data, but not processed, drop it
-        }
-      }
-      TUSB_CLEAR_RX_CTR(GetUSB(dev), PCD_ENDP0, EP);
-      TUSB_SET_RX_STATUS(GetUSB(dev), PCD_ENDP0, EP, USB_EP_RX_VALID);
-    }else{
-      TUSB_CLEAR_RX_CTR(GetUSB(dev), EPn, EP);
-      tusb_recv_data(dev, EPn);
-    }
-  }
-  if ( (EP & USB_EP_CTR_TX)) { // something transmitted
-    TUSB_CLEAR_TX_CTR(GetUSB(dev), EPn, EP);
-    tusb_send_data_done(dev, EPn);
-  }
-}
-#endif
-
 // initial the ep recv buffer
 int tusb_set_recv_buffer(tusb_device_t* dev, uint8_t EPn, void* data, uint16_t len)
 {
@@ -292,4 +242,14 @@ int tusb_set_recv_buffer(tusb_device_t* dev, uint8_t EPn, void* data, uint16_t l
   ep->rx_count = 0;
   return 0;
 }
+
+// Public callback function override by user
+// default data transmit done callback
+WEAK void tusb_on_tx_done(tusb_device_t* dev, uint8_t EPn)
+{}
+
+// default data received  callback, return 0 will continue receive data in end point rx buffer
+// return other value will cause the OUT ep NAX, user can active the OUT ep by call tusb_set_rx_valid
+WEAK int tusb_on_rx_done(tusb_device_t* dev, uint8_t EPn, const void* data, uint16_t len)
+{ return 0; }
 

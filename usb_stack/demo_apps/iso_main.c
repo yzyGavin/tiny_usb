@@ -40,7 +40,7 @@ void tusb_on_tx_done(tusb_device_t* dev, uint8_t EPn)
 {
   if(EPn == TX_EP){
     // ISO enpoint always valid
-    //set_rx_valid(dev, RX_EP);
+    //tusb_set_rx_valid(dev, RX_EP);
   }
 }
 
@@ -48,7 +48,7 @@ int tusb_on_rx_done(tusb_device_t* dev, uint8_t EPn, const void* data, uint16_t 
 {
   if(EPn == RX_EP){
     // ISO endpoint rx buffer always valid, if return value is other than 0
-    // data will lost until call set_rx_valid
+    // data will lost until call tusb_set_rx_valid
     recv_count = len;
   }
   return 0;
@@ -61,7 +61,7 @@ void tusb_reconfig(tusb_device_t* dev)
   // setup recv buffer for rx end point
   tusb_set_recv_buffer(dev, RX_EP, buf, sizeof(buf));
   // enable rx ep after buffer set
-  set_rx_valid(dev, RX_EP);
+  tusb_set_rx_valid(dev, RX_EP);
 }
 
 void delay_ms(uint32_t ms)

@@ -43,9 +43,9 @@ __IO uint32_t recv_count1 = 0;
 void tusb_on_tx_done(tusb_device_t* dev, uint8_t EPn)
 {
   if(EPn == TX_EP){
-    set_rx_valid(dev, RX_EP);
+    tusb_set_rx_valid(dev, RX_EP);
   }else if(EPn == TX_EP1){
-    set_rx_valid(dev, RX_EP1);
+    tusb_set_rx_valid(dev, RX_EP1);
   }
 }
 
@@ -76,8 +76,8 @@ void tusb_reconfig(tusb_device_t* dev)
   tusb_set_recv_buffer(dev, RX_EP1, buf1, sizeof(buf1));
   
   // enable rx ep after buffer set
-  set_rx_valid(dev, RX_EP);
-  set_rx_valid(dev, RX_EP1);
+  tusb_set_rx_valid(dev, RX_EP);
+  tusb_set_rx_valid(dev, RX_EP1);
 }
 
 void delay_ms(uint32_t ms)

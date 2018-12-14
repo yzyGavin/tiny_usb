@@ -120,7 +120,7 @@ void tusb_class_request(tusb_device_t* dev, tusb_setup_packet* setup_req)
       tusb_send_data(dev, 0, (uint16_t*)cdc_cmd, setup_req->wLength);
     }else{
       tusb_set_recv_buffer(dev, 0, cdc_cmd, setup_req->wLength);
-      dev->rx0_callback = CDC_DataoutRequest;
+      dev->ep0_rx_done = CDC_DataoutRequest;
       tusb_send_data(dev, 0, 0, 0);
     }
   }else{

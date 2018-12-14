@@ -35,7 +35,7 @@ __IO uint32_t recv_count = 0;
 void tusb_on_tx_done(tusb_device_t* dev, uint8_t EPn)
 {
   if(EPn == TX_EP){
-    set_rx_valid(dev, RX_EP);
+    tusb_set_rx_valid(dev, RX_EP);
   }
 }
 
@@ -59,7 +59,7 @@ void tusb_reconfig(tusb_device_t* dev)
   CDC_TUSB_INIT(dev);
   // setup recv buffer for rx end point
   tusb_set_recv_buffer(dev, RX_EP, buf, sizeof(buf));
-  set_rx_valid(dev, RX_EP);
+  tusb_set_rx_valid(dev, RX_EP);
 }
 
 void delay_ms(uint32_t ms)

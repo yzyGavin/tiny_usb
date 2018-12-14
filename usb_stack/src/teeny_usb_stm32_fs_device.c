@@ -25,29 +25,19 @@
 #include "string.h"
 #include "teeny_usb.h"
 
+#if defined(USB)
+
 // Public functions used by user app
 int tusb_send_data(tusb_device_t* dev, uint8_t EPn, const void* data, uint16_t len);
 int tusb_set_recv_buffer(tusb_device_t* dev, uint8_t EPn, void* data, uint16_t len);
-void set_rx_valid(tusb_device_t* dev, uint8_t EPn);
+void tusb_set_rx_valid(tusb_device_t* dev, uint8_t EPn);
 
 
 // Private functions used by teeny usb core
 void tusb_send_data_done(tusb_device_t* dev, uint8_t EPn);
 uint32_t tusb_read_ep0(tusb_device_t* dev, void* buf);
 void tusb_recv_data(tusb_device_t* dev, uint8_t EPn);
-
-
-// Public callback function override by user
-// default data transmit done callback
-WEAK void tusb_on_tx_done(tusb_device_t* dev, uint8_t EPn)
-{}
-
-// default data received  callback, return 0 will continue receive data in end point rx buffer
-// return other value will cause the OUT ep NAX, user can active the OUT ep by call set_rx_valid
-WEAK int tusb_on_rx_done(tusb_device_t* dev, uint8_t EPn, const void* data, uint16_t len)
-{ return 0; }
-
-
+void tusb_setup_handler(tusb_device_t* dev);
 
 // Copy data to PMA buffer, if memory is aligned, copy two by two
 static void tusb_pma_tx(tusb_device_t* dev, pma_record* pma, const void* data, uint32_t len)
@@ -212,10 +202,10 @@ void tusb_send_data_done(tusb_device_t* dev, uint8_t EPn)
         ep->tx_buf = 0;
       }
     }else{
-      if(EPn == 0 && dev->status_callback){
+      if(EPn == 0 && dev->ep0_tx_done){
         // invoke status transmitted call back for ep0
-        dev->status_callback(dev);
-        dev->status_callback = 0;
+        dev->ep0_tx_done(dev);
+        dev->ep0_tx_done = 0;
       }
       tusb_on_tx_done(dev, EPn);
     }
@@ -223,7 +213,7 @@ void tusb_send_data_done(tusb_device_t* dev, uint8_t EPn)
 }
 
 // set ep rx valid
-void set_rx_valid(tusb_device_t* dev, uint8_t EPn)
+void tusb_set_rx_valid(tusb_device_t* dev, uint8_t EPn)
 {
   uint16_t  EP = PCD_GET_ENDPOINT(GetUSB(dev), EPn);
   tusb_ep_data* ep = &dev->Ep[EPn];
@@ -307,5 +297,46 @@ void tusb_recv_data(tusb_device_t* dev, uint8_t EPn)
   }
 }
 
+// end point handler for USB_FS core
+void tusb_ep_handler(tusb_device_t* dev, uint8_t EPn)
+{
+  uint16_t EP = PCD_GET_ENDPOINT(GetUSB(dev), EPn);
+  if (EP & USB_EP_CTR_RX) {
+    if (EPn == 0) {
+      if (EP & USB_EP_SETUP) {
+        // Handle setup packet
+        tusb_read_ep0(dev, &dev->setup);
+        tusb_setup_handler(dev);
+      }else{
+        // Handle ep 0 data packet
+        if(dev->Ep[0].rx_buf){
+          tusb_ep_data* ep = &dev->Ep[0];
+          uint32_t len = tusb_read_ep0(dev, ep->rx_buf + ep->rx_count);
+          ep->rx_count += len;
+          if(len < GetOutMaxPacket(dev, 0) || ep->rx_count >= ep->rx_size){
+            // when got ep 0 data, invoke the setup data out call back
+            if(dev->ep0_rx_done){
+              dev->ep0_rx_done(dev);
+              dev->ep0_rx_done = 0;
+            }
+            ep->rx_buf = 0;
+          }
+        }else{
+          // recv ep0 data, but not processed, drop it
+        }
+      }
+      TUSB_CLEAR_RX_CTR(GetUSB(dev), PCD_ENDP0, EP);
+      TUSB_SET_RX_STATUS(GetUSB(dev), PCD_ENDP0, EP, USB_EP_RX_VALID);
+    }else{
+      TUSB_CLEAR_RX_CTR(GetUSB(dev), EPn, EP);
+      tusb_recv_data(dev, EPn);
+    }
+  }
+  if ( (EP & USB_EP_CTR_TX)) { // something transmitted
+    TUSB_CLEAR_TX_CTR(GetUSB(dev), EPn, EP);
+    tusb_send_data_done(dev, EPn);
+  }
+}
 
+#endif // #if defined(USB)
 

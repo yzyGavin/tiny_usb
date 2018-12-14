@@ -25,26 +25,18 @@
 #include "string.h"
 #include "teeny_usb.h"
 
+#if defined(USB_OTG_FS) || defined(USB_OTG_HS)
+
 // Public functions used by user app
 int tusb_send_data(tusb_device_t* dev, uint8_t EPn, const void* data, uint16_t len);
 int tusb_set_recv_buffer(tusb_device_t* dev, uint8_t EPn, void* data, uint16_t len);
-void set_rx_valid(tusb_device_t* dev, uint8_t EPn);
+void tusb_set_rx_valid(tusb_device_t* dev, uint8_t EPn);
 
 
 // Private functions used by teeny usb core
 void tusb_send_data_done(tusb_device_t* dev, uint8_t EPn);
 uint32_t tusb_read_ep0(tusb_device_t* dev, void* buf);
 void tusb_recv_data(tusb_device_t* dev, uint8_t EPn, uint16_t EP);
-
-// Public callback function override by user
-// default data transmit done callback
-WEAK void tusb_on_tx_done(tusb_device_t* dev, uint8_t EPn)
-{}
-
-// default data received  callback, return 0 will continue receive data in end point rx buffer
-// return other value will cause the OUT ep NAX, user can active the OUT ep by call set_rx_valid
-WEAK int tusb_on_rx_done(tusb_device_t* dev, uint8_t EPn, const void* data, uint16_t len)
-{ return 0; }
 
 #ifdef HAS_DOUBLE_BUFFER
 #define  DOUBLE_BUFF 1
@@ -198,10 +190,10 @@ void tusb_send_data_done(tusb_device_t* dev, uint8_t EPn)
     }else if(ep->tx_last_size == maxpacket){
       // Send a ZLP
       tusb_send_data(dev, EPn, ep->tx_buf, 0);
-    }else if(dev->status_callback){
+    }else if(dev->ep0_tx_done){
       // invoke status transmitted call back for ep0
-      dev->status_callback(dev);
-      dev->status_callback = 0;
+      dev->ep0_tx_done(dev);
+      dev->ep0_tx_done = 0;
     }
   }
   // clear the fifo empty mask
@@ -209,7 +201,7 @@ void tusb_send_data_done(tusb_device_t* dev, uint8_t EPn)
 }
 
 // un-like the USB FS core, we need buffer size to set the ep valid
-void set_rx_valid(tusb_device_t* dev, uint8_t EPn)
+void tusb_set_rx_valid(tusb_device_t* dev, uint8_t EPn)
 {
   PCD_TypeDef* USBx = GetUSB(dev);
   USB_OTG_OUTEndpointTypeDef* epout = USBx_OUTEP(EPn);
@@ -245,4 +237,5 @@ void set_rx_valid(tusb_device_t* dev, uint8_t EPn)
   epout->DOEPCTL |= (USB_OTG_DOEPCTL_CNAK | USB_OTG_DOEPCTL_EPENA);
 }
 
+#endif // #if defined(USB_OTG_FS) || defined(USB_OTG_HS)
 

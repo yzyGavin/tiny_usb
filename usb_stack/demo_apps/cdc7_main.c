@@ -36,7 +36,7 @@ struct{
 void tusb_on_tx_done(tusb_device_t* dev, uint8_t EPn)
 {
   if(EPn > 0 && EPn <= MAX_EP){
-    set_rx_valid(dev, EPn);
+    tusb_set_rx_valid(dev, EPn);
   }
 }
 
@@ -56,7 +56,7 @@ void tusb_reconfig(tusb_device_t* dev)
   CDC7_TUSB_INIT(dev);
   for(i=0;i<INTERFACE_CNT;i++){
     tusb_set_recv_buffer(dev, i+1, interface_buffer[i].recv_buf, CDC7_rxEpMaxSize[i+1]);
-    set_rx_valid(dev, i+1);
+    tusb_set_rx_valid(dev, i+1);
   }
 }
 

@@ -72,10 +72,11 @@ struct _tusb_device{
   uint8_t   config;                       // device config
   uint8_t   addr;                         // device addr
   uint8_t   alt_cfg;                      // device alg config
-  uint8_t   remote_wakeup;                // device feature
+  uint8_t   remote_wakeup;                // device feature of remote wakeup
   uint16_t  status;                       // device status
-  tusb_callback_t status_callback;        // status transfer done callback
-  tusb_callback_t rx0_callback;           // ep0 rx callback
+  uint16_t  padding;                      // padding to 32bit boundary
+  tusb_callback_t ep0_tx_done;            // ep0 tx done callback
+  tusb_callback_t ep0_rx_done;            // ep0 rx done callback
 #if defined(NEED_MAX_PACKET)
   const uint8_t* rx_max_size;             // RX max size buffer
   const uint8_t* tx_max_size;             // TX max size buffer
@@ -107,14 +108,14 @@ void tusb_close_device(tusb_device_t* dev);
 int tusb_send_data(tusb_device_t* dev, uint8_t EPn, const void* data, uint16_t len);
 
 // set the recv buffer for end point, should be called in tusb_reconfig
-// param  len must large then the end point packet size
+// param  len must large than the end point packet size
 // return value: 0 - means success
 //              -1 - means fail
 int tusb_set_recv_buffer(tusb_device_t* dev, uint8_t EPn, void* data, uint16_t len);
 
 // set rx valid, when tusb_on_rx_done return value is not 0, the rx end point will hang
 // use the method to enable it again
-void set_rx_valid(tusb_device_t* dev, uint8_t EPn);
+void tusb_set_rx_valid(tusb_device_t* dev, uint8_t EPn);
 
 //////////////////////////////////
 // user callback functions
@@ -129,9 +130,9 @@ void tusb_on_tx_done(tusb_device_t* dev, uint8_t EPn);
 // 1. Received data is large or equal to the buffer length set by tusb_set_recv_buffer
 // 2. Received data packed size is less than the end point max packet size
 // return value:  0 - means received data processed, the previous set received buffer can be used
-//        otherwise - means the data will be processed later, call set_rx_valid to enable receive again
+//        otherwise - means the data will be processed later, call tusb_set_rx_valid to enable receive again
 //        in case of ISO out endpoint, return 0 will use current receive buffer to rx data again
-//                                     otherwise the follow data will be dropped untill call set_rx_valid
+//                                     otherwise the follow data will be dropped untill call tusb_set_rx_valid
 // WEAK function, default return 0
 int tusb_on_rx_done(tusb_device_t* dev, uint8_t EPn, const void* data, uint16_t len);
 

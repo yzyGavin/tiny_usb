@@ -52,7 +52,7 @@ void tusb_class_request(tusb_device_t* dev, tusb_setup_packet* setup_req)
     if (setup_req->bmRequestType & 0x80){
     }else{
       tusb_set_recv_buffer(dev, 0, hid_cmd, setup_req->wLength);
-      dev->rx0_callback = HID_DataoutRequest;
+      dev->ep0_rx_done = HID_DataoutRequest;
     }
   }else{
     switch(setup_req->bRequest){

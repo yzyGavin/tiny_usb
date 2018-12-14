@@ -126,7 +126,12 @@ do{\
     GetUSB(dev)->GRXFSIZ = (size/4);\
   }while(0)
 
-
+#define  STALL_EP0(dev) \
+do{\
+  PCD_TypeDef* USBx =  GetUSB(dev);\
+  USBx_INEP(0)->DIEPCTL |= USB_OTG_DIEPCTL_STALL;\
+  USBx_OUTEP(0)->DOEPCTL |= USB_OTG_DOEPCTL_STALL;\
+}while(0)
   
 #endif
 

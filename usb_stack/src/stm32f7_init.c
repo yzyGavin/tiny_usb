@@ -354,15 +354,15 @@ void otg_handler(tusb_device_t* dev)
             // Get data from ep0, data of setup packet, the recv buffer is prepared in tusb_setup_handler
             if(ep == 0){
               // when got ep 0 data, invoke the setup data out call back
-              if(dev->rx0_callback){
-                dev->rx0_callback(dev);
-                dev->rx0_callback = 0;
+              if(dev->ep0_rx_done){
+                dev->ep0_rx_done(dev);
+                dev->ep0_rx_done = 0;
               }
               dev->Ep[0].rx_buf = 0;
             }else{
               if(tusb_on_rx_done(dev, ep, dev->Ep[ep].rx_buf, dev->Ep[ep].rx_count) == 0){
                 dev->Ep[ep].rx_count = 0;
-                set_rx_valid(dev, ep);
+                tusb_set_rx_valid(dev, ep);
               }else{
                 dev->Ep[ep].rx_count = dev->Ep[ep].rx_size;
               }
@@ -371,7 +371,7 @@ void otg_handler(tusb_device_t* dev)
           if(( epint & USB_OTG_DOEPINT_STUP) == USB_OTG_DOEPINT_STUP){
             // Do it in USB_OTG_GINTSTS_RXFLVL interrupt
             tusb_setup_handler(dev);
-            set_rx_valid(dev, 0);
+            tusb_set_rx_valid(dev, 0);
           }
           // clear all interrupt flags
           USBx_OUTEP(ep)->DOEPINT = epint;
