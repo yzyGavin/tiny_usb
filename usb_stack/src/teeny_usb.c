@@ -22,6 +22,7 @@
  * SOFTWARE.
  */
 #include "teeny_usb.h"
+#include "string.h"
 // Default function to get report descriptor
 // some class need report descriptor, e.g. HID, user should override it
 WEAK const uint8_t* tusb_get_report_descriptor(tusb_device_t* dev, tusb_setup_packet *req, uint16_t* len)
@@ -81,9 +82,49 @@ static void tusb_get_descriptor(tusb_device_t* dev, tusb_setup_packet *req)
 #endif
       break;
     }
+#if defined(USB_OTG_HS)
+    // For High speed device, support the DEVICE_QUALIFIER 
+    // and OTHER_SPEED_CONFIGURATION request
+    case USB_DESC_TYPE_DEVICE_QUALIFIER:
+    {
+      static __ALIGN_BEGIN uint8_t device_qualifer_desc_buffer[USB_LEN_DEV_QUALIFIER_DESC];
+      // just copy the device descriptor to qualifer descriptor
+      device_qualifer_desc_buffer[0] = USB_LEN_DEV_QUALIFIER_DESC;
+      device_qualifer_desc_buffer[1] = USB_DESC_TYPE_DEVICE_QUALIFIER;
+      memcpy(device_qualifer_desc_buffer+2, dev->descriptors->device + 2, 6);
+      // set the bNumConfigurations field
+      device_qualifer_desc_buffer[8] = dev->descriptors->device[17];
+      // set bReserved field to zero
+      device_qualifer_desc_buffer[9] = 0;
+      len = USB_LEN_DEV_QUALIFIER_DESC;
+      desc = device_qualifer_desc_buffer;
+      break;
+    }
+    case USB_DESC_TYPE_OTHER_SPEED_CONFIGURATION:
+    {
+      static __ALIGN_BEGIN uint8_t device_other_speed_desc_buffer[1024];
+      desc = dev->descriptors->config;
+      if(desc)len = *((uint16_t*)desc + 1);
+      if(len <= sizeof(device_other_speed_desc_buffer)){
+        // if config total length is less than the buffer, copy it to the buffer,
+        // and set it type to OTHER_SPEED_CONFIGURATION
+        memcpy(device_other_speed_desc_buffer, desc, len);
+        device_other_speed_desc_buffer[1] = USB_DESC_TYPE_OTHER_SPEED_CONFIGURATION;
+        desc = device_other_speed_desc_buffer;
+      }else{
+        // otherwise return a fail status
+        desc = 0;
+      }
+      break;
+    }
+#endif
   }
-  tusb_send_data(dev, 0, desc,
+  if(desc){
+    tusb_send_data(dev, 0, desc,
           req->wLength > len ? len : req->wLength);
+  }else{
+    STALL_EP0(dev);
+  }
 }
 
 // Callback function for set address setup
