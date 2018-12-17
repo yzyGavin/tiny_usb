@@ -62,7 +62,7 @@ static void Wait_CoreReset(USB_OTG_GlobalTypeDef *USBx)
   while ((USBx->GRSTCTL & USB_OTG_GRSTCTL_CSRST) == USB_OTG_GRSTCTL_CSRST);
 }
 
-#ifdef USB_HS_PHYC
+#if defined(USB_HS_PHYC)
 static void USB_HS_PHYCInit(USB_OTG_GlobalTypeDef *USBx)
 {
   uint32_t count = 0;
@@ -128,68 +128,117 @@ void tusb_close_device(tusb_device_t* dev)
   }
 }
 
-void tusb_open_device(tusb_device_t* dev)
+
+#define AFL(val, pin)   ((val)<< (( (pin))*4))
+#define AFH(val, pin)   ((val)<< (( (pin)-8)*4))
+static void set_io_af(GPIO_TypeDef* GPIO, uint8_t pin, uint8_t af)
+{
+  GPIOA->MODER &= ~(GPIO_MODER_MODER0 << (pin*2));
+  GPIOA->MODER |= (GPIO_MODER_MODER0_1 << (pin*2));
+  GPIOA->OTYPER &= ~(GPIO_OTYPER_OT_0 << pin);
+  GPIOA->OSPEEDR |= ( (GPIO_OSPEEDER_OSPEEDR0_0 | GPIO_OSPEEDER_OSPEEDR0_1)  << (pin*2) );
+  if(pin > 7){
+    GPIOA->AFR[1] &= ~( AFH(0xf,pin));
+    GPIOA->AFR[1] |= ( AFH(af,pin));
+  }else{
+    GPIOA->AFR[0] &= ~( AFL(0xf,pin));
+    GPIOA->AFR[0] |= ( AFL(af,pin));
+  }
+}
+
+
+// Setup IO for OTG_FS core
+static void tusb_setup_otg_fs_io(void)
+{
+  /**USB_OTG_FS GPIO Configuration    
+  PA8     ------> USB_OTG_FS_SOF
+  PA9     ------> USB_OTG_FS_VBUS
+  PA10     ------> USB_OTG_FS_ID
+  PA11     ------> USB_OTG_FS_DM
+  PA12     ------> USB_OTG_FS_DP 
+  */
+  __HAL_RCC_GPIOA_CLK_ENABLE();
+/*
+  GPIOA->MODER &= ~(GPIO_MODER_MODER11 | GPIO_MODER_MODER12);
+  GPIOA->MODER |= (GPIO_MODER_MODER11_1 | GPIO_MODER_MODER12_1);
+  // OType = PushPull
+  GPIOA->OTYPER &= ~(GPIO_OTYPER_OT_11 | GPIO_OTYPER_OT_12);
+  // OSpeed = Very High
+  GPIOA->OSPEEDR |= (GPIO_OSPEEDER_OSPEEDR11_0 | GPIO_OSPEEDER_OSPEEDR11_1
+                   | GPIO_OSPEEDER_OSPEEDR12_0 | GPIO_OSPEEDER_OSPEEDR12_1);
+  // AF = OTG_FS
+  GPIOA->AFR[1] &= ~( AFH(0xf,11) | AFH(0xf,12) );
+  GPIOA->AFR[1] |= ( AFH(GPIO_AF10_OTG_FS,11) | AFH(GPIO_AF10_OTG_FS,12) );
+  */
+  set_io_af(GPIOA, 11, GPIO_AF10_OTG_FS);
+  set_io_af(GPIOA, 12, GPIO_AF10_OTG_FS);
+#if defined(ENABLE_VBUS_DETECT)
+  // Mode = Input
+  GPIOA->MODER &= ~(GPIO_MODER_MODER9);
+  // No pull
+  GPIOA->PUPDR &= ~(GPIO_PUPDR_PUPDR9_0 | GPIO_PUPDR_PUPDR9_1);    
+#endif
+}
+
+#if defined(USB_HS_PHYC)
+// Setup IO for OTG_HS core with embedded HS phy
+static void tusb_setup_otg_hs_io(void)
+{
+}
+#endif
+
+// Setup IO for ULPI interface phy
+static void tusb_setup_otg_ulpi_io(void)
+{
+  /**USB_OTG_HS GPIO Configuration    
+    PC0     ------> USB_OTG_HS_ULPI_STP
+    PC2     ------> USB_OTG_HS_ULPI_DIR
+    PC3     ------> USB_OTG_HS_ULPI_NXT
+    PA3     ------> USB_OTG_HS_ULPI_D0
+    PA5     ------> USB_OTG_HS_ULPI_CK
+    PB0     ------> USB_OTG_HS_ULPI_D1
+    PB1     ------> USB_OTG_HS_ULPI_D2
+    PB10     ------> USB_OTG_HS_ULPI_D3
+    PB11     ------> USB_OTG_HS_ULPI_D4
+    PB12     ------> USB_OTG_HS_ULPI_D5
+    PB13     ------> USB_OTG_HS_ULPI_D6
+    PB5     ------> USB_OTG_HS_ULPI_D7 
+    */
+  __HAL_RCC_GPIOA_CLK_ENABLE();
+  __HAL_RCC_GPIOB_CLK_ENABLE();
+  __HAL_RCC_GPIOC_CLK_ENABLE();
+  set_io_af(GPIOA, 3, GPIO_AF10_OTG_HS);
+  set_io_af(GPIOA, 5, GPIO_AF10_OTG_HS);
+  
+  set_io_af(GPIOB, 0, GPIO_AF10_OTG_HS);
+  set_io_af(GPIOB, 1, GPIO_AF10_OTG_HS);
+  set_io_af(GPIOB, 10, GPIO_AF10_OTG_HS);
+  set_io_af(GPIOB, 11, GPIO_AF10_OTG_HS);
+  set_io_af(GPIOB, 12, GPIO_AF10_OTG_HS);
+  set_io_af(GPIOB, 13, GPIO_AF10_OTG_HS);
+  set_io_af(GPIOB, 5, GPIO_AF10_OTG_HS);
+  
+  set_io_af(GPIOC, 0, GPIO_AF10_OTG_HS);
+  set_io_af(GPIOC, 2, GPIO_AF10_OTG_HS);
+  set_io_af(GPIOC, 3, GPIO_AF10_OTG_HS);
+}
+
+// init the IO and OTG core
+static void tusb_otg_core_init(tusb_device_t* dev)
 {
   USB_OTG_GlobalTypeDef* USBx = GetUSB(dev);
   if(GetUSB(dev) == USB_OTG_FS){
     // Init the FS core
 #if defined(OTG_FS_EMBEDDED_PHY)
-    // open the OTG FS core
-    // 1.  setup IO pins
-    __HAL_RCC_GPIOA_CLK_ENABLE();
-    //GPIO_InitTypeDef GPIO_InitStruct;
-  
-    /**USB_OTG_FS GPIO Configuration    
-    PA8     ------> USB_OTG_FS_SOF
-    PA9     ------> USB_OTG_FS_VBUS
-    PA10     ------> USB_OTG_FS_ID
-    PA11     ------> USB_OTG_FS_DM
-    PA12     ------> USB_OTG_FS_DP 
-    */
-    
-    // Mode = AF
-    GPIOA->MODER &= ~(GPIO_MODER_MODER11 | GPIO_MODER_MODER12);
-    GPIOA->MODER |= (GPIO_MODER_MODER11_1 | GPIO_MODER_MODER12_1);
-    // OType = PushPull
-    GPIOA->OTYPER &= ~(GPIO_OTYPER_OT_11 | GPIO_OTYPER_OT_12);
-    // OSpeed = Very High
-    GPIOA->OSPEEDR |= (GPIO_OSPEEDER_OSPEEDR11_0 | GPIO_OSPEEDER_OSPEEDR11_1
-                     | GPIO_OSPEEDER_OSPEEDR12_0 | GPIO_OSPEEDER_OSPEEDR12_1);
-
-#define AFH(val, pin)   ((val)<< (( (pin)-8)*4))
-    // AF = OTG_FS
-    GPIOA->AFR[1] &= ~( AFH(0xf,11) | AFH(0xf,12) );
-    GPIOA->AFR[1] |= ( AFH(GPIO_AF10_OTG_FS,11) | AFH(GPIO_AF10_OTG_FS,12) );
-    
-    //GPIO_InitStruct.Pin = GPIO_PIN_11|GPIO_PIN_12;
-    //GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-    //GPIO_InitStruct.Pull = GPIO_NOPULL;
-    //GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
-    //GPIO_InitStruct.Alternate = GPIO_AF10_OTG_FS;
-    //HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-    
-#if defined(ENABLE_VBUS_DETECT)
-    //GPIO_InitStruct.Pin = GPIO_PIN_9;
-    //GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-    //GPIO_InitStruct.Pull = GPIO_NOPULL;
-    //HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-    
-    // Mode = Input
-    GPIOA->MODER &= ~(GPIO_MODER_MODER9);
-    // No pull
-    GPIOA->PUPDR &= ~(GPIO_PUPDR_PUPDR9_0 | GPIO_PUPDR_PUPDR9_1);
-    
-#endif
-
-    __HAL_RCC_USB_OTG_FS_CLK_ENABLE();
+    // 1. Init the IO
+    tusb_setup_otg_fs_io();
+    // 2. Init the interrupt
     NVIC_SetPriority(OTG_FS_IRQn, 0);
     NVIC_EnableIRQ(OTG_FS_IRQn);
-    
-    
-    // 2. Init the core
+    // 3. Init the core
+    __HAL_RCC_USB_OTG_FS_CLK_ENABLE();
     /* Select FS Embedded PHY */
     USBx->GUSBCFG |= USB_OTG_GUSBCFG_PHYSEL;
-    
     /* Reset after a PHY select and set Host mode */
     Wait_CoreReset(USBx);
     /* Deactivate the power down*/
@@ -197,12 +246,20 @@ void tusb_open_device(tusb_device_t* dev)
 #endif
   }else if(GetUSB(dev) == USB_OTG_HS){
     // Init the HS core
-    __HAL_RCC_USB_OTG_HS_CLK_ENABLE();
+    // 1. Init the IO
+#if defined(OTG_HS_EMBEDDED_PHY)    
+    tusb_setup_otg_hs_io();
+#elif defined(OTG_HS_EXTERNAL_PHY)    
+    tusb_setup_otg_ulpi_io();
+#endif
+    // 2. Init the interrupt
     NVIC_SetPriority(OTG_HS_IRQn, 0);
     NVIC_EnableIRQ(OTG_HS_IRQn);
     
-    // open the OTG HS core
+    __HAL_RCC_USB_OTG_HS_CLK_ENABLE();
+    // 3. Init the OTG HS core
 #if defined(OTG_HS_EMBEDDED_PHY)
+    // init embedded phy
     USBx->GCCFG &= ~(USB_OTG_GCCFG_PWRDWN);
     /* Init The UTMI Interface */
     USBx->GUSBCFG &= ~(USB_OTG_GUSBCFG_TSDPS | USB_OTG_GUSBCFG_ULPIFSLS | USB_OTG_GUSBCFG_PHYSEL);
@@ -213,13 +270,16 @@ void tusb_open_device(tusb_device_t* dev)
     USBx->GCCFG |= USB_OTG_GCCFG_PHYHSEN;
     /* Enables control of a High Speed USB PHY */
     USB_HS_PHYCInit(USBx);
-#endif
-#if defined(OTG_HS_EXTERNAL_PHY)
+#elif defined(OTG_HS_EXTERNAL_PHY)
+    // Init external phy
+    __HAL_RCC_USB_OTG_HS_ULPI_CLK_ENABLE();
     USBx->GCCFG &= ~(USB_OTG_GCCFG_PWRDWN);
     /* Init The ULPI Interface */
     USBx->GUSBCFG &= ~(USB_OTG_GUSBCFG_TSDPS | USB_OTG_GUSBCFG_ULPIFSLS | USB_OTG_GUSBCFG_PHYSEL);
     /* Select vbus source */
     USBx->GUSBCFG &= ~(USB_OTG_GUSBCFG_ULPIEVBUSD | USB_OTG_GUSBCFG_ULPIEVBUSI);
+#else
+#error embedded phy or external phy not defined
 #endif
 
 #if defined(ENABLE_VBUS_DETECT)
@@ -233,17 +293,23 @@ void tusb_open_device(tusb_device_t* dev)
     USBx->GAHBCFG |= USB_OTG_GAHBCFG_HBSTLEN_2;
     USBx->GAHBCFG |= USB_OTG_GAHBCFG_DMAEN;
 #endif
+}
+
+void tusb_open_device(tusb_device_t* dev)
+{
+  USB_OTG_GlobalTypeDef* USBx = GetUSB(dev);
+  tusb_otg_core_init(dev);
   
-    // Force to device mode
-    USBx->GUSBCFG &= ~(USB_OTG_GUSBCFG_FHMOD | USB_OTG_GUSBCFG_FDMOD);
-    USBx->GUSBCFG |= USB_OTG_GUSBCFG_FDMOD;
+  // Force to device mode
+  USBx->GUSBCFG &= ~(USB_OTG_GUSBCFG_FHMOD | USB_OTG_GUSBCFG_FDMOD);
+  USBx->GUSBCFG |= USB_OTG_GUSBCFG_FDMOD;
   
 #if defined(ENABLE_VBUS_DETECT)
-    USBx->GCCFG |= USB_OTG_GCCFG_VBDEN;
+  USBx->GCCFG |= USB_OTG_GCCFG_VBDEN;
 #else
-    USBx->GCCFG &= ~ USB_OTG_GCCFG_VBDEN;
-    USBx->GOTGCTL |= USB_OTG_GOTGCTL_BVALOEN;
-    USBx->GOTGCTL |= USB_OTG_GOTGCTL_BVALOVAL;
+  USBx->GCCFG &= ~ USB_OTG_GCCFG_VBDEN;
+  USBx->GOTGCTL |= USB_OTG_GOTGCTL_BVALOEN;
+  USBx->GOTGCTL |= USB_OTG_GOTGCTL_BVALOVAL;
 #endif
   
   USBx_PCGCCTL = 0;
@@ -314,6 +380,7 @@ void tusb_open_device(tusb_device_t* dev)
   
   USBx_DEVICE->DCTL &= ~USB_OTG_DCTL_SDIS;
   USBx->GAHBCFG |= USB_OTG_GAHBCFG_GINT;
+  
 }
 
 void tusb_send_data_done(tusb_device_t* dev, uint8_t EPn);

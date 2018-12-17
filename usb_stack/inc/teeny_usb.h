@@ -27,6 +27,11 @@
 
 #include "teeny_usb_platform.h"
 
+
+#define USB_FEATURE_B_HNP_ENABLE                3       // SET FEATURE OTG - Enable B device to perform HNP
+#define USB_FEATURE_A_HNP_SUPPORT               4       // SET FEATURE OTG - A device supports HNP
+#define USB_FEATURE_A_ALT_HNP_SUPPORT           5       // SET FEATURE OTG - Another port on the A device supports HNP
+
 typedef struct _tusb_setup_packet{
   uint8_t  bmRequestType;
   uint8_t  bRequest;
@@ -69,10 +74,14 @@ typedef struct _tusb_descriptors
 typedef struct _tusb_device tusb_device_t;
 typedef void(*tusb_callback_t)(tusb_device_t* dev);
 struct _tusb_device{
-  uint8_t   config;                       // device config
   uint8_t   addr;                         // device addr
+  uint8_t   config;                       // device config
   uint8_t   alt_cfg;                      // device alg config
-  uint8_t   remote_wakeup;                // device feature of remote wakeup
+  uint8_t   remote_wakeup:1;              // device feature of remote wakeup
+  uint8_t   b_hnp:1;                      // OTG only, hnp for b device
+  uint8_t   a_hnp:1;                      // OTG only, hnp for a device
+  uint8_t   a_alt_hnp:1;                  // OTG only, hnp for a device on other port
+  uint8_t   flag_padding:4;               // padding the bit flags
   uint16_t  status;                       // device status
   uint16_t  padding;                      // padding to 32bit boundary
   tusb_callback_t ep0_tx_done;            // ep0 tx done callback
