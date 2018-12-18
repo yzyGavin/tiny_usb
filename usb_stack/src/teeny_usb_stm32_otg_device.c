@@ -237,5 +237,242 @@ void tusb_set_rx_valid(tusb_device_t* dev, uint8_t EPn)
   epout->DOEPCTL |= (USB_OTG_DOEPCTL_CNAK | USB_OTG_DOEPCTL_EPENA);
 }
 
+
+#define  INTR()   (USBx->GINTSTS & USBx->GINTMSK)
+
+// Interrupt handler of DEVICE mode
+void tusb_otg_device_handler(tusb_device_t* dev)
+{
+  USB_OTG_GlobalTypeDef *USBx = GetUSB(dev);
+  uint32_t MAX_EP_NUM = USBx == USB_OTG_FS ? USB_OTG_FS_MAX_EP_NUM : USB_OTG_HS_MAX_EP_NUM;
+  
+
+  /* ensure that we are in device mode */
+  //if (USB_GetMode(USBx) == USB_OTG_MODE_DEVICE)
+  {
+    // no flag set, return directly
+    if(INTR() == 0){
+      return;
+    }
+
+    if(INTR() & USB_OTG_GINTSTS_MMIS){
+     /* incorrect mode, acknowledge the interrupt */
+      USBx->GINTSTS = USB_OTG_GINTSTS_MMIS;
+    }
+    
+    // Handle output 
+    if(INTR() & USB_OTG_GINTSTS_OEPINT){
+      uint32_t ep_intr = ((USBx_DEVICE->DAINT & USBx_DEVICE->DAINTMSK)) >> 16;
+      uint8_t ep = 0;
+      while(ep_intr){
+        if(ep >= MAX_EP_NUM){
+          break;
+        }
+        if (ep_intr & 0x1){
+          uint32_t epint = USBx_OUTEP(ep)->DOEPINT;
+          if(( epint & USB_OTG_DOEPINT_XFRC) == USB_OTG_DOEPINT_XFRC){
+            // Get data from ep0, data of setup packet, the recv buffer is prepared in tusb_setup_handler
+            if(ep == 0){
+              // when got ep 0 data, invoke the setup data out call back
+              if(dev->ep0_rx_done){
+                dev->ep0_rx_done(dev);
+                dev->ep0_rx_done = 0;
+              }
+              dev->Ep[0].rx_buf = 0;
+            }else{
+              if(tusb_on_rx_done(dev, ep, dev->Ep[ep].rx_buf, dev->Ep[ep].rx_count) == 0){
+                dev->Ep[ep].rx_count = 0;
+                tusb_set_rx_valid(dev, ep);
+              }else{
+                dev->Ep[ep].rx_count = dev->Ep[ep].rx_size;
+              }
+            }
+          }
+          if(( epint & USB_OTG_DOEPINT_STUP) == USB_OTG_DOEPINT_STUP){
+            // Do it in USB_OTG_GINTSTS_RXFLVL interrupt
+            tusb_setup_handler(dev);
+            tusb_set_rx_valid(dev, 0);
+          }
+          // clear all interrupt flags
+          USBx_OUTEP(ep)->DOEPINT = epint;
+        }
+        ep_intr>>=1;
+        ep+=1;
+      }
+    }
+
+    // handle input
+    if(INTR() & USB_OTG_GINTSTS_IEPINT){
+      uint32_t ep_intr = (USBx_DEVICE->DAINT & USBx_DEVICE->DAINTMSK) & 0xffff;
+      uint8_t ep = 0;
+      while(ep_intr){
+        if(ep >= MAX_EP_NUM){
+          break;
+        }
+        if (ep_intr & 0x1){
+          USB_OTG_INEndpointTypeDef* epin = USBx_INEP(ep);
+          uint32_t epint = epin->DIEPINT;
+          // Xfer complete interrupt handler
+          if(epint & USB_OTG_DIEPINT_XFRC){
+            USBx_DEVICE->DIEPEMPMSK &= ~(0x1ul << ep);
+            epin->DIEPINT = USB_OTG_DIEPINT_XFRC;
+            tusb_send_data_done(dev, ep);
+          }
+          
+//          if(( epint & USB_OTG_DIEPINT_TOC) == USB_OTG_DIEPINT_TOC){
+//            epin->DIEPINT = USB_OTG_DIEPINT_TOC;
+//          }
+//          if(( epint & USB_OTG_DIEPINT_ITTXFE) == USB_OTG_DIEPINT_ITTXFE){
+//            epin->DIEPINT = USB_OTG_DIEPINT_ITTXFE;
+//          }
+//          if(( epint & USB_OTG_DIEPINT_INEPNE) == USB_OTG_DIEPINT_INEPNE){
+//            epin->DIEPINT = USB_OTG_DIEPINT_INEPNE;
+//          }
+//          if(( epint & USB_OTG_DIEPINT_EPDISD) == USB_OTG_DIEPINT_EPDISD){
+//            epin->DIEPINT = USB_OTG_DIEPINT_EPDISD;
+//          }
+          // FIFO empty interrupt handler
+          if( ((epint & USB_OTG_DIEPINT_TXFE) == USB_OTG_DIEPINT_TXFE) && (USBx_DEVICE->DIEPEMPMSK & (1 << ep)) ){
+            tusb_fifo_empty(dev, ep);
+          }
+          // clear all interrupts
+          epin->DIEPINT = epint;
+        }
+        ep_intr>>=1;
+        ep+=1;
+      }
+    }
+    /* Handle Resume Interrupt */
+    if(INTR() & USB_OTG_GINTSTS_WKUINT){
+      // TODO: leave low power mode
+      /* Clear the Remote Wake-up Signaling */
+      USBx_DEVICE->DCTL &= ~USB_OTG_DCTL_RWUSIG;
+      USBx->GINTSTS = USB_OTG_GINTSTS_WKUINT;
+    }
+
+    /* Handle Suspend Interrupt */
+    if(INTR()& USB_OTG_GINTSTS_USBSUSP){
+      // TODO: enter low power mode
+      USBx->GINTSTS = USB_OTG_GINTSTS_USBSUSP;
+    }
+
+    /* Handle LPM Interrupt */
+    if(INTR() & USB_OTG_GINTSTS_LPMINT){
+      USBx->GINTSTS = USB_OTG_GINTSTS_LPMINT;
+    }
+
+    /* Handle Reset Interrupt */
+    if(INTR() & USB_OTG_GINTSTS_USBRST ){
+      uint32_t i;
+      USBx_DEVICE->DCTL &= ~USB_OTG_DCTL_RWUSIG;
+      flush_tx(USBx, 0x10);
+      for (i = 0; i < MAX_EP_NUM ; i++)
+      {
+        USBx_INEP(i)->DIEPINT = 0xFF;
+        USBx_INEP(i)->DIEPCTL &= ~USB_OTG_DIEPCTL_STALL;
+        USBx_INEP(i)->DIEPCTL |= USB_OTG_DIEPCTL_EPDIS;
+        USBx_OUTEP(i)->DOEPINT = 0xFF;
+        USBx_OUTEP(i)->DOEPCTL &= ~USB_OTG_DOEPCTL_STALL;
+        USBx_OUTEP(i)->DOEPCTL |= USB_OTG_DOEPCTL_EPDIS;
+      }
+      USBx_DEVICE->DAINT = 0xFFFFFFFF;
+      USBx_DEVICE->DAINTMSK |= 0x10001;
+      {
+        USBx_DEVICE->DOEPMSK |= (USB_OTG_DOEPMSK_STUPM | USB_OTG_DOEPMSK_XFRCM | USB_OTG_DOEPMSK_EPDM | USB_OTG_DOEPMSK_OTEPSPRM);
+        USBx_DEVICE->DIEPMSK |= (USB_OTG_DIEPMSK_TOM | USB_OTG_DIEPMSK_XFRCM | USB_OTG_DIEPMSK_EPDM);
+      }
+
+      /* Set Default Address to 0 */
+      USBx_DEVICE->DCFG &= ~USB_OTG_DCFG_DAD;
+
+      /* setup EP0 to receive SETUP packets */
+      // setup ep0
+      USBx_OUTEP(0)->DOEPTSIZ = 0;
+      USBx_OUTEP(0)->DOEPTSIZ |= (USB_OTG_DOEPTSIZ_PKTCNT & (1 << 19)) ;
+      USBx_OUTEP(0)->DOEPTSIZ |= (3 * 8);
+      USBx_OUTEP(0)->DOEPTSIZ |=  USB_OTG_DOEPTSIZ_STUPCNT;
+#if defined(ENABLE_DMA)
+      USBx_OUTEP(0)->DOEPDMA = (uint32_t)&dev->setup;
+      /* EP enable */
+      USBx_OUTEP(0)->DOEPCTL = 0x80008000;
+#endif
+      USBx->GINTSTS = USB_OTG_GINTSTS_USBRST;
+    }
+
+    /* Handle Enumeration done Interrupt */
+    if(INTR() & USB_OTG_GINTSTS_ENUMDNE ){
+      tusb_reconfig(dev);
+      USBx->GUSBCFG &= ~USB_OTG_GUSBCFG_TRDT;
+      switch(USBx_DEVICE->DSTS & USB_OTG_DSTS_ENUMSPD){
+        case DSTS_ENUMSPD_HS_PHY_30MHZ_OR_60MHZ:
+          USBx->GUSBCFG |= (uint32_t)((USBD_HS_TRDT_VALUE << 10) & USB_OTG_GUSBCFG_TRDT);
+          break;
+        case DSTS_ENUMSPD_LS_PHY_6MHZ:
+          USBx_INEP(0)->DIEPCTL |= 3; // force ep0 packet size to 8 when in LS mode
+        case DSTS_ENUMSPD_FS_PHY_30MHZ_OR_60MHZ:
+        case DSTS_ENUMSPD_FS_PHY_48MHZ:
+          USBx->GUSBCFG |= (uint32_t)((0x6 << 10) & USB_OTG_GUSBCFG_TRDT);
+          break;
+      }
+      USBx_DEVICE->DCTL |= USB_OTG_DCTL_CGINAK;
+      USBx->GINTSTS = USB_OTG_GINTSTS_ENUMDNE;
+    }
+
+    /* Handle RxQLevel Interrupt */
+    if(INTR() & USB_OTG_GINTSTS_RXFLVL){
+      USB_MASK_INTERRUPT(USBx, USB_OTG_GINTSTS_RXFLVL);
+      {
+        uint32_t sts = USBx->GRXSTSP;
+        uint8_t EPn = sts & USB_OTG_GRXSTSP_EPNUM;
+        uint32_t len = (sts & USB_OTG_GRXSTSP_BCNT) >> 4;
+        if(((sts & USB_OTG_GRXSTSP_PKTSTS) >> 17) ==  STS_DATA_UPDT){
+          tusb_ep_data* ep = &dev->Ep[EPn];
+          if(ep->rx_count<ep->rx_size && ep->rx_buf){
+            // copy data packet
+            tusb_read_data(dev, ep->rx_buf + ep->rx_count, len);
+            ep->rx_count += len;
+          }else{
+            // drop the data because no memory to handle them
+            tusb_read_data(dev,0, len);
+          }
+        }else if(((sts & USB_OTG_GRXSTSP_PKTSTS) >> 17) ==  STS_SETUP_UPDT){
+          // copy setup packet
+          tusb_read_data(dev, &dev->setup, len);
+        }
+      }
+      USB_UNMASK_INTERRUPT(USBx, USB_OTG_GINTSTS_RXFLVL);
+    }
+
+    /* Handle SOF Interrupt */
+    if(INTR() & USB_OTG_GINTSTS_SOF){
+      USBx->GINTSTS = USB_OTG_GINTSTS_SOF;
+    }
+
+    /* Handle Incomplete ISO IN Interrupt */
+    if(INTR() & USB_OTG_GINTSTS_IISOIXFR){
+      USBx->GINTSTS = USB_OTG_GINTSTS_IISOIXFR;
+    }
+
+    /* Handle Incomplete ISO OUT Interrupt */
+    if(INTR() & USB_OTG_GINTSTS_PXFR_INCOMPISOOUT){
+      USBx->GINTSTS = USB_OTG_GINTSTS_PXFR_INCOMPISOOUT;
+    }
+
+    /* Handle Connection event Interrupt */
+    if(INTR() & USB_OTG_GINTSTS_SRQINT){
+      USBx->GINTSTS = USB_OTG_GINTSTS_SRQINT;
+    }
+
+    /* Handle Disconnection event Interrupt */
+    if(INTR() & USB_OTG_GINTSTS_OTGINT){
+      uint32_t temp = USBx->GOTGINT;
+      if((temp & USB_OTG_GOTGINT_SEDET) == USB_OTG_GOTGINT_SEDET){
+        // dis connect event
+      }
+      USBx->GOTGINT |= temp;
+    }
+  }
+}
+
 #endif // #if defined(USB_OTG_FS) || defined(USB_OTG_HS)
 

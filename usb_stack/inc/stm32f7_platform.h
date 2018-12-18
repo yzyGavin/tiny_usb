@@ -48,6 +48,9 @@
 #define USB_OTG_FS_MAX_EP_NUM   6
 #define USB_OTG_HS_MAX_EP_NUM   9
 
+#define USB_OTG_FS_MAX_CH_NUM   12
+#define USB_OTG_HS_MAX_CH_NUM   16
+
 #if defined(USB_OTG_FS) && defined(USB_OTG_HS)
 #define  USB_CORE_HANDLE_TYPE        PCD_TypeDef*
 #define  GetUSB(dev)           ((dev)->handle)
@@ -72,7 +75,8 @@
 #define  GetInMaxPacket(dev, EPn)  get_max_in_packet_size(GetUSB(dev), EPn)
 #define  GetOutMaxPacket(dev, EPn) get_max_out_packet_size(GetUSB(dev), EPn)
 
-
+void flush_rx(USB_OTG_GlobalTypeDef *USBx);
+void flush_tx(USB_OTG_GlobalTypeDef *USBx, uint32_t num);
 
 #define init_ep_tx(dev, EPn, type, mps)                                                    \
 do{                                                                                        \
