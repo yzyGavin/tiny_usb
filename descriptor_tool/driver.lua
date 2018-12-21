@@ -5,7 +5,7 @@
 require("usb_common_desc")
 require("usb_wcid")
 
-local tinyGUID = "{5F5080D8-75A4-46F5-ADF8-ED654DD1AF45}"
+local teenyGUID = "{5F5080D8-75A4-46F5-ADF8-ED654DD1AF45}"
 
 local tempPath = "driver_res\\template\\"
 local tempBin = "driver_res\\bins\\"
@@ -68,7 +68,7 @@ local function getIfNo(IForIAD)
 end
 
 local function GetString(desc, field, default)
-    return rawget(desc, field) or default or "TinyUSB"
+    return rawget(desc, field) or default or "TeenyUSB"
 end
 
 local function append_interface(drvs, drvName, ifID, dev)
@@ -116,7 +116,7 @@ local function PrepareDriver(name, r, genFiles)
     local drivers = {}
     name = string.gsub(name, "_+$", "")
     if name == "" then
-        name = "TinyUSB"
+        name = "TeenyUSB"
     end
     
     for i,dev in ipairs(r.devs) do
@@ -213,8 +213,8 @@ local function DriverCollect(r, desc)
     end
     local dev = r.devs[devId]
     dev.id = devId
-    dev.vendor = GetString(desc, "strManufacture", "TinyUSB")
-    dev.product = GetString(desc, "strProduct", "TinyUSB Demo")
+    dev.vendor = GetString(desc, "strManufacture", "TeenyUSB")
+    dev.product = GetString(desc, "strProduct", "TeenyUSB Demo")
     for i, v in ipairs(cfg) do
         local ifID = string.format("VID_%04X&PID_%04X&MI_%02X", desc.vid, desc.pid, getIfNo(v))
         
