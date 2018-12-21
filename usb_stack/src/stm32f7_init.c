@@ -351,7 +351,7 @@ static void tusb_init_otg_device(tusb_device_t* dev)
 }
 
 
-static void tusb_otg_driver_vbus (USB_OTG_GlobalTypeDef* USBx, uint8_t state)
+void tusb_otg_driver_vbus (USB_OTG_GlobalTypeDef* USBx, uint8_t state)
 {
   __IO uint32_t hprt0 = 0U;
   hprt0 = USBx_HPRT0;
@@ -427,6 +427,9 @@ static void tusb_init_otg_host(tusb_device_t* dev)
   USBx->GINTMSK |= (USB_OTG_GINTMSK_PRTIM            | USB_OTG_GINTMSK_HCIM |\
                     USB_OTG_GINTMSK_SOFM             | USB_OTG_GINTSTS_DISCINT|\
                     USB_OTG_GINTMSK_PXFRM_IISOOXFRM  | USB_OTG_GINTMSK_WUIM);
+  
+  
+  USBx->GAHBCFG |= USB_OTG_GAHBCFG_GINT;
 }
 
 void tusb_open_device(tusb_device_t* dev)
@@ -446,35 +449,34 @@ void tusb_open_device(tusb_device_t* dev)
 }
 
 void tusb_otg_device_handler(tusb_device_t* dev);
-void tusb_otg_host_handler(tusb_device_t* dev);
+void tusb_otg_host_handler(tusb_host_t* dev);
 
 #define TUSB_OTG_GetMode(USBx) ((USBx->GINTSTS ) & 0x1U)
 
-void otg_handler(tusb_device_t* dev)
-{
-  USB_OTG_GlobalTypeDef *USBx = GetUSB(dev);
-  /* ensure that we are in device mode */
-  if (TUSB_OTG_GetMode(USBx) == USB_OTG_MODE_DEVICE){
-    tusb_otg_device_handler(dev);
-  }else{
-    tusb_otg_host_handler(dev);
-  }
-}
-
 #if defined(USB_OTG_FS)
 extern tusb_device_t tusb_dev_otg_fs;
+extern tusb_host_t tusb_host_otg_fs;
 void OTG_FS_IRQHandler(void)
 {
-  otg_handler(&tusb_dev_otg_fs);
+  if (TUSB_OTG_GetMode(USB_OTG_FS) == USB_OTG_MODE_DEVICE){
+    tusb_otg_device_handler(&tusb_dev_otg_fs);
+  }else{
+    tusb_otg_host_handler(&tusb_host_otg_fs);
+  }
 }
 #endif
 
 
 #if defined(USB_OTG_HS)
 extern tusb_device_t tusb_dev_otg_hs;
+extern tusb_host_t tusb_host_otg_hs;
 void OTG_HS_IRQHandler(void)
 {
-  otg_handler(&tusb_dev_otg_hs);
+  if (TUSB_OTG_GetMode(USB_OTG_HS) == USB_OTG_MODE_DEVICE){
+    tusb_otg_device_handler(&tusb_dev_otg_hs);
+  }else{
+    tusb_otg_host_handler(&tusb_host_otg_hs);
+  }
 }
 #endif
 

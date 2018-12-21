@@ -13,6 +13,7 @@
 
   <project>
     <PathAndName>.\stm32f1xx.uvprojx</PathAndName>
+    <NodeIsExpanded>1</NodeIsExpanded>
   </project>
 
   <project>

@@ -50,9 +50,8 @@ void tusb_recv_data(tusb_device_t* dev, uint8_t EPn, uint16_t EP);
 #endif
 
 
-void tusb_read_data(tusb_device_t* dev, void* buf, uint32_t len)
+void tusb_otg_read_data(USB_OTG_GlobalTypeDef *USBx, void* buf, uint32_t len)
 {
-  USB_OTG_GlobalTypeDef *USBx = GetUSB(dev);
   __packed uint32_t * dest = (__packed uint32_t *)buf;
   len = (len + 3) / 4;
   while(len){
@@ -239,6 +238,8 @@ void tusb_set_rx_valid(tusb_device_t* dev, uint8_t EPn)
 
 
 #define  INTR()   (USBx->GINTSTS & USBx->GINTMSK)
+
+void tusb_setup_handler(tusb_device_t* dev);
 
 // Interrupt handler of DEVICE mode
 void tusb_otg_device_handler(tusb_device_t* dev)
@@ -429,15 +430,15 @@ void tusb_otg_device_handler(tusb_device_t* dev)
           tusb_ep_data* ep = &dev->Ep[EPn];
           if(ep->rx_count<ep->rx_size && ep->rx_buf){
             // copy data packet
-            tusb_read_data(dev, ep->rx_buf + ep->rx_count, len);
+            tusb_otg_read_data(USBx, ep->rx_buf + ep->rx_count, len);
             ep->rx_count += len;
           }else{
             // drop the data because no memory to handle them
-            tusb_read_data(dev,0, len);
+            tusb_otg_read_data(USBx,0, len);
           }
         }else if(((sts & USB_OTG_GRXSTSP_PKTSTS) >> 17) ==  STS_SETUP_UPDT){
           // copy setup packet
-          tusb_read_data(dev, &dev->setup, len);
+          tusb_otg_read_data(USBx, &dev->setup, len);
         }
       }
       USB_UNMASK_INTERRUPT(USBx, USB_OTG_GINTSTS_RXFLVL);

@@ -70,7 +70,6 @@ typedef struct _tusb_descriptors
 #endif
 }tusb_descriptors;
 
-
 typedef struct _tusb_device tusb_device_t;
 typedef void(*tusb_callback_t)(tusb_device_t* dev);
 struct _tusb_device{
@@ -97,6 +96,39 @@ struct _tusb_device{
   USB_CORE_HANDLE_TYPE  handle;           // USB hardware handle
 #endif
 };
+
+
+#define  RETRY_FOREVER              0xffffffff
+#define  MAX_HC_NUM                 16
+
+
+
+// Host channel data
+typedef struct _tusb_hc_data
+{
+  uint8_t*  ch_buf;
+  uint16_t  size;                    // size of the pipe buffer
+  uint16_t  count;                   // data count of the pipe buffer
+  uint32_t  retry_count;             // channel error count
+  uint32_t  error_reason;            // channel error reason
+  uint8_t   state;                   // channel state
+  uint8_t   toggle_in:1;             // toggle bit for IN pipe
+  uint8_t   toggle_out:1;            // toggle bit for OUT pipe
+  uint8_t   do_ping:1;               // do ping flag
+  uint8_t   is_use:1;                // used flag
+  uint8_t   is_data:1;               // 1: data packet, 0: setup packet
+  uint8_t   auto_free:1;             // 1: auto free when transaction done, 0: do not free
+  uint8_t   padding:2;               // bit field padding
+  uint16_t  padding32;               // padding to 32bit boundary
+}tusb_hc_data_t;
+
+typedef struct _tusb_host{
+  uint32_t  state;
+  tusb_hc_data_t  hc[MAX_HC_NUM];         // host channel
+#if defined(USB_CORE_HANDLE_TYPE)
+  USB_CORE_HANDLE_TYPE  handle;           // USB hardware handle
+#endif
+}tusb_host_t;
 
 
 #if defined(USB_CORE_HANDLE_TYPE)
@@ -156,6 +188,24 @@ void tusb_class_request(tusb_device_t* dev, tusb_setup_packet* setup_req);
 // get device report descripor when need
 // WEAK function, default return 0, set length to 0
 const uint8_t* tusb_get_report_descriptor(tusb_device_t* dev, tusb_setup_packet *req, uint16_t* len);
+
+
+//////////////////////////////////
+// Host functions
+//////////////////////////////////
+
+
+//////////////////////////////////
+// Host callback functions
+//////////////////////////////////
+
+// WEAK function
+// called when host channel action done or error
+// return value: 0 - means the channel should keep
+//       otherwise - halt the channel 
+int tusb_on_channel_event(tusb_host_t* host, uint8_t hc_num);
+
+void tusb_host_port_changed(tusb_host_t* host);
 
 
 #endif

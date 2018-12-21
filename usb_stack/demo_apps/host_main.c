@@ -88,28 +88,24 @@ void delay_ms(uint32_t ms)
 }
 
 #if defined(USB_OTG_FS)
-tusb_device_t tusb_dev_otg_fs;
 tusb_host_t tusb_host_otg_fs;
+tusb_device_t tusb_dev_otg_fs;
 #endif
 #if defined(USB_OTG_HS)
-tusb_device_t tusb_dev_otg_hs;
 tusb_host_t tusb_host_otg_hs;
-#endif
-#if defined(USB)
-tusb_device_t tusb_dev;
+tusb_device_t tusb_dev_otg_hs;
 #endif
 
 int main(void)
 {
   tusb_device_t* dev;
-#if defined(USB)
-  dev = &tusb_dev;
-#endif
 #if defined(USB_OTG_HS)
+  SetUSB(&tusb_host_otg_hs, USB_OTG_HS);
   SetUSB(&tusb_dev_otg_hs, USB_OTG_HS);
   dev = &tusb_dev_otg_hs;
 #endif
 #if defined(USB_OTG_FS)
+  SetUSB(&tusb_host_otg_fs, USB_OTG_FS);
   SetUSB(&tusb_dev_otg_fs, USB_OTG_FS);
   dev = &tusb_dev_otg_fs;
 #endif
