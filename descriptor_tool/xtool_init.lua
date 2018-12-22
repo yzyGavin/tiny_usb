@@ -98,7 +98,7 @@ function EPView:makeDesc()
         if transPerFrame < 0 then transPerFrame = 0 end
         if transPerFrame > 2 then transPerFrame = 2 end
     end
-    transPerFrame = tonumber(transPerFrame) * (2^11)
+    transPerFrame = tonumber(transPerFrame) << 11
     return EndPoint{
         bEndpointAddress = self:getAddr(),
         bmAttributes = _G[self.attr.currentText],
@@ -307,6 +307,7 @@ function UsbDescView:__init(parent)
     self.editPktSize = QComboBox{
         {"8","16","32","64"}, maxW = 60
     }
+    self.editPktSize.currentIndex = 3
     self.editDeviceName = QLineEdit(""){
         placeHolderText = "Name"
     }

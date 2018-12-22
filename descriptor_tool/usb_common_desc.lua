@@ -17,7 +17,7 @@ function Device(param)
         {bDeviceClass       = 0                        },
         {bDeviceSubClass    = 0                        },
         {bDeviceProtocol    = 0                        },
-        {bMaxPacketSize     = 8                        },
+        {bMaxPacketSize     = 64                       },
         {idVendor           = 0x2017                   },
         {idProduct          = 0x0924                   },
         {bcdDevice          = 0x100                    },

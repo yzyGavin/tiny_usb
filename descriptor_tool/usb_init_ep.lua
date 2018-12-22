@@ -354,12 +354,12 @@ function EndPointInfo(deviceDescriptor, maxEp, maxMem)
                         if ep.inSize then
                             warning("EndPoint " .. addr .. " input size already set, the last one will take effect")
                         end
-                        ep.inSize = maybeEp.wMaxPacketSize
+                        ep.inSize = maybeEp.wMaxPacketSize & 0x7ff
                     else
                         if ep.outSize then
                             warning("EndPoint " .. addr .. " outut size already set, the last one will take effect")
                         end
-                        ep.outSize = maybeEp.wMaxPacketSize
+                        ep.outSize = maybeEp.wMaxPacketSize & 0x7ff
                         if r.maxOutSize < ep.outSize then r.maxOutSize = ep.outSize end
                         r.outEpCount = r.outEpCount + 1
                         if maybeEp.bmAttributes == Control then
