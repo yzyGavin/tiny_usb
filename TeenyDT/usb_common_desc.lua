@@ -146,7 +146,7 @@ function Config(param)
     -- parse the attr from the given param
     if param.SelfPower then attr = attr + 0x40 end
     if param.RemoteWakeup then attr = attr + 0x20 end
-    if param.bmAttributes then attr = bmAttributes end
+    if param.bmAttributes then attr = param.bmAttributes end
     local desc = Descriptor{
         {bLength           = DUMMY                     },
         {bDescriptorType   = CONFIGURATION_DESCRIPTOR_TYPE },
@@ -373,10 +373,19 @@ function StringDescriptor(param)
     if type(param) == "string" then
         local p = {}
         p.varData = {}
-        for i=1,#param do
-            p.varData[#p.varData+1] = {
-                ["wcChar"..(i-1)] = param:byte(i)
-            }
+        local i = 1
+        while i<=#param do
+            if param:byte(i)>0x7f and i<#param then
+                p.varData[#p.varData+1] = {
+                    ["wcChar"..(i-1)] = param:byte(i) | (param:byte(i+1)<<8)
+                }
+                i = i + 1
+            else
+                p.varData[#p.varData+1] = {
+                    ["wcChar"..(i-1)] = param:byte(i)
+                }
+            end
+            i = i + 1
         end
         local d = StringDescriptor(p)
         d.string = param
