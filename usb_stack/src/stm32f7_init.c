@@ -94,9 +94,10 @@ static void USB_HS_PHYCInit(USB_OTG_GlobalTypeDef *USBx)
 }
 #endif
 
-void tusb_close_device(tusb_device_t* dev)
+
+void tusb_close_core(tusb_core_t* core)
 {
-  USB_OTG_GlobalTypeDef* USBx = GetUSB(dev);
+  USB_OTG_GlobalTypeDef* USBx = GetUSB(core);
   USBx->GAHBCFG &= ~USB_OTG_GAHBCFG_GINT;
   
   uint32_t i;
@@ -128,6 +129,15 @@ void tusb_close_device(tusb_device_t* dev)
   }
 }
 
+void tusb_close_device(tusb_device_t* dev)
+{
+  tusb_close_core((tusb_core_t*) dev);
+}
+
+void tusb_close_host(tusb_host_t* host)
+{
+  tusb_close_core((tusb_core_t*) host);
+}
 
 #define AFL(val, pin)   ((val)<< (( (pin))*4))
 #define AFH(val, pin)   ((val)<< (( (pin)-8)*4))
@@ -224,10 +234,10 @@ static void tusb_setup_otg_ulpi_io(void)
 }
 
 // init the IO and OTG core
-static void tusb_otg_core_init(tusb_device_t* dev)
+static void tusb_otg_core_init(tusb_core_t* core)
 {
-  USB_OTG_GlobalTypeDef* USBx = GetUSB(dev);
-  if(GetUSB(dev) == USB_OTG_FS){
+  USB_OTG_GlobalTypeDef* USBx = GetUSB(core);
+  if(GetUSB(core) == USB_OTG_FS){
     // Init the FS core
 #if defined(OTG_FS_EMBEDDED_PHY)
     // 1. Init the IO
@@ -244,7 +254,7 @@ static void tusb_otg_core_init(tusb_device_t* dev)
     /* Deactivate the power down*/
     USBx->GCCFG = USB_OTG_GCCFG_PWRDWN;
 #endif
-  }else if(GetUSB(dev) == USB_OTG_HS){
+  }else if(GetUSB(core) == USB_OTG_HS){
     // Init the HS core
     // 1. Init the IO
 #if defined(OTG_HS_EMBEDDED_PHY)    
@@ -367,7 +377,7 @@ void tusb_otg_driver_vbus (USB_OTG_GlobalTypeDef* USBx, uint8_t state)
   }
 }
 
-static void tusb_init_otg_host(tusb_device_t* dev)
+static void tusb_init_otg_host(tusb_host_t* dev)
 {
   USB_OTG_GlobalTypeDef* USBx = GetUSB(dev);
   //uint32_t USBx_BASE = (uint32_t)USBx;
@@ -435,17 +445,20 @@ static void tusb_init_otg_host(tusb_device_t* dev)
 void tusb_open_device(tusb_device_t* dev)
 {
   USB_OTG_GlobalTypeDef* USBx = GetUSB(dev);
-  tusb_otg_core_init(dev);
-#if defined(HOST_ONLY)
-  // Force to device mode
-  USBx->GUSBCFG &= ~(USB_OTG_GUSBCFG_FHMOD | USB_OTG_GUSBCFG_FDMOD);
-  USBx->GUSBCFG |= USB_OTG_GUSBCFG_FHMOD;
-  tusb_init_otg_host(dev);
-#else
+  tusb_otg_core_init((tusb_core_t*) dev);
   USBx->GUSBCFG &= ~(USB_OTG_GUSBCFG_FHMOD | USB_OTG_GUSBCFG_FDMOD);
   USBx->GUSBCFG |= USB_OTG_GUSBCFG_FDMOD;
   tusb_init_otg_device(dev);
-#endif
+}
+
+void tusb_open_host(tusb_host_t* host)
+{
+  USB_OTG_GlobalTypeDef* USBx = GetUSB(host);
+  tusb_otg_core_init((tusb_core_t*) host);
+  // Force to device mode
+  USBx->GUSBCFG &= ~(USB_OTG_GUSBCFG_FHMOD | USB_OTG_GUSBCFG_FDMOD);
+  USBx->GUSBCFG |= USB_OTG_GUSBCFG_FHMOD;
+  tusb_init_otg_host(host);
 }
 
 void tusb_otg_device_handler(tusb_device_t* dev);

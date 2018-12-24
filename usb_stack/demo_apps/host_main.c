@@ -39,46 +39,8 @@ __IO uint32_t recv_count = 0;
 uint8_t buf1[4096];
 __IO uint32_t recv_count1 = 0;
 
-// if data tx done, set rx valid again
-void tusb_on_tx_done(tusb_device_t* dev, uint8_t EPn)
-{
-  if(EPn == TX_EP){
-    tusb_set_rx_valid(dev, RX_EP);
-  }else if(EPn == TX_EP1){
-    tusb_set_rx_valid(dev, RX_EP1);
-  }
-}
 
-int tusb_on_rx_done(tusb_device_t* dev, uint8_t EPn, const void* data, uint16_t len)
-{
-  if(EPn == RX_EP){
-    recv_count = len;
-    if(recv_count == 0){
-      // recv 0 length packet, no data need process
-      return 0;
-    }
-    // otherwise, return -1 means data need process, recv buffer is busy
-    return -1;
-  }else if(EPn == RX_EP1){
-    recv_count1 = len;
-    return recv_count1;
-  }
-  return 0;
-}
-uint32_t get_max_in_packet_size(PCD_TypeDef* USBx, uint8_t EPn);
-void tusb_reconfig(tusb_device_t* dev)
-{
-  // call the BULK device init macro
-  BULK_TUSB_INIT(dev);
-  
-  // setup recv buffer for rx end point
-  tusb_set_recv_buffer(dev, RX_EP, buf, sizeof(buf));
-  tusb_set_recv_buffer(dev, RX_EP1, buf1, sizeof(buf1));
-  
-  // enable rx ep after buffer set
-  tusb_set_rx_valid(dev, RX_EP);
-  tusb_set_rx_valid(dev, RX_EP1);
-}
+
 
 void delay_ms(uint32_t ms)
 {
@@ -98,38 +60,19 @@ tusb_device_t tusb_dev_otg_hs;
 
 int main(void)
 {
-  tusb_device_t* dev;
+  tusb_host_t* host;
 #if defined(USB_OTG_HS)
   SetUSB(&tusb_host_otg_hs, USB_OTG_HS);
-  SetUSB(&tusb_dev_otg_hs, USB_OTG_HS);
-  dev = &tusb_dev_otg_hs;
+  host = &tusb_host_otg_hs;
 #endif
 #if defined(USB_OTG_FS)
   SetUSB(&tusb_host_otg_fs, USB_OTG_FS);
-  SetUSB(&tusb_dev_otg_fs, USB_OTG_FS);
-  dev = &tusb_dev_otg_fs;
+  host = &tusb_host_otg_fs;
 #endif
-  tusb_close_device(dev);
+  tusb_close_host(host);
   delay_ms(100);  
-  tusb_open_device(dev);
+  tusb_open_host(host);
   while(1){
-    if(recv_count){
-      // every data plus 1 and echo back
-      for(int i=0;i<recv_count;i++){
-        buf[i]++;
-      }
-      tusb_send_data(dev, TX_EP, buf, recv_count);
-      recv_count = 0; 
-    }
-    
-    if(recv_count1){
-      // every data plus 2 and echo back
-      for(int i=0;i<recv_count1;i++){
-        buf1[i]+=2;
-      }
-      tusb_send_data(dev, TX_EP1, buf1, recv_count1);
-      recv_count1 = 0; 
-    }
   }
 }
 

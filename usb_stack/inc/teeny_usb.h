@@ -70,9 +70,22 @@ typedef struct _tusb_descriptors
 #endif
 }tusb_descriptors;
 
+typedef struct _tusb_core
+{
+#if defined(USB_CORE_HANDLE_TYPE)
+  USB_CORE_HANDLE_TYPE  handle;           // USB hardware handle
+#else
+  void*                 handle_not_used;  // fix compile issue
+#endif
+}tusb_core_t;
+
+
 typedef struct _tusb_device tusb_device_t;
 typedef void(*tusb_callback_t)(tusb_device_t* dev);
 struct _tusb_device{
+#if defined(USB_CORE_HANDLE_TYPE)
+  USB_CORE_HANDLE_TYPE  handle;           // USB hardware handle
+#endif
   uint8_t   addr;                         // device addr
   uint8_t   config;                       // device config
   uint8_t   alt_cfg;                      // device alg config
@@ -92,16 +105,11 @@ struct _tusb_device{
   tusb_setup_packet  setup;               // setup packet buffer
   tusb_ep_data   Ep[EP_NUM];              // end point
   const tusb_descriptors*  descriptors;   // device descriptors, can be override at runtime
-#if defined(USB_CORE_HANDLE_TYPE)
-  USB_CORE_HANDLE_TYPE  handle;           // USB hardware handle
-#endif
 };
 
 
 #define  RETRY_FOREVER              0xffffffff
 #define  MAX_HC_NUM                 16
-
-
 
 // Host channel data
 typedef struct _tusb_hc_data
@@ -123,11 +131,11 @@ typedef struct _tusb_hc_data
 }tusb_hc_data_t;
 
 typedef struct _tusb_host{
-  uint32_t  state;
-  tusb_hc_data_t  hc[MAX_HC_NUM];         // host channel
 #if defined(USB_CORE_HANDLE_TYPE)
   USB_CORE_HANDLE_TYPE  handle;           // USB hardware handle
 #endif
+  uint32_t  state;
+  tusb_hc_data_t  hc[MAX_HC_NUM];         // host channel
 }tusb_host_t;
 
 
@@ -137,9 +145,16 @@ typedef struct _tusb_host{
 #define  TUSB_DEVICE_SIZE   sizeof(tusb_device_t)
 #endif
 
+typedef union _tusb_otg
+{
+  tusb_device_t device;
+  tusb_host_t   host;
+}tusb_otg_t;
 
-
-// open USB device, implement by platform
+//////////////////////////////////////////////
+// Device functions,  used in device only mode
+//////////////////////////////////////////////
+// open USB in device mode, implement by platform
 void tusb_open_device(tusb_device_t* dev);
 
 // close USB device, implement by platform
@@ -190,10 +205,14 @@ void tusb_class_request(tusb_device_t* dev, tusb_setup_packet* setup_req);
 const uint8_t* tusb_get_report_descriptor(tusb_device_t* dev, tusb_setup_packet *req, uint16_t* len);
 
 
-//////////////////////////////////
-// Host functions
-//////////////////////////////////
+//////////////////////////////////////////////
+// Host functions,  used in host only mode
+//////////////////////////////////////////////
+// open USB core in host mode, implement by platform
+void tusb_open_host(tusb_host_t* dev);
 
+// close USB host, implement by platform
+void tusb_close_host(tusb_host_t* dev);
 
 //////////////////////////////////
 // Host callback functions
@@ -205,7 +224,22 @@ const uint8_t* tusb_get_report_descriptor(tusb_device_t* dev, tusb_setup_packet 
 //       otherwise - halt the channel 
 int tusb_on_channel_event(tusb_host_t* host, uint8_t hc_num);
 
+// WEAK function
+// called when port status changed
+// when new connection detect, start enum device
 void tusb_host_port_changed(tusb_host_t* host);
+
+
+//////////////////////////////////////////////
+// OTG functions, used in DRD mode
+//////////////////////////////////////////////
+// When working in device mode, use the device related functions
+// when working in host mode, use the host related functions
+// open USB core in DRD mode, implement by platform
+void tusb_open_otg(tusb_host_t* dev);
+
+// close USB core in DRD mode, implement by platform
+void tusb_close_otg(tusb_host_t* dev);
 
 
 #endif
