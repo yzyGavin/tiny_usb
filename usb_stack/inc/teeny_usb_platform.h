@@ -52,8 +52,11 @@
 #include "stm32f7xx_hal.h"
 #include "stm32f7_platform.h"
 
-//#define  OTG_HS_EMBEDDED_PHY
+#if defined(STM32F723xx)
+#define  OTG_HS_EMBEDDED_PHY
+#else
 #define  OTG_HS_EXTERNAL_PHY
+#endif
 #define  OTG_FS_EMBEDDED_PHY
 
 

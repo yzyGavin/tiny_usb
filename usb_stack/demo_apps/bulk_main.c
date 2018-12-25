@@ -107,10 +107,13 @@ int main(void)
 #endif
 #if defined(USB_OTG_HS)
   SetUSB(&tusb_dev_otg_hs, USB_OTG_HS);
-  dev = &tusb_dev_otg_hs;
 #endif
 #if defined(USB_OTG_FS)
   SetUSB(&tusb_dev_otg_fs, USB_OTG_FS);
+#endif
+#if defined(STM32F723xx)
+  dev = &tusb_dev_otg_hs;
+#else
   dev = &tusb_dev_otg_fs;
 #endif
   tusb_close_device(dev);

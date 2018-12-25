@@ -68,10 +68,15 @@ void tusb_otg_read_data(USB_OTG_GlobalTypeDef *USBx, void* buf, uint32_t len)
 static uint32_t get_max_in_packet_size(PCD_TypeDef* USBx, uint8_t EPn)
 {
   uint32_t maxpacket = USBx_INEP(EPn)->DIEPCTL & USB_OTG_DIEPCTL_MPSIZ;
-  if(EPn == 0 && USBx == USB_OTG_FS){
-    // for the ep0 in otg FS core, the max packet size is defined by
-    // DEP0CTL_MPS_64, DEP0CTL_MPS_32, DEP0CTL_MPS_16, DEP0CTL_MPS_8
-    maxpacket = 8ul * (1ul << (3 - (maxpacket & 3) ));
+  if(EPn == 0){
+    if(USBx == USB_OTG_FS){
+      // for the ep0 in otg FS core, the max packet size is defined by
+      // DEP0CTL_MPS_64, DEP0CTL_MPS_32, DEP0CTL_MPS_16, DEP0CTL_MPS_8
+      maxpacket = 8ul * (1ul << (3 - (maxpacket & 3) ));
+    }else{
+      // For high speed core, ep0 always 64 bytes, there is no mps info in DIEPCTL
+      maxpacket = 64;
+    }
   }
   return maxpacket;
 }

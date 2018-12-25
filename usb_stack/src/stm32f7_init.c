@@ -63,9 +63,9 @@ static void Wait_CoreReset(USB_OTG_GlobalTypeDef *USBx)
 }
 
 #if defined(USB_HS_PHYC)
+void delay_ms(uint32_t ms);
 static void USB_HS_PHYCInit(USB_OTG_GlobalTypeDef *USBx)
 {
-  uint32_t count = 0;
   /* Enable LDO */
   USB_HS_PHYC->USB_HS_PHYC_LDO |= USB_HS_PHYC_LDO_ENABLE;
   /* wait for LDO Ready */
@@ -90,7 +90,7 @@ static void USB_HS_PHYCInit(USB_OTG_GlobalTypeDef *USBx)
   /* Enable PLL internal PHY */
   USB_HS_PHYC->USB_HS_PHYC_PLL |= USB_HS_PHYC_PLL_PLLEN;
   /* 2ms Delay required to get internal phy clock stable */
-  delay(2000);
+  delay_ms(20);
 }
 #endif
 
@@ -194,9 +194,19 @@ static void tusb_setup_otg_fs_io(void)
 // Setup IO for OTG_HS core with embedded HS phy
 static void tusb_setup_otg_hs_io(void)
 {
+  __HAL_RCC_GPIOB_CLK_ENABLE();
+  set_io_af(GPIOB, 14, GPIO_AF12_OTG_HS_FS);
+  set_io_af(GPIOB, 15, GPIO_AF12_OTG_HS_FS);
+#if defined(ENABLE_VBUS_DETECT)
+  // Mode = Input
+  GPIOB->MODER &= ~(GPIO_MODER_MODER13);
+  // No pull
+  GPIOB->PUPDR &= ~(GPIO_PUPDR_PUPDR13_0 | GPIO_PUPDR_PUPDR9_13);
+#endif
 }
 #endif
 
+#if defined(OTG_HS_EXTERNAL_PHY)
 // Setup IO for ULPI interface phy
 static void tusb_setup_otg_ulpi_io(void)
 {
@@ -232,6 +242,7 @@ static void tusb_setup_otg_ulpi_io(void)
   set_io_af(GPIOC, 2, GPIO_AF10_OTG_HS);
   set_io_af(GPIOC, 3, GPIO_AF10_OTG_HS);
 }
+#endif
 
 // init the IO and OTG core
 static void tusb_otg_core_init(tusb_core_t* core)
@@ -266,7 +277,12 @@ static void tusb_otg_core_init(tusb_core_t* core)
     NVIC_SetPriority(OTG_HS_IRQn, 0);
     NVIC_EnableIRQ(OTG_HS_IRQn);
     
+#if defined(USB_HS_PHYC)
+    __HAL_RCC_OTGPHYC_CLK_ENABLE();
+#endif
+    
     __HAL_RCC_USB_OTG_HS_CLK_ENABLE();
+    __HAL_RCC_USB_OTG_HS_ULPI_CLK_ENABLE();
     // 3. Init the OTG HS core
 #if defined(OTG_HS_EMBEDDED_PHY)
     // init embedded phy

@@ -22,6 +22,10 @@
 
   <project>
     <PathAndName>.\stm32f767ZI_Nucleo.uvprojx</PathAndName>
+  </project>
+
+  <project>
+    <PathAndName>.\stm32f723E_Disco.uvprojx</PathAndName>
     <NodeIsActive>1</NodeIsActive>
     <NodeIsExpanded>1</NodeIsExpanded>
   </project>
