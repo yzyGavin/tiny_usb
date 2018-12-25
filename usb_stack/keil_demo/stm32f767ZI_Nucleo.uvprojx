@@ -396,6 +396,11 @@
               <FileType>1</FileType>
               <FilePath>..\src\teeny_usb_stm32_otg_host.c</FilePath>
             </File>
+            <File>
+              <FileName>teeny_usb_host.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\src\teeny_usb_host.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -1217,6 +1222,11 @@
               <FileName>teeny_usb_stm32_otg_host.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\src\teeny_usb_stm32_otg_host.c</FilePath>
+            </File>
+            <File>
+              <FileName>teeny_usb_host.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\src\teeny_usb_host.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -2058,6 +2068,11 @@
               <FileType>1</FileType>
               <FilePath>..\src\teeny_usb_stm32_otg_host.c</FilePath>
             </File>
+            <File>
+              <FileName>teeny_usb_host.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\src\teeny_usb_host.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -2897,6 +2912,11 @@
               <FileName>teeny_usb_stm32_otg_host.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\src\teeny_usb_stm32_otg_host.c</FilePath>
+            </File>
+            <File>
+              <FileName>teeny_usb_host.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\src\teeny_usb_host.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -3738,6 +3758,11 @@
               <FileType>1</FileType>
               <FilePath>..\src\teeny_usb_stm32_otg_host.c</FilePath>
             </File>
+            <File>
+              <FileName>teeny_usb_host.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\src\teeny_usb_host.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -4559,6 +4584,11 @@
               <FileName>teeny_usb_stm32_otg_host.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\src\teeny_usb_stm32_otg_host.c</FilePath>
+            </File>
+            <File>
+              <FileName>teeny_usb_host.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\src\teeny_usb_host.c</FilePath>
             </File>
           </Files>
         </Group>

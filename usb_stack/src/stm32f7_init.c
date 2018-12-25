@@ -434,8 +434,8 @@ static void tusb_init_otg_host(tusb_host_t* dev)
 #endif
 
   /* Enable interrupts matching to the Host mode ONLY */
-  USBx->GINTMSK |= (USB_OTG_GINTMSK_PRTIM            | USB_OTG_GINTMSK_HCIM |\
-                    USB_OTG_GINTMSK_SOFM             | USB_OTG_GINTSTS_DISCINT|\
+  USBx->GINTMSK |= (USB_OTG_GINTMSK_PRTIM            | USB_OTG_GINTMSK_HCIM |
+                    USB_OTG_GINTMSK_SOFM             | USB_OTG_GINTMSK_DISCINT|
                     USB_OTG_GINTMSK_PXFRM_IISOOXFRM  | USB_OTG_GINTMSK_WUIM);
   
   

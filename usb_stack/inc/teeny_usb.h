@@ -22,8 +22,8 @@
  * SOFTWARE.
  */
 
-#ifndef __CDC_H__
-#define __CDC_H__
+#ifndef __TEENY_USB_H__
+#define __TEENY_USB_H__
 
 #include "teeny_usb_platform.h"
 
@@ -151,6 +151,32 @@ typedef union _tusb_otg
   tusb_host_t   host;
 }tusb_otg_t;
 
+
+typedef enum {
+  TUSB_HS_DUMMY = 0,
+  TUSB_HOST_PORT_DISCONNECTED,
+  TUSB_HOST_PORT_CONNECTED,
+  TUSB_HOST_PORT_ENABLED,
+  TUSB_HOST_PORT_DISABLED,
+}host_state_t;
+
+typedef enum {
+  TUSB_CS_INIT = 0,
+  TUSB_CS_TRANSFER_COMPLETE = 1,
+  TUSB_CS_NAK,
+  TUSB_CS_ACK,
+  TSUB_CS_PING_SUCCESS,
+  TUSB_CS_NYET,
+  TUSB_CS_STALL,
+  
+  TUSB_CS_AHB_ERROR = 10,
+  TUSB_CS_DT_ERROR,
+  TUSB_CS_TRANSACTION_ERROR,
+  TUSB_CS_FRAMEOVERRUN_ERROR,
+  TUSB_CS_BABBLE_ERROR,
+}channel_state_t;
+
+
 //////////////////////////////////////////////
 // Device functions,  used in device only mode
 //////////////////////////////////////////////
@@ -194,6 +220,7 @@ int tusb_on_rx_done(tusb_device_t* dev, uint8_t EPn, const void* data, uint16_t 
 
 // called when USB device reset
 // Setup the end point and device initial status here
+// WEAK function, default do nothing
 void tusb_reconfig(tusb_device_t* dev);
 
 // called when got class specified request
@@ -209,10 +236,13 @@ const uint8_t* tusb_get_report_descriptor(tusb_device_t* dev, tusb_setup_packet 
 // Host functions,  used in host only mode
 //////////////////////////////////////////////
 // open USB core in host mode, implement by platform
-void tusb_open_host(tusb_host_t* dev);
+void tusb_open_host(tusb_host_t* host);
 
 // close USB host, implement by platform
-void tusb_close_host(tusb_host_t* dev);
+void tusb_close_host(tusb_host_t* host);
+
+// Reset the port
+void tusb_host_port_reset(tusb_host_t* host, uint8_t port, uint8_t reset);
 
 //////////////////////////////////
 // Host callback functions
@@ -227,7 +257,8 @@ int tusb_on_channel_event(tusb_host_t* host, uint8_t hc_num);
 // WEAK function
 // called when port status changed
 // when new connection detect, start enum device
-void tusb_host_port_changed(tusb_host_t* host);
+void tusb_host_port_changed(tusb_host_t* host, host_state_t new_state);
+
 
 
 //////////////////////////////////////////////

@@ -294,3 +294,6 @@ WEAK void tusb_on_tx_done(tusb_device_t* dev, uint8_t EPn)
 WEAK int tusb_on_rx_done(tusb_device_t* dev, uint8_t EPn, const void* data, uint16_t len)
 { return 0; }
 
+WEAK void tusb_reconfig(tusb_device_t* dev)
+{
+}

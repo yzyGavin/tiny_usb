@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-#include "teeny_usb.h"
+#include "teeny_usb_host.h"
 #include "string.h"
 
 
@@ -37,8 +37,12 @@ __IO uint32_t recv_count = 0;
 #define  TX_EP1   PCD_ENDP3
 
 uint8_t buf1[4096];
-__IO uint32_t recv_count1 = 0;
+__IO host_state_t state = TUSB_HS_DUMMY;
 
+void tusb_host_port_changed(tusb_host_t* host, host_state_t new_state)
+{
+  state = new_state;
+}
 
 
 
@@ -57,6 +61,33 @@ tusb_device_t tusb_dev_otg_fs;
 tusb_host_t tusb_host_otg_hs;
 tusb_device_t tusb_dev_otg_hs;
 #endif
+int tusb_otg_host_start_xfer(
+  tusb_host_t* host,
+  uint8_t dev_addr, 
+  uint8_t ep_addr, 
+  uint8_t ep_type, 
+  uint16_t mps, 
+  uint8_t is_data, 
+  uint8_t* data,
+  uint32_t len,
+  uint8_t auto_free);
+
+uint32_t tusb_otg_host_xfer_data(tusb_host_t* host, uint8_t hc_num, uint8_t is_data, uint8_t* data, uint32_t len);
+uint8_t  tusb_otg_host_get_free_ch(tusb_host_t* host);
+void tusb_host_init_channel(tusb_host_t* host, uint8_t hc_num, uint8_t dev_addr, uint8_t ep_addr, uint8_t ep_type, uint16_t mps);
+void tusb_host_deinit_channel(tusb_host_t* host, uint8_t hc_num);
+
+uint8_t  hc_read = 0xff;
+uint8_t  hc_write = 0xff;
+
+tusb_pipe_t pipe_read;
+tusb_pipe_t pipe_write;
+
+uint8_t test_data[] = {
+  1,2,3,4,5,6,7,8,
+  1,2,3,4,5,6,7,8,
+  1,2,3,4,5,6,7,8,
+};
 
 int main(void)
 {
@@ -73,7 +104,47 @@ int main(void)
   delay_ms(100);  
   tusb_open_host(host);
   while(1){
+    if(state == TUSB_HOST_PORT_CONNECTED){
+      state = TUSB_HS_DUMMY;
+      // reset port0
+      tusb_host_port_reset(host, 0, 1);
+      delay_ms(100);
+      // release port0
+      tusb_host_port_reset(host, 0, 0);
+      delay_ms(100);
+      // use addr 0 to get device desc
+      // test ep 0x02, 0x81
+      
+      tusb_pipe_open(host, &pipe_write, 0, 0x02, EP_TYPE_BULK, 64);
+      tusb_pipe_xfer_data(&pipe_write, test_data, sizeof(test_data));
+      
+      tusb_pipe_open(host, &pipe_read, 0, 0x81, EP_TYPE_BULK, 64);
+      tusb_pipe_xfer_data(&pipe_read, buf1, sizeof(buf1));
+      
+    }else if(state == TUSB_HOST_PORT_DISCONNECTED){
+      state = TUSB_HS_DUMMY;
+      tusb_pipe_close(&pipe_write);
+      tusb_pipe_close(&pipe_read);
+    }
   }
+}
+
+int tusb_on_channel_event(tusb_host_t* host, uint8_t hc_num)
+{
+  tusb_hc_data_t* hc = &host->hc[hc_num];
+  if(hc_num == pipe_read.hc_num){
+    if(hc->state == TUSB_CS_TRANSFER_COMPLETE){
+      // read data success
+      return 1;
+    }
+  }
+  if(hc_num == pipe_write.hc_num){
+    if(hc->state == TUSB_CS_TRANSFER_COMPLETE){
+      // send data success
+      return 1;
+    }
+  }
+  return 0;
 }
 
 // include the descriptors here instead of add to project

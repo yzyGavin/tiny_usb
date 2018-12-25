@@ -24,28 +24,6 @@
 
 #include "string.h"
 #include "teeny_usb.h"
-typedef enum {
-  TUSB_HOST_PORT_DISCONNECTED = 1,
-  TUSB_HOST_PORT_CONNECTED,
-  TUSB_HOST_PORT_ENABLED,
-  TUSB_HOST_PORT_DISABLED,
-}host_state_t;
-
-typedef enum {
-  TUSB_CS_INIT = 0,
-  TUSB_CS_TRANSFER_COMPLETE = 1,
-  TUSB_CS_NAK,
-  TUSB_CS_ACK,
-  TSUB_CS_PING_SUCCESS,
-  TUSB_CS_NYET,
-  TUSB_CS_STALL,
-  
-  TUSB_CS_AHB_ERROR = 10,
-  TUSB_CS_DT_ERROR,
-  TUSB_CS_TRANSACTION_ERROR,
-  TUSB_CS_FRAMEOVERRUN_ERROR,
-  TUSB_CS_BABBLE_ERROR,
-}channel_state_t;
 
 #if defined(USB_OTG_FS) || defined(USB_OTG_HS)
 
@@ -120,13 +98,16 @@ static void tusb_otg_host_disconnect(tusb_host_t* host)
   USBx->GAHBCFG |= USB_OTG_GAHBCFG_GINT;
   tusb_otg_driver_vbus(USBx, 1);
   
-  tusb_host_port_changed(host);
+  tusb_host_port_changed(host, TUSB_HOST_PORT_DISCONNECTED);
 }
 
 static void tusb_host_port_handler(tusb_host_t* host)
 {
   USB_OTG_GlobalTypeDef *USBx = GetUSB(host);
   uint32_t hprt0 = USBx_HPRT0;
+  uint32_t hprt0_dup = USBx_HPRT0;
+  hprt0_dup &= ~(USB_OTG_HPRT_PENA | USB_OTG_HPRT_PCDET |\
+                 USB_OTG_HPRT_PENCHNG | USB_OTG_HPRT_POCCHNG);
   
   if( hprt0 & USB_OTG_HPRT_PCDET ) {
     // Port connect detect
@@ -135,16 +116,16 @@ static void tusb_host_port_handler(tusb_host_t* host)
       USB_MASK_INTERRUPT(USBx, USB_OTG_GINTSTS_DISCINT);
       // Post connect message
       host->state = TUSB_HOST_PORT_CONNECTED;
-      tusb_host_port_changed(host);
+      tusb_host_port_changed(host, TUSB_HOST_PORT_CONNECTED);
     }
     // write 1 to clear the PCDET int flag
-    USBx_HPRT0 |= USB_OTG_HPRT_PCDET;
+    hprt0_dup  |= USB_OTG_HPRT_PCDET;
   }
   
   if( hprt0 & USB_OTG_HPRT_PENCHNG ) {
     // Port enable changed
     if( hprt0 & USB_OTG_HPRT_PENA ){
-      if(USBx == USB_OTG_FS){
+#if defined(OTG_HS_EMBEDDED_PHY)
         if ((hprt0 & USB_OTG_HPRT_PSPD) == (HPRT0_PRTSPD_LOW_SPEED << 17)){
           // Low speed
           tusb_otg_set_phy_clock(USBx, HCFG_6_MHZ);
@@ -152,12 +133,14 @@ static void tusb_host_port_handler(tusb_host_t* host)
           // Full speed
           tusb_otg_set_phy_clock(USBx, HCFG_48_MHZ);
         }
-      }else{
-        // HS phy
-        USBx_HOST->HFIR = 60000U;
-      }
+#else
+        if(USBx == USB_OTG_FS){
+          // FS phy
+          USBx_HOST->HFIR = 60000U;
+        }
+#endif
       host->state = TUSB_HOST_PORT_ENABLED;
-      tusb_host_port_changed(host);
+      tusb_host_port_changed(host, TUSB_HOST_PORT_ENABLED);
       // Port enabled
     }else{
       // Port disabled
@@ -165,16 +148,32 @@ static void tusb_host_port_handler(tusb_host_t* host)
                       USB_OTG_HPRT_PENCHNG | USB_OTG_HPRT_POCCHNG );
       USB_UNMASK_INTERRUPT(USBx, USB_OTG_GINTSTS_DISCINT);
       host->state = TUSB_HOST_PORT_DISABLED;
-      tusb_host_port_changed(host);
+      tusb_host_port_changed(host, TUSB_HOST_PORT_DISABLED);
     }
-    USBx_HPRT0 |= USB_OTG_HPRT_PENCHNG;
+    hprt0_dup |= USB_OTG_HPRT_PENCHNG;
   }
   
   if( hprt0 & USB_OTG_HPRT_POCCHNG )
   {
-    USBx_HPRT0 |= USB_OTG_HPRT_POCCHNG;
+    hprt0_dup |= USB_OTG_HPRT_POCCHNG;
+  }
+  USBx_HPRT0 = hprt0_dup;
+}
+
+void tusb_host_port_reset(tusb_host_t* host, uint8_t port, uint8_t reset)
+{
+  USB_OTG_GlobalTypeDef *USBx = GetUSB(host);
+  uint32_t hprt0 = USBx_HPRT0;
+  hprt0 &= ~(USB_OTG_HPRT_PENA | USB_OTG_HPRT_PCDET |
+             USB_OTG_HPRT_PENCHNG | USB_OTG_HPRT_POCCHNG);
+  
+  if(reset){
+    USBx_HPRT0 = (USB_OTG_HPRT_PRST | hprt0);
+  }else{
+    USBx_HPRT0 = ((~USB_OTG_HPRT_PRST) & hprt0);
   }
 }
+
 
 void tusb_otg_read_data(USB_OTG_GlobalTypeDef *USBx, void* buf, uint32_t len);
 
@@ -278,6 +277,7 @@ static void tusb_otg_host_channel_handler(tusb_host_t* host, uint8_t hc_num)
   if(HC->HCINT & USB_OTG_HCINT_XFRC){
     // Transfer complete
     CLEAR_INT(USB_OTG_HCINT_XFRC);
+    hc->state = TUSB_CS_TRANSFER_COMPLETE;
     if(is_in){
       uint32_t HcEpType = (HC->HCCHAR & USB_OTG_HCCHAR_EPTYP) >> 18;
       // IN transfer, and DMA enabled
@@ -286,7 +286,7 @@ static void tusb_otg_host_channel_handler(tusb_host_t* host, uint8_t hc_num)
       }else{
         // otherwise, rx data count will update in the tusb_otg_host_rx_handler
       }
-      hc->state = TUSB_CS_TRANSFER_COMPLETE;
+      
       if(HcEpType == HCCHAR_CTRL || HcEpType == HCCHAR_BULK){
         CLEAR_INT(USB_OTG_HCINT_NAK);
       }else if( HcEpType == HCCHAR_INTR ){
@@ -300,7 +300,6 @@ static void tusb_otg_host_channel_handler(tusb_host_t* host, uint8_t hc_num)
     tusb_otg_halt_channel(USBx, hc_num);
     
   }else if ( HC->HCINT & USB_OTG_HCINT_ACK ) {
-    hc->state = TUSB_CS_ACK;
     if(!is_in){
       // for out EP, ping ack means host can start OUT transaction
       if(hc->do_ping){
@@ -308,13 +307,14 @@ static void tusb_otg_host_channel_handler(tusb_host_t* host, uint8_t hc_num)
         hc->do_ping = 0;
         hc->state = TSUB_CS_PING_SUCCESS;
         // halt current channel, re-active in the halt interrupt
+        UNMASK_HALT();
+        tusb_otg_halt_channel(USBx, hc_num);
       }
     }else{
       // IN EP will got data instead of ACK, never enter here
     }
     CLEAR_INT(USB_OTG_HCINT_ACK);
-    UNMASK_HALT();
-    tusb_otg_halt_channel(USBx, hc_num);
+    
     
   }else if( HC->HCINT & USB_OTG_HCINT_NAK ){
     hc->state = TUSB_CS_NAK;
@@ -568,9 +568,9 @@ void tusb_host_init_channel(tusb_host_t* host, uint8_t hc_num, uint8_t dev_addr,
   /* Make sure host channel interrupts are enabled. */
   USBx->GINTMSK |= USB_OTG_GINTMSK_HCIM;
   
-  HC->HCCHAR = ( (((uint32_t)dev_addr & USB_OTG_HCCHAR_DAD_Msk) << USB_OTG_HCCHAR_DAD_Pos )      |
-                 (((uint32_t)ep_addr & USB_OTG_HCCHAR_EPNUM_Msk) << USB_OTG_HCCHAR_EPNUM_Pos )   |
-                 (((uint32_t)ep_type & USB_OTG_HCCHAR_EPTYP_Msk) << USB_OTG_HCCHAR_EPTYP_Pos )   |
+  HC->HCCHAR = ( ((uint32_t)dev_addr << USB_OTG_HCCHAR_DAD_Pos )      |
+                 ((uint32_t)ep_addr  << USB_OTG_HCCHAR_EPNUM_Pos )   |
+                 ((uint32_t)ep_type  << USB_OTG_HCCHAR_EPTYP_Pos )   |
                             ((uint32_t)mps & USB_OTG_HCCHAR_MPSIZ) );
   if(ep_addr & 0x80){
     HC->HCCHAR |= USB_OTG_HCCHAR_EPDIR;
@@ -718,6 +718,7 @@ uint32_t tusb_otg_host_xfer_data(tusb_host_t* host, uint8_t hc_num, uint8_t is_d
   hc->count = 0;
   hc->state = TUSB_CS_INIT;
   hc->do_ping = 0;
+  hc->is_data = is_data;
   
   if( ((HC->HCCHAR & USB_OTG_HCCHAR_EPTYP) >> USB_OTG_HCCHAR_EPTYP_Pos) == EP_TYPE_BULK){
     if(USBx == USB_OTG_HS){
@@ -765,7 +766,7 @@ WEAK int tusb_on_channel_event(tusb_host_t* host, uint8_t hc_num)
   return 1;
 }
 
-WEAK void tusb_host_port_changed(tusb_host_t* host)
+WEAK void tusb_host_port_changed(tusb_host_t* host, host_state_t new_state)
 {
   (void)host;
 }
