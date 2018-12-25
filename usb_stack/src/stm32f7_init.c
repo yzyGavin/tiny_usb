@@ -316,8 +316,11 @@ static void tusb_otg_core_init(tusb_core_t* core)
   }
 
 #if defined(ENABLE_DMA)
+  if(GetUSB(core) == USB_OTG_HS){
+    // only HS core has DMA feature
     USBx->GAHBCFG |= USB_OTG_GAHBCFG_HBSTLEN_2;
     USBx->GAHBCFG |= USB_OTG_GAHBCFG_DMAEN;
+  }
 #endif
 }
 
@@ -354,13 +357,15 @@ static void tusb_init_otg_device(tusb_device_t* dev)
   USBx->GINTSTS = 0xBFFFFFFF;
   
   //TODO: support LPM, BCD feature
-#if defined(ENABLE_DMA)
+  if(USBx->GAHBCFG & USB_OTG_GAHBCFG_DMAEN){
+    uint32_t t;
     USBx_DEVICE->DTHRCTL = (USB_OTG_DTHRCTL_TXTHRLEN_6 | USB_OTG_DTHRCTL_RXTHRLEN_6);
     USBx_DEVICE->DTHRCTL |= (USB_OTG_DTHRCTL_RXTHREN | USB_OTG_DTHRCTL_ISOTHREN | USB_OTG_DTHRCTL_NONISOTHREN);
-    i = USBx_DEVICE->DTHRCTL;
-#else
+    t = USBx_DEVICE->DTHRCTL;
+    (void)t;
+  }else{
     USBx->GINTMSK |= USB_OTG_GINTMSK_RXFLVLM;
-#endif
+  }
 
   /* Enable interrupts matching to the Device mode ONLY */
   USBx->GINTMSK |= (USB_OTG_GINTMSK_USBSUSPM | USB_OTG_GINTMSK_USBRST |
@@ -444,10 +449,10 @@ static void tusb_init_otg_host(tusb_host_t* dev)
   }
 
   /* Enable the common interrupts */
-#if defined(ENABLE_DMA)
-#else
+  if( (USBx->GAHBCFG & USB_OTG_GAHBCFG_DMAEN) == 0){
+    // copy data in fifo non-empty interrupt
     USBx->GINTMSK |= USB_OTG_GINTMSK_RXFLVLM;
-#endif
+  }
 
   /* Enable interrupts matching to the Host mode ONLY */
   USBx->GINTMSK |= (USB_OTG_GINTMSK_PRTIM            | USB_OTG_GINTMSK_HCIM |

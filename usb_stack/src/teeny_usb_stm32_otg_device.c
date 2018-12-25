@@ -135,8 +135,14 @@ int tusb_send_data(tusb_device_t* dev, uint8_t EPn, const void* data, uint16_t l
       epin->DIEPCTL |= USB_OTG_DIEPCTL_SD0PID_SEVNFRM;
     }
   }
-  if(len > 0){
-    USBx_DEVICE->DIEPEMPMSK |= (1 << EPn);
+  
+  
+  if(USBx->GAHBCFG & USB_OTG_GAHBCFG_DMAEN){
+    epin->DIEPDMA = (uint32_t)ep->tx_buf;
+  }else{  
+    if(len > 0){
+      USBx_DEVICE->DIEPEMPMSK |= (1 << EPn);
+    }
   }
   // do not fill data here, data will be filled in the empty interrupt
   //copy_data_to_fifo(dev, ep, EPn, data, len, total_len);
@@ -230,6 +236,10 @@ void tusb_set_rx_valid(tusb_device_t* dev, uint8_t EPn)
   if(len) len = pktCnt * maxpacket;
   // clear and set the EPT size field
   epout->DOEPTSIZ =  (pktCnt<<19) | len;
+  
+  if(USBx->GAHBCFG & USB_OTG_GAHBCFG_DMAEN){
+    epout->DOEPDMA = (uint32_t)ep->rx_buf;
+  }
   
   if(ISO_EP && ((epout->DOEPCTL & USB_OTG_DOEPCTL_EPTYP)  ==  ((USB_EP_ISOCHRONOUS)<<(USB_OTG_DOEPCTL_EPTYP_Pos))) ){
     if ((USBx_DEVICE->DSTS & ( 1 << 8 )) == 0){
@@ -397,11 +407,11 @@ void tusb_otg_device_handler(tusb_device_t* dev)
       USBx_OUTEP(0)->DOEPTSIZ |= (USB_OTG_DOEPTSIZ_PKTCNT & (1 << 19)) ;
       USBx_OUTEP(0)->DOEPTSIZ |= (3 * 8);
       USBx_OUTEP(0)->DOEPTSIZ |=  USB_OTG_DOEPTSIZ_STUPCNT;
-#if defined(ENABLE_DMA)
-      USBx_OUTEP(0)->DOEPDMA = (uint32_t)&dev->setup;
-      /* EP enable */
-      USBx_OUTEP(0)->DOEPCTL = 0x80008000;
-#endif
+      if(USBx->GAHBCFG & USB_OTG_GAHBCFG_DMAEN){
+        USBx_OUTEP(0)->DOEPDMA = (uint32_t)&dev->setup;
+        /* EP enable */
+        USBx_OUTEP(0)->DOEPCTL = 0x80008000;
+      }
       USBx->GINTSTS = USB_OTG_GINTSTS_USBRST;
     }
 
